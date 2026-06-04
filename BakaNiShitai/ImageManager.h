@@ -1,0 +1,32 @@
+#pragma once
+#include "DxLib.h"
+#include "WeaponConfig.h"
+
+class ImageManager {
+public:
+    // ƒvƒŒƒCƒ„[‰æ‘œ
+    int player1[7];
+    int player2[7];
+
+    // UI‰æ‘œ
+    int p1Hp[2];
+    int p2Hp[2];
+    int p1Score[2];
+    int p2Score[2];
+    int numbers[10];
+
+    // •Ší‰æ‘œ
+    int kama;
+    int konbou;
+    int ken;
+    int gun;
+    int houki;
+    int hammer;
+    int potionBlue;
+	int potionRed;
+    int potionPurple;
+    int bomb;
+
+    int weaponImages[WEAPON_TYPE_MAX];
+    void Load();
+};
