@@ -24,6 +24,7 @@ public:
 	bool wantExplode;
 	bool isBlinking;
 	int blinkTimer;
+	bool isReadyThrow;
 
 	int animFrame;   // 今何枚目か
 	int animTimer;   // 切り替えカウンター

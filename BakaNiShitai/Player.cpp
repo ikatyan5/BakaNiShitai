@@ -25,6 +25,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	weaponDrawY = 0.0f;
 	prevAttackKey = false;
 	prevThrowKey = false;
+	isReadyThrow = false;
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
 	}
@@ -68,6 +69,7 @@ void Player::UpdateAttack(Weapon* weapons) {
 	if (PlayerID == 1) {
 		bool attackKey = CheckHitKey(KEY_INPUT_F);
 		bool throwKey = CheckHitKey(KEY_INPUT_G) && CheckHitKey(KEY_INPUT_F);
+		isReadyThrow = CheckHitKey(KEY_INPUT_G) && holdingWeaponIndex != -1;
 		if (throwKey && !prevThrowKey && attackTimer == 0 && holdingWeaponIndex != -1) {
 			wantThrow = true;
 			attackTimer = 15;
@@ -82,6 +84,7 @@ void Player::UpdateAttack(Weapon* weapons) {
 	else if (PlayerID == 2) {
 		bool attackKey = GetMouseInput() & MOUSE_INPUT_LEFT;
 		bool throwKey = (GetMouseInput() & MOUSE_INPUT_RIGHT) && (GetMouseInput() & MOUSE_INPUT_LEFT);
+		isReadyThrow = (GetMouseInput() & MOUSE_INPUT_RIGHT) && holdingWeaponIndex != -1;
 		if (throwKey && !prevThrowKey && attackTimer == 0 && holdingWeaponIndex != -1) {
 			wantThrow = true;
 			attackTimer = 15;
@@ -108,7 +111,11 @@ void Player::UpdateAnim() {
 
 	animTimer++;
 
-	if (attacking) {
+
+	if (isReadyThrow) {
+		animFrame = 5;
+	}
+	else if (attacking) {
 		// UŒ‚’†‚Í[3]‚Æ[4]‚ðØ‚è‘Ö‚¦
 		if (animTimer < 8) animFrame = 3;
 		else animFrame = 4;
@@ -189,7 +196,12 @@ void Player::Draw(Weapon* weapons) {
 		}
 		float weaponAngle = 0.0f;
 
-		if (attacking && WEAPON_DATA[weapons[holdingWeaponIndex].weaponType].isRanged) {
+		if (isReadyThrow) {
+			weaponDrawX = facingRight ? x - 20.0f : x + 20.0f;
+			weaponDrawY = y - 110.0f;
+			weaponAngle = facingRight ? -2.5f : 2.5f;
+		}
+		else if (attacking && WEAPON_DATA[weapons[holdingWeaponIndex].weaponType].isRanged) {
 			if (attackTimer > 7) {
 				weaponDrawY = y - 110.0f;
 				weaponAngle = facingRight ? -0.8f : 0.8f;
