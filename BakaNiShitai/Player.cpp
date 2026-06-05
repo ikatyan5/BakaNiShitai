@@ -26,6 +26,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	prevAttackKey = false;
 	prevThrowKey = false;
 	isReadyThrow = false;
+	canAttack = true;
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
 	}
@@ -37,12 +38,12 @@ void Player::UpdateInput() {
 	if (attacking)return;
 
 	if (PlayerID == 1) {
-		if (CheckHitKey(KEY_INPUT_A)) { vx = -5.0f; facingRight = false; }
-		if (CheckHitKey(KEY_INPUT_D)) { vx = 5.0f; facingRight = true; }
+		if (CheckHitKey(KEY_INPUT_A)) { vx = isBlinking ? -8.0f : -5.0f; facingRight = false; }
+		if (CheckHitKey(KEY_INPUT_D)) { vx = isBlinking ? 8.0f : 5.0f; facingRight = true; }
 	}
 	else if (PlayerID == 2) {
-		if (CheckHitKey(KEY_INPUT_LEFT)) { vx = -5.0f; facingRight = false; }
-		if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = 5.0f; facingRight = true; }
+		if (CheckHitKey(KEY_INPUT_LEFT)) { vx = isBlinking ? -8.0f : -5.0f; facingRight = false; }
+		if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = isBlinking ? 8.0f : 5.0f; facingRight = true; }
 	}
 }
 
@@ -61,6 +62,8 @@ void Player::UpdateJump() {
 
 // UŒ‚‚Ìˆ—
 void Player::UpdateAttack(Weapon* weapons) {
+	if (!canAttack) return;
+
 	if (attackTimer > 0) {
 		attackTimer--;
 		if (attackTimer == 0) attacking = false;
@@ -106,6 +109,7 @@ void Player::UpdateAnim() {
 		if (blinkTimer <= 0) {
 			isBlinking = false;
 			wantExplode = true;
+			canAttack = true;
 		}
 	}
 

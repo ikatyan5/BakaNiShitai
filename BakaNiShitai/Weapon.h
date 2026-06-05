@@ -22,9 +22,13 @@ public:
     void Init(WeaponType type, ImageManager& imgMgr);
     void Throw(float startX, float startY, bool facingRight, int id, WeaponType type, ImageManager& imgMgr);
     void Update();
-    bool CheckHit(float bx, float by, float bw, float bh);
+    bool CheckHit(float bx, float by, float bw, float bh, int targetID);
+    bool CheckParry(float bx, float by, float bw, float bh);
     void Draw();
+
 
     int weaponImage;
     int groundTimer;
+    int parryRemain; // c‚è‚Í‚½‚«—‚Æ‚µ‰ñ”
+    int selfHitTimer; // “Š‚°‚½’¼Œã‚Ì©•ª‚Ö‚Ì“–‚½‚è”»’è—P—\
 };

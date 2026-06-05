@@ -25,6 +25,7 @@ public:
 	bool isBlinking;
 	int blinkTimer;
 	bool isReadyThrow;
+	bool canAttack;
 
 	int animFrame;   // 今何枚目か
 	int animTimer;   // 切り替えカウンター

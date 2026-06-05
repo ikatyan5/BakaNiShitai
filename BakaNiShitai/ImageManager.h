@@ -23,6 +23,7 @@ public:
     int houki;
     int hammer;
     int stick;
+    int orbs[3];
 
     // ƒAƒCƒeƒ€
     int potionBlue;

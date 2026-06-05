@@ -10,17 +10,9 @@ void Weapon::Init(WeaponType type, ImageManager& imgMgr) {
     ownerID = 0;
     weaponType = type;
     groundTimer = 0;
-    switch (type) {
-    case WEAPON_KAMA:
-        weaponImage = imgMgr.kama;
-        break;
-    case WEAPON_KONBOU:
-        weaponImage = imgMgr.konbou;
-        break;
-    default:
-        weaponImage = -1;
-        break;
-    }
+    selfHitTimer = 0;
+    parryRemain = WEAPON_DATA[type].parryCount;
+    weaponImage = imgMgr.weaponImages[type];
 }
 
 void Weapon::Throw(float startX, float startY, bool facingRight, int id, WeaponType type, ImageManager& imgMgr) {
@@ -28,7 +20,9 @@ void Weapon::Throw(float startX, float startY, bool facingRight, int id, WeaponT
     y = startY;
     vx = facingRight ? WEAPON_SPEED : -WEAPON_SPEED;
     angle = 0.0f;
+    selfHitTimer = 20;
     weaponState = WEAPON_THROWN;  // active = true ‚Ì‘ã‚í‚è
+    parryRemain = WEAPON_DATA[type].parryCount;
     ownerID = id;
     weaponType = type;
 }
@@ -46,16 +40,26 @@ void Weapon::Update() {
         }
     }
     else if (weaponState == WEAPON_THROWN) {
+        if (selfHitTimer > 0) selfHitTimer--;
         x += vx;
         angle += (vx > 0) ? WEAPON_ROTATE : -WEAPON_ROTATE; // Œü‚«‚Å‰ñ“]•ûŒü•Ï‚¦‚é
         if (x < 0 || x > 1280) weaponState = WEAPON_INACTIVE;
     }
 }
 
-bool Weapon::CheckHit(float bx, float by, float bw, float bh) {
+bool Weapon::CheckHit(float bx, float by, float bw, float bh, int targetID) {
     if (weaponState != WEAPON_THROWN) return false;
+    if (targetID == ownerID && selfHitTimer > 0) return false; // —P—\’†‚ÍŽ©•ª‚É“–‚½‚ç‚È‚¢
     float aw = WEAPON_DATA[weaponType].hitW;
     float ah = WEAPON_DATA[weaponType].hitH;
+    return fabsf(x - bx) < (aw + bw) / 2 &&
+        fabsf(y - by) < (ah + bh) / 2;
+}
+
+bool Weapon::CheckParry(float bx, float by, float bw, float bh) {
+    if (weaponState != WEAPON_THROWN) return false;
+    float aw = WEAPON_DATA[weaponType].parryW;
+    float ah = WEAPON_DATA[weaponType].parryH;
     return fabsf(x - bx) < (aw + bw) / 2 &&
         fabsf(y - by) < (ah + bh) / 2;
 }

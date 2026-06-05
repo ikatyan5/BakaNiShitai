@@ -38,6 +38,11 @@ void ImageManager::Load() {
     weaponImages[WEAPON_HAMMER] = LoadGraph(_T("Image/Weapon/hammer.png"));
     weaponImages[WEAPON_STICK] = LoadGraph(_T("Image/Weapon/stick.png"));
 
+    int srcOrb = LoadGraph(_T("Image/Weapon/orb.png"));
+    for (int i = 0; i < 3; i++) {
+        orbs[i] = DerivationGraph(32 * i, 0, 32, 32, srcOrb);
+    }
+
     potionBlue = LoadGraph(_T("Image/Item/potionBlue.png"));
 	potionRed = LoadGraph(_T("Image/Item/potionRed.png"));
     potionPurple = LoadGraph(_T("Image/Item/potionPurple.png"));

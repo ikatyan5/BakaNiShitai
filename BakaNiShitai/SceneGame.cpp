@@ -21,6 +21,7 @@ void SceneGame::Init(ImageManager& imgMgr_) {
         weapons[i].Init(WEAPON_KAMA, *imgMgr);
     }
     itemManager.Init(*imgMgr);
+    orbManager.Init(*imgMgr);
     stage.Init(1);
 }
 
@@ -36,8 +37,107 @@ void SceneGame::InitPlayers(bool keepWinCount) {
     player2.Init(p1Right ? leftX : rightX, 360.0f, 2, !p1Right, *imgMgr, p2Win);
 }
 
+void SceneGame::CheckParry(Player& attacker, int ownerID) {
+    if (!attacker.attacking) return;
+    if (attacker.attackTimer >= 7) return;
+    bool isFirstFrame = (attacker.attackTimer == PARRY_FRAME);
+    if (attacker.holdingWeaponIndex == -1) return;
+
+    Weapon& held = weapons[attacker.holdingWeaponIndex];
+    if (held.parryRemain <= 0) return;
+
+    float atkX = attacker.facingRight ? attacker.x + 50.0f : attacker.x - 50.0f;
+    float atkY = attacker.y - 50.0f;
+
+    orbManager.CheckParry(atkX, atkY, 40.0f, 80.0f, ownerID);
+
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        if (weapons[i].ownerID == ownerID) continue;
+        if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
+        if (weapons[i].CheckParry(atkX, atkY, 40.0f, 80.0f)) {
+            if (isFirstFrame) {
+                weapons[i].vx = -weapons[i].vx;
+            }
+            else {
+                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                held.parryRemain--;
+                if (held.parryRemain <= 0) {
+                    held.weaponState = Weapon::WEAPON_INACTIVE;
+                    attacker.holdingWeaponIndex = -1;
+                }
+            }
+            break;
+        }
+    }
+}
+
+void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue, int targetID) {
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
+        if (weapons[i].CheckHit(
+            target.x, target.y - PLAYER_HIT_CY,
+            PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
+            weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+            attacker.winCount++;
+            EnterHitState(judgeValue);
+            return;
+        }
+    }
+}
+
+void SceneGame::ThrowWeapon(Player& player, int ownerID) {
+    if (!player.wantThrow) return;
+    if (player.holdingWeaponIndex != -1) {
+        int idx = player.holdingWeaponIndex;
+        if (weapons[idx].weaponType == WEAPON_STICK) {
+            orbManager.Launch(player.x, player.y - 50.0f, player.facingRight, ownerID);
+            weapons[idx].weaponState = Weapon::WEAPON_INACTIVE;
+            player.holdingWeaponIndex = -1;
+        }
+        else {
+            weapons[idx].Throw(player.x, player.y - 50.0f, player.facingRight, ownerID,
+                (WeaponType)weapons[idx].weaponType, *imgMgr);
+            player.holdingWeaponIndex = -1;
+        }
+    }
+    player.wantThrow = false;
+}
+
+void SceneGame::PickupWeapon(Player& player) {
+    if (player.holdingWeaponIndex != -1) return;
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        if (weapons[i].weaponState != Weapon::WEAPON_FALLING) continue;
+        float dx = player.x - weapons[i].x;
+        float dist = fabsf(dx);
+        if (dist < 80.0f && fabsf(player.y - weapons[i].y) < 150.0f) {
+            weapons[i].weaponState = Weapon::WEAPON_HELD;
+            player.holdingWeaponIndex = i;
+            break;
+        }
+    }
+}
+
+void SceneGame::SpawnWeapon() {
+    weaponSpawnTimer++;
+    if (weaponSpawnTimer >= WEAPON_SPAWN_INTERVAL) {
+        weaponSpawnTimer = 0;
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
+                WeaponType type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
+                weapons[i].Init(type, *imgMgr);
+                weapons[i].weaponState = Weapon::WEAPON_FALLING;
+                weapons[i].x = (float)(rand() % 1100 + 90);
+                weapons[i].y = 0.0f;
+                weapons[i].angle = 0.0f;
+                break;
+            }
+        }
+    }
+}
+
 void SceneGame::Update() {
     if (state == STATE_PLAYING) {
+        // タイマーカウントダウン
         if (timeTimer > 0) timeTimer--;
         else {
             // 時間切れ！両者END
@@ -52,34 +152,34 @@ void SceneGame::Update() {
             state = STATE_HIT;
             JUDGE = false;
         }
+
+        // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding) {
             player1.Update(stage, weapons);
             player2.Update(stage, weapons);
         }
         itemManager.Update(player1, player2);
-
-
+        orbManager.Update(player1, player2);
+        // 爆発ヒット判定
         if (itemManager.hitOccurred) {
             itemManager.hitOccurred = false;
-            EnterHitState(itemManager.hitWinnerID == 2);
+            EnterHitState(itemManager.hitWinnerID == 2, true);
         }
-        auto checkWeaponHit = [&](Player& target, Player& attacker, bool judgeValue, int targetID) {
-            for (int i = 0; i < WEAPON_MAX; i++) {
-                if (weapons[i].CheckHit(
-                    target.x, target.y - PLAYER_HIT_CY,
-                    PLAYER_HIT_W, PLAYER_HIT_H)
-                    && weapons[i].ownerID != targetID) {
-                    weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-                    attacker.winCount++;
-                    EnterHitState(judgeValue);
-                    return;
-                }
-            }
-        };
 
-        checkWeaponHit(player1, player2, true, 1);
-        checkWeaponHit(player2, player1, false, 2);
+        if (orbManager.hitOccurred) {
+            orbManager.hitOccurred = false;
+            EnterHitState(orbManager.hitWinnerID == 2, false);
+        }
 
+        // はたき落とし判定
+        CheckParry(player1, 1);
+        CheckParry(player2, 2);
+
+        // 投げ武器ヒット判定
+        CheckWeaponHit(player1, player2, true, 1);
+        CheckWeaponHit(player2, player1, false, 2);
+
+        // 近接攻撃ヒット判定
         if (player1.CheckAttackHit(player2, weapons)) {
             EnterHitState(false);
         }
@@ -87,64 +187,26 @@ void SceneGame::Update() {
             EnterHitState(true);
         }
 
-        auto throwWeapon = [&](Player& player, int ownerID) {
-            if (player.wantThrow) {
-                if (player.holdingWeaponIndex != -1) {
-                    int idx = player.holdingWeaponIndex;
-                    weapons[idx].Throw(player.x, player.y - 50.0f, player.facingRight, ownerID,
-                        (WeaponType)weapons[idx].weaponType, *imgMgr);
-                    player.holdingWeaponIndex = -1;
-                }
-                player.wantThrow = false;
-            }
-            };
+        ThrowWeapon(player1, 1);
+        ThrowWeapon(player2, 2);
 
-        throwWeapon(player1, 1);
-        throwWeapon(player2, 2);
+        // 武器スポーン
+        SpawnWeapon();
 
-        weaponSpawnTimer++;
-        if (weaponSpawnTimer >= WEAPON_SPAWN_INTERVAL) {
-            weaponSpawnTimer = 0;
-            for (int i = 0; i < WEAPON_MAX; i++) {
-                if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
-                    weapons[i].weaponState = Weapon::WEAPON_FALLING;
-                    weapons[i].x = (float)(rand() % 1100 + 90);
-                    weapons[i].y = 0.0f;
-                    weapons[i].angle = 0.0f;
-                    WeaponType type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
-                    weapons[i].weaponType = type;
-                    weapons[i].weaponImage = imgMgr->weaponImages[type];
-                    break;
-                }
-            }
-        }
-
-        auto pickupWeapon = [&](Player& player) {
-            if (player.holdingWeaponIndex != -1) return;
-            for (int i = 0; i < WEAPON_MAX; i++) {
-                if (weapons[i].weaponState != Weapon::WEAPON_FALLING) continue;
-                float dx = player.x - weapons[i].x;
-                float dist = fabsf(dx);
-                if (dist < 80.0f && fabsf(player.y - weapons[i].y) < 150.0f) {
-                    weapons[i].weaponState = Weapon::WEAPON_HELD;
-                    player.holdingWeaponIndex = i;
-                    break;
-                }
-            }
-            };
-
-        pickupWeapon(player1);
-        pickupWeapon(player2);
+        PickupWeapon(player1);
+        PickupWeapon(player2);
 
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Update();
         }
     }
     else if (state == STATE_HIT) {
+        // ヒット演出タイマー
         if (HIT_TIMER > 0) HIT_TIMER--;
         else state = STATE_RESULT;
     }
     else if (state == STATE_RESULT) {
+        // リザルト表示タイマー
         if (RESULT_TIMER > 0) RESULT_TIMER--;
         else {
             if (player1.winCount >= WINNING_SCORE || player2.winCount >= WINNING_SCORE) {
@@ -152,7 +214,7 @@ void SceneGame::Update() {
             }
             else {
                 // ラウンド間リセット
-				InitPlayers(true);
+                InitPlayers(true);
                 for (int i = 0; i < WEAPON_MAX; i++) {
                     weapons[i].Init(WEAPON_KAMA, *imgMgr);
                 }
@@ -161,12 +223,14 @@ void SceneGame::Update() {
                 p2HpIndex = 0;
                 timeTimer = matchTime * 60;
                 itemManager.Init(*imgMgr);
+                orbManager.Init(*imgMgr);
                 weaponSpawnTimer = 0;
                 state = STATE_PLAYING;
             }
         }
     }
     else if (state == STATE_GAMEEND) {
+        // Rキーでリスタート
         if (CheckHitKey(KEY_INPUT_R)) {
             InitPlayers(false);
             for (int i = 0; i < WEAPON_MAX; i++) {
@@ -175,7 +239,9 @@ void SceneGame::Update() {
             isDraw = false;
             p1HpIndex = 0;
             p2HpIndex = 0;
+            timeTimer = matchTime * 60;
             itemManager.Init(*imgMgr);
+            orbManager.Init(*imgMgr);
             weaponSpawnTimer = 0;
             state = STATE_PLAYING;
             nextScene = -1;
@@ -191,6 +257,7 @@ void SceneGame::Draw() {
         }
         player1.Draw(weapons);
         player2.Draw(weapons);
+        orbManager.Draw();
         itemManager.Draw();
         DrawUI();
     }
@@ -201,6 +268,8 @@ void SceneGame::Draw() {
         }
         player1.Draw(weapons);
         player2.Draw(weapons);
+        orbManager.Draw();
+        itemManager.Draw();
         if (!isDraw) {
             if (!JUDGE) {
                 DrawString(540, 300, _T("HIT"), GetColor(255, 0, 0));
@@ -270,18 +339,21 @@ void SceneGame::DrawUI()
     DrawExtendGraphF(638.0f, UI_TIME_Y, 638.0f + UI_NUMBER_SIZE, UI_TIME_Y + UI_NUMBER_SIZE, imgMgr->numbers[ones], TRUE);
 }
 
-void SceneGame::EnterHitState(bool judgeValue) {
+void SceneGame::EnterHitState(bool judgeValue, bool addScore) {
     JUDGE = judgeValue;
     if (JUDGE) {
         p1HpIndex = 1;
         player1.animFrame = 6;
+        if (addScore) player2.winCount++;
     }
     else {
         p2HpIndex = 1;
         player2.animFrame = 6;
+        if (addScore) player1.winCount++;
     }
     HIT_TIMER = 60;
     RESULT_TIMER = 120;
+    timeTimer = matchTime * 60;
     state = STATE_HIT;
 }
 

@@ -5,6 +5,7 @@
 #include "Stage.h"
 #include "ImageManager.h"
 #include "ItemManager.h"
+#include "OrbManager.h"
 
 class SceneGame : public BaseScene {
 public:
@@ -13,9 +14,13 @@ public:
     void Update() override;
     void Draw() override;
     void DrawUI();
-    void EnterHitState(bool judgeValue);
+    void EnterHitState(bool judgeValue, bool addScore = false);
     int GetNextScene() override;
-
+    void SpawnWeapon();
+    void CheckParry(Player& attacker, int ownerID);
+    void CheckWeaponHit(Player& target, Player& attacker, bool judgeValue, int targetID);
+    void ThrowWeapon(Player& player, int ownerID);
+    void PickupWeapon(Player& player);
 private:
     enum GameState {
         STATE_PLAYING,
@@ -33,6 +38,7 @@ private:
     Weapon weapons[WEAPON_MAX];
     ImageManager* imgMgr;
     ItemManager itemManager;
+    OrbManager orbManager;
     bool JUDGE;
     int HIT_TIMER;
     int RESULT_TIMER;

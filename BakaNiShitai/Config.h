@@ -11,14 +11,14 @@ const float GROUND_Y = 800.0f; // 仮の地面の位置
 const int WINNING_SCORE = 3; // 勝利条件のスコア
 
 // 武器関係
-const float WEAPON_SPEED = 10.0f;		// 投げたときの速度
-const float WEAPON_ROTATE = 0.15f;		// 回転速度
-const int   WEAPON_W = 40;				// 判定の幅
-const int   WEAPON_H = 20;				// 判定の高さ
-const int WEAPON_SPAWN_INTERVAL = 180;	// 武器がスポーンする間隔
-const int WEAPON_GROUND_TIME = 300;		// 地面に落ちてから消えるまでの時間
-const float WEAPON_GROUND_OFFSET = 15.0f; // 地面にめり込む量
-
+const float WEAPON_SPEED = 10.0f;			// 投げたときの速度
+const float WEAPON_ROTATE = 0.15f;			// 回転速度
+const int   WEAPON_W = 40;					// 判定の幅
+const int   WEAPON_H = 20;					// 判定の高さ
+const int WEAPON_SPAWN_INTERVAL = 180;		// 武器がスポーンする間隔
+const int WEAPON_GROUND_TIME = 300;			// 地面に落ちてから消えるまでの時間
+const float WEAPON_GROUND_OFFSET = 15.0f;	// 地面にめり込む量
+const int PARRY_FRAME = 6;					// はたき返し判定フレーム ×６して
 // アイテム関係
 const int ITEM_SPAWN_INTERVAL = 300; // アイテムがスポーンする間隔
 
