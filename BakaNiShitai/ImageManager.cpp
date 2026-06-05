@@ -36,7 +36,7 @@ void ImageManager::Load() {
 	weaponImages[WEAPON_GUN] = LoadGraph(_T("Image/Weapon/gun.png"));
     weaponImages[WEAPON_HOUKI] = LoadGraph(_T("Image/Weapon/houki.png"));
     weaponImages[WEAPON_HAMMER] = LoadGraph(_T("Image/Weapon/hammer.png"));
-    
+    weaponImages[WEAPON_STICK] = LoadGraph(_T("Image/Weapon/stick.png"));
 
     potionBlue = LoadGraph(_T("Image/Item/potionBlue.png"));
 	potionRed = LoadGraph(_T("Image/Item/potionRed.png"));

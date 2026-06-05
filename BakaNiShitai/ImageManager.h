@@ -22,6 +22,9 @@ public:
     int gun;
     int houki;
     int hammer;
+    int stick;
+
+    // ƒAƒCƒeƒ€
     int potionBlue;
 	int potionRed;
     int potionPurple;

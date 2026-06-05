@@ -7,6 +7,7 @@ enum WeaponType {
     WEAPON_GUN,
     WEAPON_HOUKI,
     WEAPON_HAMMER,
+    WEAPON_STICK,
     WEAPON_TYPE_MAX // ïKÇ∏ç≈å„Ç…íuÇ≠
 };
 
@@ -24,5 +25,6 @@ const WeaponData WEAPON_DATA[] = {
     { 100.0f,  80.0f, 1.5f, true  },    // WEAPON_GUN
     { 60.0f, 100.0f, 1.5f, true},       // WEAPON_HOUKI
     { 60.0f, 100.0f, 1.5f, true},       // WEAPON_HAMMER
+    { 60.0f, 100.0f, 1.5f, true},       // WEAPON_STICK
     // Ç±ÇÍÇ©ÇÁïêäÌÇ™ëùÇ¶ÇΩÇÁÇ±Ç±Ç…í«â¡Ç∑ÇÈÇæÇØÅI
 };
