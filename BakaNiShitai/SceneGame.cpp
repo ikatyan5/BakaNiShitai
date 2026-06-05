@@ -159,6 +159,7 @@ void SceneGame::Update() {
                 isDraw = false;
                 p1HpIndex = 0;
                 p2HpIndex = 0;
+                timeTimer = matchTime * 60;
                 itemManager.Init(*imgMgr);
                 weaponSpawnTimer = 0;
                 state = STATE_PLAYING;
@@ -281,7 +282,6 @@ void SceneGame::EnterHitState(bool judgeValue) {
     }
     HIT_TIMER = 60;
     RESULT_TIMER = 120;
-    timeTimer = matchTime * 60;
     state = STATE_HIT;
 }
 

@@ -19,8 +19,8 @@ struct WeaponData {
 };
 
 const WeaponData WEAPON_DATA[] = {
-    { 60.0f, 100.0f, 1.5f, false },     // WEAPON_KAMA
-    { 60.0f, 90.0f, 1.5f, false },      // WEAPON_KONBOU
+    { 60.0f, 100.0f, 1.5f, true },     // WEAPON_KAMA
+    { 60.0f, 90.0f, 1.5f, true },      // WEAPON_KONBOU
     { 70.0f,  70.0f, 1.5f, true  },     // WEAPON_KEN
     { 100.0f,  80.0f, 1.5f, true  },    // WEAPON_GUN
     { 60.0f, 100.0f, 1.5f, true},       // WEAPON_HOUKI
