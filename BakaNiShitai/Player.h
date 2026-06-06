@@ -38,6 +38,7 @@ public:
 	bool GetFacingRight() { return facingRight; }
 	int GetWinCount() { return winCount; }
 
+	int GetAttackFrames(Weapon* weapons);
 	bool CheckHit(float ax, float ay, float aw, float ah,
 		float bx, float by, float bw, float bh);
 	bool CheckAttackHit(Player& other, Weapon* weapons);

@@ -16,6 +16,11 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     matchTime = DEFAULT_TIME;
     timeTimer = matchTime * 60;
 
+    mementoMoriTimer = 0;
+    mementoMoriShooterID = 0;
+    mementoMoriWinnerID = 0;
+    mementoMoriPending = false;
+
     p1Glowing = false;
     p2Glowing = false;
 
@@ -39,6 +44,26 @@ void SceneGame::InitPlayers(bool keepWinCount) {
 
     player1.Init(p1Right ? rightX : leftX, 360.0f, 1, p1Right, *imgMgr, p1Win);
     player2.Init(p1Right ? leftX : rightX, 360.0f, 2, !p1Right, *imgMgr, p2Win);
+}
+
+void SceneGame::ResetGame(bool keepWinCount) {
+    InitPlayers(keepWinCount);
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        weapons[i].Init(WEAPON_KAMA, *imgMgr);
+    }
+    isDraw = false;
+    p1HpIndex = 0;
+    p2HpIndex = 0;
+    p1Glowing = false;
+    p2Glowing = false;
+    timeTimer = matchTime * 60;
+    itemManager.Init(*imgMgr);
+    orbManager.Init(*imgMgr);
+    weaponSpawnTimer = 0;
+    mementoMoriTimer = 0;
+    mementoMoriShooterID = 0;
+    mementoMoriWinnerID = 0;
+    mementoMoriPending = false;
 }
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {
@@ -82,8 +107,7 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
             target.x, target.y - PLAYER_HIT_CY,
             PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
             weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-            attacker.winCount++;
-            EnterHitState(judgeValue);
+            EnterHitState(judgeValue, true);
             return;
         }
     }
@@ -143,6 +167,42 @@ void SceneGame::SpawnWeapon() {
     }
 }
 
+void SceneGame::CheckMementoMori(Player& attacker, Player& target, bool judgeValue) {
+    if (attacker.holdingWeaponIndex == -1) return;
+    Weapon& held = weapons[attacker.holdingWeaponIndex];
+    if (held.weaponType != WEAPON_MEMENTO_MORI) return;
+    if (!attacker.attacking) return;
+
+    int charge = WEAPON_DATA[WEAPON_MEMENTO_MORI].chargeFrames;
+    int atkFrames = WEAPON_DATA[WEAPON_MEMENTO_MORI].attackFrames;
+    if (attacker.attackTimer != atkFrames) return;
+
+    float hitH = WEAPON_DATA[WEAPON_MEMENTO_MORI].hitH;
+    bool hit = fabsf((target.y - PLAYER_HIT_CY) - (attacker.y - PLAYER_HIT_CY)) < (hitH + PLAYER_HIT_H) / 2;
+
+    held.weaponState = Weapon::WEAPON_INACTIVE;
+    attacker.holdingWeaponIndex = -1;
+    mementoMoriPending = true;
+    mementoMoriShooterID = attacker.PlayerID;
+    mementoMoriTimer = 30;
+    mementoMoriWinnerID = hit ? (judgeValue ? 2 : 1) : (judgeValue ? 1 : 2);
+}
+
+void SceneGame::DrawMementoMori(Player& attacker) {
+    int atkFrames = WEAPON_DATA[WEAPON_MEMENTO_MORI].attackFrames;
+    bool isAttacking = attacker.attacking && attacker.attackTimer <= atkFrames
+        && attacker.holdingWeaponIndex != -1
+        && weapons[attacker.holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI;
+    bool isPending = mementoMoriPending && mementoMoriShooterID == attacker.PlayerID;
+
+    if (!isAttacking && !isPending) return;
+
+
+    float hitH = WEAPON_DATA[WEAPON_MEMENTO_MORI].hitH;
+    float cy = attacker.y - PLAYER_HIT_CY;
+    DrawBoxAA(0, cy - hitH / 2, 1280, cy + hitH / 2, GetColor(180, 0, 0), TRUE);
+}
+
 void SceneGame::Update() {
     if (state == STATE_PLAYING) {
         // タイマーカウントダウン
@@ -162,7 +222,7 @@ void SceneGame::Update() {
         }
 
         // 爆発中はプレイヤーの更新を止める
-        if (!itemManager.isExploding) {
+        if (!itemManager.isExploding && !mementoMoriPending) {
             player1.Update(stage, weapons);
             player2.Update(stage, weapons);
         }
@@ -176,11 +236,24 @@ void SceneGame::Update() {
 
         if (orbManager.hitOccurred) {
             orbManager.hitOccurred = false;
-            EnterHitState(orbManager.hitWinnerID == 2, false);
+            EnterHitState(orbManager.hitWinnerID == 2, true);
         }
 
         p1Glowing = player1.isGlowing;
         p2Glowing = player2.isGlowing;
+
+        // メメントモリ判定
+        CheckMementoMori(player1, player2, false);
+        CheckMementoMori(player2, player1, true);
+
+        // メメントモリ余韻タイマー
+        if (mementoMoriPending) {
+            mementoMoriTimer--;
+            if (mementoMoriTimer <= 0) {
+                mementoMoriPending = false;
+                EnterHitState(mementoMoriWinnerID == 2, true);
+            }
+        }
 
         // はたき落とし判定
         CheckParry(player1, 1);
@@ -191,12 +264,8 @@ void SceneGame::Update() {
         CheckWeaponHit(player2, player1, false, 2);
 
         // 近接攻撃ヒット判定
-        if (player1.CheckAttackHit(player2, weapons)) {
-            EnterHitState(false);
-        }
-        if (player2.CheckAttackHit(player1, weapons)) {
-            EnterHitState(true);
-        }
+        if (player1.CheckAttackHit(player2, weapons)) EnterHitState(false, true);
+        if (player2.CheckAttackHit(player1, weapons)) EnterHitState(true, true);
 
         ThrowWeapon(player1, 1);
         ThrowWeapon(player2, 2);
@@ -225,19 +294,7 @@ void SceneGame::Update() {
             }
             else {
                 // ラウンド間リセット
-                InitPlayers(true);
-                for (int i = 0; i < WEAPON_MAX; i++) {
-                    weapons[i].Init(WEAPON_KAMA, *imgMgr);
-                }
-                isDraw = false;
-                p1HpIndex = 0;
-                p2HpIndex = 0;
-                p1Glowing = false;
-                p2Glowing = false;
-                timeTimer = matchTime * 60;
-                itemManager.Init(*imgMgr);
-                orbManager.Init(*imgMgr);
-                weaponSpawnTimer = 0;
+                ResetGame(true);
                 state = STATE_PLAYING;
             }
         }
@@ -245,19 +302,7 @@ void SceneGame::Update() {
     else if (state == STATE_GAMEEND) {
         // Rキーでリスタート
         if (CheckHitKey(KEY_INPUT_R)) {
-            InitPlayers(false);
-            for (int i = 0; i < WEAPON_MAX; i++) {
-                weapons[i].Init(WEAPON_KAMA, *imgMgr);
-            }
-            isDraw = false;
-            p1HpIndex = 0;
-            p2HpIndex = 0;
-            p1Glowing = false;
-            p2Glowing = false;
-            timeTimer = matchTime * 60;
-            itemManager.Init(*imgMgr);
-            orbManager.Init(*imgMgr);
-            weaponSpawnTimer = 0;
+            ResetGame(false);
             state = STATE_PLAYING;
             nextScene = -1;
         }
@@ -272,6 +317,8 @@ void SceneGame::Draw() {
         }
         player1.Draw(weapons);
         player2.Draw(weapons);
+        DrawMementoMori(player1);
+        DrawMementoMori(player2);
         orbManager.Draw();
         itemManager.Draw();
         DrawUI();
@@ -302,6 +349,8 @@ void SceneGame::Draw() {
         }
         player1.Draw(weapons);
         player2.Draw(weapons);
+        orbManager.Draw();
+        itemManager.Draw();
         if (isDraw) {
             DrawString(540, 300, _T("ちんたらすんな！"), GetColor(255, 255, 0));
         }

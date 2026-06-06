@@ -46,6 +46,7 @@ void ImageManager::Load() {
     weaponImages[WEAPON_HAMMER] = LoadGraph(_T("Image/Weapon/hammer.png"));
     weaponImages[WEAPON_STICK] = LoadGraph(_T("Image/Weapon/stick.png"));
     weaponImages[WEAPON_BOOMERANG] = LoadGraph(_T("Image/Weapon/boomerang.png"));
+    weaponImages[WEAPON_MEMENTO_MORI] = LoadGraph(_T("Image/Weapon/memento_mori.png"));
 
     int srcOrb = LoadGraph(_T("Image/Weapon/orb.png"));
     for (int i = 0; i < 3; i++) {

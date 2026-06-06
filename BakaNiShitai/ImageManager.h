@@ -27,6 +27,7 @@ public:
     int hammer;
     int stick;
     int boomerang;
+    int memento_mori;
     int orbs[3];
 
     // ƒAƒCƒeƒ€

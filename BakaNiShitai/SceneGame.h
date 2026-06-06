@@ -11,6 +11,7 @@ class SceneGame : public BaseScene {
 public:
     void Init(ImageManager& imgMgr);
     void InitPlayers(bool keepWinCount = false);
+    void ResetGame(bool keepWinCount);
     void Update() override;
     void Draw() override;
     void DrawUI();
@@ -21,6 +22,8 @@ public:
     void CheckWeaponHit(Player& target, Player& attacker, bool judgeValue, int targetID);
     void ThrowWeapon(Player& player, int ownerID);
     void PickupWeapon(Player& player);
+    void CheckMementoMori(Player& attacker, Player& target, bool judgeValue);
+    void DrawMementoMori(Player& attacker);
 private:
     enum GameState {
         STATE_PLAYING,
@@ -47,6 +50,11 @@ private:
     bool isDraw;
     int matchTime; // 実際に使う試合時間
     int timeTimer; // フレームカウンター
+
+    int mementoMoriTimer;       // 余韻タイマー
+    int mementoMoriShooterID;   // 撃ったプレイヤーのID
+    int mementoMoriWinnerID;    // ENDする側
+    bool mementoMoriPending;    // END待ち状態か
 
     bool p1Glowing;
     bool p2Glowing;

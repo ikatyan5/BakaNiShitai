@@ -12,6 +12,6 @@ const ItemType DBG_ITEM_TYPE = ITEM_POTION_YELLOW;
 
 // ïêäÌã≠êßÉXÉ|Å[Éì
 const bool DBG_FORCE_WEAPON = true;
-const WeaponType DBG_WEAPON_TYPE = WEAPON_BOOMERANG;
+const WeaponType DBG_WEAPON_TYPE = WEAPON_MEMENTO_MORI;
 
 #endif

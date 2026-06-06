@@ -63,6 +63,13 @@ void Player::UpdateJump() {
 	prevJumpKey = jumpKey;
 }
 
+// 攻撃モーション全体のフレーム数を取得する関数
+int Player::GetAttackFrames(Weapon* weapons) {
+	if (holdingWeaponIndex == -1) return 15; // 素手は固定
+	WeaponType type = (WeaponType)weapons[holdingWeaponIndex].weaponType;
+	return WEAPON_DATA[type].chargeFrames + WEAPON_DATA[type].attackFrames;
+}
+
 // 攻撃の処理
 void Player::UpdateAttack(Weapon* weapons) {
 	if (!canAttack) return;
@@ -82,7 +89,7 @@ void Player::UpdateAttack(Weapon* weapons) {
 		}
 		else if (attackKey && !prevAttackKey && attackTimer == 0) {
 			attacking = true;
-			attackTimer = 15;
+			attackTimer = GetAttackFrames(weapons);
 		}
 		prevAttackKey = attackKey;
 		prevThrowKey = throwKey;
@@ -97,7 +104,7 @@ void Player::UpdateAttack(Weapon* weapons) {
 		}
 		else if (attackKey && !prevAttackKey && attackTimer == 0) {
 			attacking = true;
-			attackTimer = 15;
+			attackTimer = GetAttackFrames(weapons);
 		}
 		prevAttackKey = attackKey;
 		prevThrowKey = throwKey;
@@ -232,7 +239,14 @@ void Player::Draw(Weapon* weapons) {
 		GetColor(0, 255, 0), FALSE
 	);
 	// 攻撃判定（赤）
-	if (attacking && attackTimer < 7) {
+	int debugCharge = 7;
+	int debugAtkFrames = 8;
+	if (holdingWeaponIndex != -1) {
+		WeaponType type = (WeaponType)weapons[holdingWeaponIndex].weaponType;
+		debugCharge = WEAPON_DATA[type].chargeFrames;
+		debugAtkFrames = WEAPON_DATA[type].attackFrames;
+	}
+	if (attacking && attackTimer < debugCharge && attackTimer >= debugCharge - debugAtkFrames) {
 		if (holdingWeaponIndex != -1 && WEAPON_DATA[weapons[holdingWeaponIndex].weaponType].isRanged) {
 			float atkW = WEAPON_DATA[weapons[holdingWeaponIndex].weaponType].hitW;
 			float atkH = WEAPON_DATA[weapons[holdingWeaponIndex].weaponType].hitH;
@@ -253,7 +267,17 @@ void Player::Draw(Weapon* weapons) {
 
 bool Player::CheckAttackHit(Player& other, Weapon* weapons) {
 	if (!attacking) return false;
-	if (attackTimer >= 7) return false;
+
+	int charge = 7;
+	int atkFrames = 8; // 素手のデフォルト
+	if (holdingWeaponIndex != -1) {
+		WeaponType type = (WeaponType)weapons[holdingWeaponIndex].weaponType;
+		charge = WEAPON_DATA[type].chargeFrames;
+		atkFrames = WEAPON_DATA[type].attackFrames;
+	}
+	// chargeFrames以上 または attackFramesより少ない残り時間なら判定なし
+	if (attackTimer >= charge) return false;
+	if (attackTimer < charge - atkFrames) return false;
 
 	float atkX, atkY, atkW, atkH;
 
@@ -275,7 +299,6 @@ bool Player::CheckAttackHit(Player& other, Weapon* weapons) {
 		other.x, other.y - PLAYER_HIT_CY,
 		PLAYER_HIT_W, PLAYER_HIT_H)) {
 		attacking = false;
-		winCount++;
 		return true;
 	}
 	return false;
