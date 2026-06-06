@@ -8,6 +8,7 @@ enum WeaponType {
     WEAPON_HOUKI,
     WEAPON_HAMMER,
     WEAPON_STICK,
+    WEAPON_BOOMERANG,
     WEAPON_TYPE_MAX // ïKÇ∏ç≈å„Ç…íuÇ≠
 };
 
@@ -32,5 +33,6 @@ const WeaponData WEAPON_DATA[] = {
       { 60.0f, 100.0f, 1.5f,  true,     4,     10.0f,      7,      80.0f,  120.0f }, // HOUKI ÇÕÇΩÇ´çLÇﬂ
       { 60.0f, 100.0f, 1.5f,  true,     1,     7.0f,       14,     60.0f,  100.0f }, // HAMMER íxÇ¢çdíºí∑
       { 60.0f, 100.0f, 1.5f,  true,     1,     10.0f,      7,      60.0f,  100.0f }, // STICK
+      { 60.0f, 60.0f,  1.5f,  true,     1,     16.0f,      7,      60.0f,   60.0f }, // BOOMERANG
       // Ç±ÇÍÇ©ÇÁïêäÌÇ™ëùÇ¶ÇΩÇÁÇ±Ç±Ç…í«â¡Ç∑ÇÈÇæÇØÅI
 };

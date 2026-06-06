@@ -48,6 +48,8 @@ private:
     int matchTime; // 実際に使う試合時間
     int timeTimer; // フレームカウンター
 
+    bool p1Glowing;
+    bool p2Glowing;
 
     int p1HpIndex = 0;
     int p2HpIndex = 0;

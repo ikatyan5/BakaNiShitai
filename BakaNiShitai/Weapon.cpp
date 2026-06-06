@@ -11,6 +11,8 @@ void Weapon::Init(WeaponType type, ImageManager& imgMgr) {
     weaponType = type;
     groundTimer = 0;
     selfHitTimer = 0;
+    boomerangDecel = 0.0f;
+    boomerangReturning = false;
     parryRemain = WEAPON_DATA[type].parryCount;
     weaponImage = imgMgr.weaponImages[type];
 }
@@ -19,6 +21,10 @@ void Weapon::Throw(float startX, float startY, bool facingRight, int id, WeaponT
     x = startX;
     y = startY;
     vx = facingRight ? WEAPON_SPEED : -WEAPON_SPEED;
+    if (type == WEAPON_BOOMERANG) {
+        vx = facingRight ? 16.0f : -16.0f;
+        boomerangDecel = facingRight ? 0.3f : -0.3f;
+    }
     angle = 0.0f;
     selfHitTimer = 20;
     weaponState = WEAPON_THROWN;  // active = true ‚Ì‘ã‚í‚è
@@ -41,6 +47,19 @@ void Weapon::Update() {
     }
     else if (weaponState == WEAPON_THROWN) {
         if (selfHitTimer > 0) selfHitTimer--;
+
+        // ƒu[ƒƒ‰ƒ“ˆ—
+        if (weaponType == WEAPON_BOOMERANG) {
+            vx -= boomerangDecel;
+            if (!boomerangReturning) {
+                if ((boomerangDecel > 0 && vx <= 0) || (boomerangDecel < 0 && vx >= 0)) {
+                    boomerangReturning = true;
+                    vx = boomerangDecel > 0 ? -1.0f : 1.0f; // Ü‚è•Ô‚µ‰‘¬
+                    boomerangDecel = -boomerangDecel;
+                }
+            }
+        }
+
         x += vx;
         angle += (vx > 0) ? WEAPON_ROTATE : -WEAPON_ROTATE; // Œü‚«‚Å‰ñ“]•ûŒü•Ï‚¦‚é
         if (x < 0 || x > 1280) weaponState = WEAPON_INACTIVE;

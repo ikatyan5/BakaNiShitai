@@ -15,6 +15,9 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     matchTime = DEFAULT_TIME;
     timeTimer = matchTime * 60;
 
+    p1Glowing = false;
+    p2Glowing = false;
+
 	InitPlayers(false);
 
     for (int i = 0; i < WEAPON_MAX; i++) {
@@ -171,6 +174,9 @@ void SceneGame::Update() {
             EnterHitState(orbManager.hitWinnerID == 2, false);
         }
 
+        p1Glowing = player1.isGlowing;
+        p2Glowing = player2.isGlowing;
+
         // はたき落とし判定
         CheckParry(player1, 1);
         CheckParry(player2, 2);
@@ -221,6 +227,8 @@ void SceneGame::Update() {
                 isDraw = false;
                 p1HpIndex = 0;
                 p2HpIndex = 0;
+                p1Glowing = false;
+                p2Glowing = false;
                 timeTimer = matchTime * 60;
                 itemManager.Init(*imgMgr);
                 orbManager.Init(*imgMgr);
@@ -239,6 +247,8 @@ void SceneGame::Update() {
             isDraw = false;
             p1HpIndex = 0;
             p2HpIndex = 0;
+            p1Glowing = false;
+            p2Glowing = false;
             timeTimer = matchTime * 60;
             itemManager.Init(*imgMgr);
             orbManager.Init(*imgMgr);
@@ -312,24 +322,30 @@ void SceneGame::Draw() {
 
 void SceneGame::DrawUI()
 {
-    // Player1（左側）
-    DrawExtendGraphF(50.0f, 20.0f, 50.0f + UI_HP_W, 20.0f + UI_HP_H, imgMgr->p1Hp[p1HpIndex], TRUE);
-    // Player2（右側） 
-    DrawExtendGraphF(1280.0f - 50.0f - UI_HP_W, 20.0f, 1280.0f - 50.0f, 20.0f + UI_HP_H, imgMgr->p2Hp[p2HpIndex], TRUE);
+    // Player1 HPバー
+    int p1HpImg = p1Glowing ? imgMgr->p3Hp[p1HpIndex] : imgMgr->p1Hp[p1HpIndex];
+    DrawExtendGraphF(50.0f, 20.0f, 50.0f + UI_HP_W, 20.0f + UI_HP_H, p1HpImg, TRUE);
 
-    // Player1スコア（HPバーの下あたり）
+    // Player2 HPバー
+    int p2HpImg = p2Glowing ? imgMgr->p3Hp[p2HpIndex] : imgMgr->p2Hp[p2HpIndex];
+    DrawExtendGraphF(1280.0f - 50.0f - UI_HP_W, 20.0f, 1280.0f - 50.0f, 20.0f + UI_HP_H, p2HpImg, TRUE);
+
+    // Player1スコア
     for (int i = 0; i < WINNING_SCORE; i++) {
         int idx = (WINNING_SCORE - 1 - i < player1.winCount) ? 0 : 1;
+        int scoreImg = p1Glowing ? imgMgr->p3Score[idx] : imgMgr->p1Score[idx];
         DrawExtendGraphF(UI_P1_SCORE_X + i * UI_SCORE_W, UI_SCORE_Y,
             UI_P1_SCORE_X + i * UI_SCORE_W + UI_SCORE_W, UI_SCORE_Y + UI_SCORE_H,
-            imgMgr->p1Score[idx], TRUE);
+            scoreImg, TRUE);
     }
-    // Player2スコア（右側）
+
+    // Player2スコア
     for (int i = 0; i < WINNING_SCORE; i++) {
         int idx = (i < player2.winCount) ? 0 : 1;
+        int scoreImg = p2Glowing ? imgMgr->p3Score[idx] : imgMgr->p2Score[idx];
         float startX = UI_P2_SCORE_X - WINNING_SCORE * UI_SCORE_W + i * UI_SCORE_W;
         DrawExtendGraphF(startX, UI_SCORE_Y, startX + UI_SCORE_W, UI_SCORE_Y + UI_SCORE_H,
-            imgMgr->p2Score[idx], TRUE);
+            scoreImg, TRUE);
     }
 
     int sec = timeTimer / 60;

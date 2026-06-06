@@ -9,6 +9,7 @@ class Player
 public:
 	float x, y;         // 位置
 	float vx, vy;       // 速度
+	float moveSpeed;	// 移動速度
 	float jumpPower;	// ジャンプの初速(デフォルトはJUMP_POWER)
 	bool onGround;      // 地面にいるか
 	bool attacking;     // 攻撃中か
@@ -26,6 +27,7 @@ public:
 	int blinkTimer;
 	bool isReadyThrow;
 	bool canAttack;
+	bool isGlowing;
 
 	int animFrame;   // 今何枚目か
 	int animTimer;   // 切り替えカウンター
@@ -49,7 +51,7 @@ public:
 	void Draw(Weapon* weapons);
 private:
 	int playerImage[7];
-
+	int playerGlowImage[7];
 
 	float weaponDrawX;
 	float weaponDrawY;

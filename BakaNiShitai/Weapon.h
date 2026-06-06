@@ -29,6 +29,9 @@ public:
 
     int weaponImage;
     int groundTimer;
-    int parryRemain; // 残りはたき落とし回数
-    int selfHitTimer; // 投げた直後の自分への当たり判定猶予
+    int parryRemain;        // 残りはたき落とし回数
+    int selfHitTimer;       // 投げた直後の自分への当たり判定猶予
+    bool boomerangReturning;
+    float boomerangDecel;   // ブーメランの減速値
+
 };

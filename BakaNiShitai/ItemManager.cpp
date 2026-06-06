@@ -2,6 +2,8 @@
 #include "ItemPotionBlue.h"
 #include "ItemPotionRed.h"
 #include "ItemPotionPurple.h"
+#include "ItemPotionYellow.h"
+#include "ItemHankachi.h"
 #include "Player.h"
 #include "Config.h"
 #include <cmath>
@@ -138,6 +140,16 @@ void ItemManager::SpawnItem() {
             else if (type == ITEM_POTION_PURPLE) {
                 ItemPotionPurple* item = new ItemPotionPurple();
                 item->itemImage = imgMgr->potionPurple;
+                items[i] = item;
+            }
+            else if (type == ITEM_POTION_YELLOW) {
+                ItemPotionYellow* item = new ItemPotionYellow();
+                item->itemImage = imgMgr->potionYellow;
+                items[i] = item;
+            }
+            else if (type == ITEM_HANKACHI) {
+                ItemHankachi* item = new ItemHankachi();
+                item->itemImage = imgMgr->hankachi;
                 items[i] = item;
             }
             if (items[i] == nullptr) break;

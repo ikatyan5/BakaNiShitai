@@ -6,6 +6,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	x = startX;
 	y = startY;
 	vx = vy = 0.0f;
+	moveSpeed = 5.0f;
 	jumpPower = JUMP_POWER;
 	onGround = true;
 	attacking = false;
@@ -26,9 +27,11 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	prevAttackKey = false;
 	prevThrowKey = false;
 	isReadyThrow = false;
+	isGlowing = false;
 	canAttack = true;
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
+		playerGlowImage[i] = imgMgr.player3[i];
 	}
 }
 
@@ -38,12 +41,12 @@ void Player::UpdateInput() {
 	if (attacking)return;
 
 	if (PlayerID == 1) {
-		if (CheckHitKey(KEY_INPUT_A)) { vx = isBlinking ? -8.0f : -5.0f; facingRight = false; }
-		if (CheckHitKey(KEY_INPUT_D)) { vx = isBlinking ? 8.0f : 5.0f; facingRight = true; }
+		if (CheckHitKey(KEY_INPUT_A)) { vx = isBlinking ? -(moveSpeed + 3.0f) : -moveSpeed; facingRight = false; }
+		if (CheckHitKey(KEY_INPUT_D)) { vx = isBlinking ? (moveSpeed + 3.0f) : moveSpeed; facingRight = true; }
 	}
 	else if (PlayerID == 2) {
-		if (CheckHitKey(KEY_INPUT_LEFT)) { vx = isBlinking ? -8.0f : -5.0f; facingRight = false; }
-		if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = isBlinking ? 8.0f : 5.0f; facingRight = true; }
+		if (CheckHitKey(KEY_INPUT_LEFT)) { vx = isBlinking ? -(moveSpeed + 3.0f) : -moveSpeed; facingRight = false; }
+		if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = isBlinking ? (moveSpeed + 3.0f) : moveSpeed; facingRight = true; }
 	}
 }
 
@@ -184,11 +187,12 @@ void Player::Draw(Weapon* weapons) {
 
 	float drawX = x - 48.0f;
 	float drawY = y - 128.0f;
+	int* drawImage = isGlowing ? playerGlowImage : playerImage;
 	if (facingRight) {
-		DrawExtendGraphF(drawX, drawY, drawX + 96, drawY + 128, playerImage[animFrame], TRUE);
+		DrawExtendGraphF(drawX, drawY, drawX + 96, drawY + 128, drawImage[animFrame], TRUE);
 	}
 	else {
-		DrawExtendGraphF(drawX + 96, drawY, drawX, drawY + 128, playerImage[animFrame], TRUE);
+		DrawExtendGraphF(drawX + 96, drawY, drawX, drawY + 128, drawImage[animFrame], TRUE);
 	}
 	// •Ší‚Ì’Ç]•`‰æ
 	if (holdingWeaponIndex != -1) {

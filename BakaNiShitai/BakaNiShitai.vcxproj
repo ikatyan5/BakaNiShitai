@@ -127,10 +127,12 @@
   <ItemGroup>
     <ClCompile Include="ImageManager.cpp" />
     <ClCompile Include="Item.cpp" />
+    <ClCompile Include="ItemHankachi.cpp" />
     <ClCompile Include="ItemManager.cpp" />
     <ClCompile Include="ItemPotionBlue.cpp" />
     <ClCompile Include="ItemPotionPurple.cpp" />
     <ClCompile Include="ItemPotionRed.cpp" />
+    <ClCompile Include="ItemPotionYellow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Orb.cpp" />
     <ClCompile Include="OrbManager.cpp" />
@@ -144,10 +146,12 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="ImageManager.h" />
     <ClInclude Include="Item.h" />
+    <ClInclude Include="ItemHankachi.h" />
     <ClInclude Include="ItemManager.h" />
     <ClInclude Include="ItemPotionBlue.h" />
     <ClInclude Include="ItemPotionPurple.h" />
     <ClInclude Include="ItemPotionRed.h" />
+    <ClInclude Include="ItemPotionYellow.h" />
     <ClInclude Include="Orb.h" />
     <ClInclude Include="OrbManager.h" />
     <ClInclude Include="Player.h" />
