@@ -24,6 +24,7 @@ void Weapon::Throw(float startX, float startY, bool facingRight, int id, WeaponT
     if (type == WEAPON_BOOMERANG) {
         vx = facingRight ? 16.0f : -16.0f;
         boomerangDecel = facingRight ? 0.3f : -0.3f;
+        boomerangReturning = rand() % 2 == 0; // ƒ‰ƒ“ƒ_ƒ€‚Å‹““®‘I‘ğI
     }
     angle = 0.0f;
     selfHitTimer = 20;
@@ -54,8 +55,8 @@ void Weapon::Update() {
             if (!boomerangReturning) {
                 if ((boomerangDecel > 0 && vx <= 0) || (boomerangDecel < 0 && vx >= 0)) {
                     boomerangReturning = true;
-                    vx = boomerangDecel > 0 ? -1.0f : 1.0f; // Ü‚è•Ô‚µ‰‘¬
-                    boomerangDecel = -boomerangDecel;
+                    boomerangDecel = -boomerangDecel; // ‰Á‘¬•ûŒü”½“]
+                    vx = boomerangDecel * 0.1f; // Ü‚è•Ô‚µ‰‘¬‚ğ‚Ù‚Úƒ[ƒ‚©‚ç
                 }
             }
         }

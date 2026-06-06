@@ -1,6 +1,7 @@
 #include "SceneGame.h"
 #include "Config.h"
 #include "UIConfig.h"
+#include "DebugConfig.h"
 #include <cmath>
 
 void SceneGame::Init(ImageManager& imgMgr_) {
@@ -126,7 +127,11 @@ void SceneGame::SpawnWeapon() {
         weaponSpawnTimer = 0;
         for (int i = 0; i < WEAPON_MAX; i++) {
             if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
+#ifdef _DEBUG
+                WeaponType type = DBG_FORCE_WEAPON ? DBG_WEAPON_TYPE : (WeaponType)(rand() % WEAPON_TYPE_MAX);
+#else
                 WeaponType type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
+#endif
                 weapons[i].Init(type, *imgMgr);
                 weapons[i].weaponState = Weapon::WEAPON_FALLING;
                 weapons[i].x = (float)(rand() % 1100 + 90);

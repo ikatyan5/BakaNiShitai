@@ -6,6 +6,7 @@
 #include "ItemHankachi.h"
 #include "Player.h"
 #include "Config.h"
+#include "DebugConfig.h"
 #include <cmath>
 
 void ItemManager::Init(ImageManager& imgMgr_) {
@@ -122,7 +123,11 @@ void ItemManager::Draw() {
 void ItemManager::SpawnItem() {
     for (int i = 0; i < ITEM_MAX; i++) {
         if (items[i] == nullptr) {
+#ifdef _DEBUG
+            ItemType type = DBG_FORCE_ITEM ? DBG_ITEM_TYPE : (ItemType)(rand() % ITEM_TYPE_MAX);
+#else
             ItemType type = (ItemType)(rand() % ITEM_TYPE_MAX);
+#endif
 
             if (type == ITEM_POTION_BLUE) {
                 ItemPotionBlue* item = new ItemPotionBlue();
