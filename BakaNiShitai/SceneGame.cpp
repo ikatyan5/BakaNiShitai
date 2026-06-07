@@ -31,6 +31,7 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     }
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
+    restrictionManager.Init();
     stage.Init(1);
 }
 
@@ -59,6 +60,7 @@ void SceneGame::ResetGame(bool keepWinCount) {
     timeTimer = matchTime * 60;
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
+    restrictionManager.SelectRandom();
     weaponSpawnTimer = 0;
     mementoMoriTimer = 0;
     mementoMoriShooterID = 0;

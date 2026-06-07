@@ -6,6 +6,7 @@
 #include "ImageManager.h"
 #include "ItemManager.h"
 #include "OrbManager.h"
+#include "RestrictionManager.h"
 
 class SceneGame : public BaseScene {
 public:
@@ -42,6 +43,7 @@ private:
     ImageManager* imgMgr;
     ItemManager itemManager;
     OrbManager orbManager;
+    RestrictionManager restrictionManager;
     bool JUDGE;
     int HIT_TIMER;
     int RESULT_TIMER;

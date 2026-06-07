@@ -19,6 +19,9 @@
     <Filter Include="ヘッダー ファイル\Item">
       <UniqueIdentifier>{d805a2cc-540a-4c8d-9bec-102f2fa0925b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\Config">
+      <UniqueIdentifier>{5f8f31a4-627a-41ee-a8d9-9df7fe4f12c8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -66,12 +69,12 @@
     <ClCompile Include="Item.cpp">
       <Filter>ソース ファイル\Item</Filter>
     </ClCompile>
+    <ClCompile Include="RestrictionManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Player.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Config.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Weapon.h">
@@ -89,9 +92,6 @@
     <ClInclude Include="SceneGame.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="WeaponConfig.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="ItemPotionBlue.h">
       <Filter>ヘッダー ファイル\Item</Filter>
     </ClInclude>
@@ -102,9 +102,6 @@
       <Filter>ヘッダー ファイル\Item</Filter>
     </ClInclude>
     <ClInclude Include="ItemManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="UIConfig.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Orb.h">
@@ -122,8 +119,23 @@
     <ClInclude Include="Item.h">
       <Filter>ヘッダー ファイル\Item</Filter>
     </ClInclude>
-    <ClInclude Include="DebugConfig.h">
+    <ClInclude Include="RestrictionConfig.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="RestrictionManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>ヘッダー ファイル\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugConfig.h">
+      <Filter>ヘッダー ファイル\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="UIConfig.h">
+      <Filter>ヘッダー ファイル\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponConfig.h">
+      <Filter>ヘッダー ファイル\Config</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

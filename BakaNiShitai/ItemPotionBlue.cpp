@@ -1,7 +1,7 @@
 // ItemPotionBlue.cpp
 
 // ジャンプ力が上がる
-// 1.8倍にするよ！
+// 1.5倍にするよ！
 
 #include "ItemPotionBlue.h"
 #include "Player.h"
