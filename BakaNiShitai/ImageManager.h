@@ -31,6 +31,9 @@ public:
     int memento_mori;
     int orbs[3];
 
+    // エフェクト
+    int mementoMoriEffect;
+
     // アイテム
     int potionBlue;
 	int potionRed;

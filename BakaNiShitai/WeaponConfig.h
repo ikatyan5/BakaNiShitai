@@ -37,6 +37,6 @@ const WeaponData WEAPON_DATA[] = {
       { 60.0f, 100.0f, 1.5f,  true,     1,     7.0f,       14,     60.0f,  100.0f, 12,     9  }, // HAMMER
       { 60.0f, 100.0f, 1.5f,  true,     1,     10.0f,      7,      60.0f,  100.0f,  8,     6  }, // STICK
       { 60.0f,  60.0f, 1.5f,  true,     1,     16.0f,      7,      60.0f,   60.0f,  6,     5  }, // BOOMERANG
-      { 20.0f,  10.0f, 1.5f,  true,     0,     10.0f,      7,      20.0f,   60.0f, 20,     4  }, // MEMENTO_MORI
+      { 20.0f,  20.0f, 1.5f,  true,     0,     10.0f,      7,      20.0f,   60.0f, 20,     4  }, // MEMENTO_MORI
       // Ç±ÇÍÇ©ÇÁïêäÌÇ™ëùÇ¶ÇΩÇÁÇ±Ç±Ç…í«â¡Ç∑ÇÈÇæÇØÅI
 };

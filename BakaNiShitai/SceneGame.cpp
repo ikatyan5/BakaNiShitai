@@ -201,10 +201,14 @@ void SceneGame::DrawMementoMori(Player& attacker) {
 
     if (!isAttacking && !isPending) return;
 
-
     float hitH = WEAPON_DATA[WEAPON_MEMENTO_MORI].hitH;
     float cy = attacker.y - PLAYER_HIT_CY;
-    DrawBoxAA(0, cy - hitH / 2, 1280, cy + hitH / 2, GetColor(180, 0, 0), TRUE);
+    float drawY = cy - hitH / 2;
+
+    // 48px‚Ìƒ^ƒCƒ‹‚ð‰¡‚É•À‚×‚Ä1280px–„‚ß‚é
+    for (int x = 0; x < 1280; x += 48) {
+        DrawExtendGraphF(x, drawY, x + 48, drawY + 20, imgMgr->mementoMoriEffect, TRUE);
+    }
 }
 
 void SceneGame::Update() {
@@ -326,6 +330,30 @@ void SceneGame::Draw() {
         orbManager.Draw();
         itemManager.Draw();
         DrawUI();
+
+#ifdef _DEBUG
+        const TCHAR* restrictionNames[] = {
+            _T("NONE"),
+            _T("GRAVITY_ZERO"),
+            _T("HOVER_JUMP"),
+            _T("THROW_NO_DAMAGE"),
+            _T("MELEE_NO_DAMAGE"),
+            _T("STICK_ONLY"),
+            _T("BOOMERANG_ONLY"),
+            _T("SETSUNA"),
+            _T("GRAVITY_CONTROL"),
+            _T("SCREEN_FLIP"),
+            _T("MASH_MOVE"),
+            _T("METEOR"),
+            _T("ONIIGOKKO"),
+            _T("JUMP_LIMIT"),
+            _T("SCREEN_BLUR"),
+            _T("WINDOW_MOVE"),
+        };
+        for (int i = 0; i < restrictionManager.activeCount; i++) {
+            DrawString(10, 10 + i * 20, restrictionNames[restrictionManager.active[i]], GetColor(255, 255, 0));
+        }
+#endif
     }
     else if (state == STATE_HIT) {
         stage.Draw();

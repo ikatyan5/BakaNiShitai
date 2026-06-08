@@ -55,6 +55,11 @@ void ImageManager::Load() {
         orbs[i] = DerivationGraph(32 * i, 0, 32, 32, srcOrb);
     }
 
+    // エフェクト画像
+    mementoMoriEffect = LoadGraph(_T("Image/Effect/memento_mori_Effect.png"));
+
+
+    // アイテム画像
     potionBlue = LoadGraph(_T("Image/Item/potionBlue.png"));
 	potionRed = LoadGraph(_T("Image/Item/potionRed.png"));
     potionPurple = LoadGraph(_T("Image/Item/potionPurple.png"));

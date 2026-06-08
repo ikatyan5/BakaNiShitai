@@ -42,7 +42,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 
 // ¶‰EˆÚ“®‚ÆƒL[“ü—Íˆ—
 void Player::UpdateInput(const RestrictionManager& restrictions) {
-	if (attacking) return;
+	if (attacking){ vx = 0; return; }
 	if (restrictions.IsActive(REST_JUMP_LIMIT) && onGround) return;
 
 	bool mashMove = restrictions.IsActive(REST_MASH_MOVE);
