@@ -14,6 +14,7 @@ void ItemManager::Init(ImageManager& imgMgr_) {
     itemSpawnTimer = 0;
     hitOccurred = false;
     hitWinnerID = 0;
+    hyperPlayerID = 0;
     for (int i = 0; i < ITEM_MAX; i++) {
         items[i] = nullptr;
     }
@@ -95,6 +96,8 @@ void ItemManager::Update(Player& player1, Player& player2, const RestrictionMana
             if (items[i] == nullptr) return;
             if (items[i]->itemState != Item::ITEM_GROUND &&
                 items[i]->itemState != Item::ITEM_FALLING) return;
+            // ハイパー強い側は取得不可
+            if (hyperPlayerID != 0 && player.PlayerID == hyperPlayerID) return;
             float dx = fabsf(player.x - items[i]->x);
             float dy = fabsf(player.y - items[i]->y);
             if (dx < 80.0f && dy < 150.0f) {
@@ -140,6 +143,14 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else if (roll == 2) type = ITEM_POTION_YELLOW;
                 else                type = ITEM_HANKACHI;
             }
+            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_HYPETSUYOI)) {
+                // 赤ポーションなし・紫多め
+                int roll = rand() % 10;
+                if (roll < 5)      type = ITEM_POTION_PURPLE; // 50%
+                else if (roll < 7) type = ITEM_POTION_BLUE;   // 20%
+                else if (roll < 9) type = ITEM_POTION_YELLOW; // 20%
+                else               type = ITEM_HANKACHI;       // 10%
+            }
 #else
             ItemType type;
             if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
@@ -156,6 +167,14 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else if (roll == 1) type = ITEM_POTION_PURPLE;
                 else if (roll == 2) type = ITEM_POTION_YELLOW;
                 else                type = ITEM_HANKACHI;
+            }
+            else if (restrictions.IsActive(REST_HYPETSUYOI)) {
+                // 赤ポーションなし・紫多め
+                int roll = rand() % 10;
+                if (roll < 5)      type = ITEM_POTION_PURPLE; // 50%
+                else if (roll < 7) type = ITEM_POTION_BLUE;   // 20%
+                else if (roll < 9) type = ITEM_POTION_YELLOW; // 20%
+                else               type = ITEM_HANKACHI;       // 10%
             }
             else {
                 type = (ItemType)(rand() % ITEM_TYPE_MAX);

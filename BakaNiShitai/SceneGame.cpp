@@ -51,9 +51,34 @@ void SceneGame::InitPlayers(bool keepWinCount) {
 
     int p1Win = keepWinCount ? player1.winCount : 0;
     int p2Win = keepWinCount ? player2.winCount : 0;
-
     player1.Init(p1Right ? rightX : leftX, 360.0f, 1, p1Right, *imgMgr, p1Win);
     player2.Init(p1Right ? leftX : rightX, 360.0f, 2, !p1Right, *imgMgr, p2Win);
+
+    // 弱い側にピコハンを持たせる
+    if (restrictionManager.IsActive(REST_HYPETSUYOI)) {
+        // 負けてる側優先、同点ならランダム
+        if (player1.winCount < player2.winCount) hyperPlayerID = 1;
+        else if (player2.winCount < player1.winCount) hyperPlayerID = 2;
+        else hyperPlayerID = (rand() % 2) + 1;
+
+        itemManager.hyperPlayerID = hyperPlayerID;
+
+        Player& hyperPlayer = (hyperPlayerID == 1) ? player1 : player2;
+        hyperPlayer.canAttack = false;
+        hyperPlayer.moveSpeed = 5.0f * 1.3f;
+
+        // 弱い側にピコハンを持たせる
+        int weakID = (hyperPlayerID == 1) ? 2 : 1;
+        Player& weakPlayer = (weakID == 1) ? player1 : player2;
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
+                weapons[i].Init(WEAPON_PIKOHAN, *imgMgr);
+                weapons[i].weaponState = Weapon::WEAPON_HELD;
+                weakPlayer.holdingWeaponIndex = i;
+                break;
+            }
+        }
+    }
 
     // メテオ中は最初からピコハンを持たせる
     if (restrictionManager.IsActive(REST_METEOR)) {
@@ -87,6 +112,8 @@ void SceneGame::ResetGame(bool keepWinCount) {
     orbManager.Init(*imgMgr);
     meteorManager.Init();
     restrictionManager.SelectRandom();
+    hyperPlayerID = 0;
+    itemManager.hyperPlayerID = 0;
     weaponSpawnTimer = 0;
     mementoMoriTimer = 0;
     mementoMoriShooterID = 0;
@@ -170,6 +197,35 @@ void SceneGame::CheckParry(Player& attacker, int ownerID) {
 }
 
 void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue, int targetID) {
+    // ハイパー強い側はピコハン投げ当たりでスタン
+    if (restrictionManager.IsActive(REST_HYPETSUYOI) && targetID == hyperPlayerID) {
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
+            if (weapons[i].weaponType != WEAPON_PIKOHAN) continue;
+            if (weapons[i].CheckHit(
+                target.x, target.y - PLAYER_HIT_CY,
+                PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
+                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                target.EnterStun();
+                attacker.pikohanRespawnTimer = 180;
+            }
+        }
+        return;
+    }
+    // メテオ中はピコハン投げ当たりでスタン
+    if (restrictionManager.IsActive(REST_METEOR)) {
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
+            if (weapons[i].weaponType != WEAPON_PIKOHAN) continue;
+            if (weapons[i].CheckHit(
+                target.x, target.y - PLAYER_HIT_CY,
+                PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
+                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                target.EnterStun();
+            }
+        }
+        return;
+    }
     // 投げものダメージなしの場合
     if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
         for (int i = 0; i < WEAPON_MAX; i++) {
@@ -192,20 +248,6 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
         }
         return;
     }
-    // メテオ中はピコハン投げ当たりでスタン
-    if (restrictionManager.IsActive(REST_METEOR)) {
-        for (int i = 0; i < WEAPON_MAX; i++) {
-            if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
-            if (weapons[i].weaponType != WEAPON_PIKOHAN) continue;
-            if (weapons[i].CheckHit(
-                target.x, target.y - PLAYER_HIT_CY,
-                PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
-                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-                target.EnterStun();
-            }
-        }
-        return;
-    }
     // 通常処理
     for (int i = 0; i < WEAPON_MAX; i++) {
         if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
@@ -216,6 +258,20 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
             EnterHitState(judgeValue, true);
             return;
         }
+    }
+}
+
+void SceneGame::CheckHyperTouch() {
+    if (!restrictionManager.IsActive(REST_HYPETSUYOI)) return;
+    if (hyperPlayerID == 0) return;
+
+    Player& hyperPlayer = (hyperPlayerID == 1) ? player1 : player2;
+    Player& weakPlayer = (hyperPlayerID == 1) ? player2 : player1;
+    float dx = hyperPlayer.x - weakPlayer.x;
+    float dy = (hyperPlayer.y - PLAYER_HIT_CY) - (weakPlayer.y - PLAYER_HIT_CY);
+    if (fabsf(dx) < PLAYER_HIT_W &&
+        fabsf(dy) < PLAYER_HIT_H) {
+        EnterHitState(hyperPlayerID == 2, true);
     }
 }
 
@@ -256,8 +312,9 @@ void SceneGame::PickupWeapon(Player& player) {
 }
 
 void SceneGame::SpawnWeapon() {
-    // メテオ中は武器スポーンしない
+    // メテオ中・ハイパー強い中は武器スポーンしない
     if (restrictionManager.IsActive(REST_METEOR)) return;
+    if (restrictionManager.IsActive(REST_HYPETSUYOI)) return;
     weaponSpawnTimer++;
     int spawnInterval = WEAPON_SPAWN_INTERVAL;
     if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
@@ -345,20 +402,25 @@ void SceneGame::DrawMementoMori(Player& attacker) {
 
 void SceneGame::Update() {
     if (state == STATE_PLAYING) {
-        // タイマーカウントダウン
         if (timeTimer > 0) timeTimer--;
         else {
-            // 時間切れ！両者END
-            isDraw = true;
-            player1.animFrame = 6;
-            player2.animFrame = 6;
-            p1HpIndex = 1;
-            p2HpIndex = 1;
-            HIT_TIMER = 60;
-            RESULT_TIMER = 120;
-            timeTimer = matchTime * 60;
-            state = STATE_HIT;
-            JUDGE = false;
+            if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
+                // ハイパー側が時間切れで自爆→弱い側の勝ち
+                EnterHitState(hyperPlayerID == 1, true);
+            }
+            else {
+                // 通常の引き分け処理
+                isDraw = true;
+                player1.animFrame = 6;
+                player2.animFrame = 6;
+                p1HpIndex = 1;
+                p2HpIndex = 1;
+                HIT_TIMER = 60;
+                RESULT_TIMER = 120;
+                timeTimer = matchTime * 60;
+                state = STATE_HIT;
+                JUDGE = false;
+            }
         }
 
         if (restrictionManager.IsActive(REST_SCREEN_BLUR)) {
@@ -401,6 +463,21 @@ void SceneGame::Update() {
 
         p1Glowing = player1.isGlowing;
         p2Glowing = player2.isGlowing;
+
+        // ハイパー強いモード
+        if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
+            // 接触判定
+            CheckHyperTouch();
+
+            // 急降下
+            Player& hyperPlayer = (hyperPlayerID == 1) ? player1 : player2;
+            if (!hyperPlayer.onGround) {
+                bool downKey = (hyperPlayerID == 1)
+                    ? CheckHitKey(KEY_INPUT_S)
+                    : CheckHitKey(KEY_INPUT_DOWN);
+                if (downKey) hyperPlayer.vy += GRAVITY * 4.0f;
+            }
+        }
 
         // メメントモリ判定
         CheckMementoMori(player1, player2, false);
@@ -480,8 +557,36 @@ void SceneGame::Update() {
             }
         }
         else {
-            if (player1.CheckAttackHit(player2, weapons)) EnterHitState(false, true);
-            if (player2.CheckAttackHit(player1, weapons)) EnterHitState(true, true);
+            if (player1.CheckAttackHit(player2, weapons)) {
+                if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID == 2) {
+                    // ハイパー強い側(2P)にはスタンのみ・ピコハン消費
+                    if (player1.holdingWeaponIndex != -1 &&
+                        weapons[player1.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
+                        player2.EnterStun();
+                        weapons[player1.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
+                        player1.holdingWeaponIndex = -1;
+                        player1.pikohanRespawnTimer = 180;
+                    }
+                }
+                else {
+                    EnterHitState(false, true);
+                }
+            }
+            if (player2.CheckAttackHit(player1, weapons)) {
+                if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID == 1) {
+                    // ハイパー強い側(1P)にはスタンのみ・ピコハン消費
+                    if (player2.holdingWeaponIndex != -1 &&
+                        weapons[player2.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
+                        player1.EnterStun();
+                        weapons[player2.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
+                        player2.holdingWeaponIndex = -1;
+                        player2.pikohanRespawnTimer = 180;
+                    }
+                }
+                else {
+                    EnterHitState(true, true);
+                }
+            }
         }
 
         ThrowWeapon(player1, 1);
@@ -578,7 +683,7 @@ void SceneGame::Draw() {
             _T("SCREEN_FLIP"),
             _T("MASH_MOVE"),
             _T("METEOR"),
-            _T("ONIIGOKKO"),
+            _T("HYPERTSUYOI"),
             _T("JUMP_LIMIT"),
             _T("SCREEN_BLUR"),
             _T("WINDOW_MOVE"),
@@ -586,7 +691,6 @@ void SceneGame::Draw() {
         for (int i = 0; i < restrictionManager.activeCount; i++) {
             DrawString(10, 10 + i * 20, restrictionNames[restrictionManager.active[i]], GetColor(255, 255, 0));
         }
-        DrawFormatString(10, 200, GetColor(255, 0, 0), _T("blurMode: %d"), blurMode);
 #endif
     }
     else if (state == STATE_HIT) {

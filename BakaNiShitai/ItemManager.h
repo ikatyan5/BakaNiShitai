@@ -26,6 +26,7 @@ public:
     int bombImage;
     bool hitOccurred;  // 爆発ヒットがあったか
     int hitWinnerID;   // 勝ったプレイヤーのID（1か2）
+    int hyperPlayerID; // 0なら無効
     bool isExploding;
 
 private:

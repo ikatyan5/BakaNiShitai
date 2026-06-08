@@ -22,6 +22,7 @@ public:
     void SpawnWeapon();
     void CheckParry(Player& attacker, int ownerID);
     void CheckWeaponHit(Player& target, Player& attacker, bool judgeValue, int targetID);
+    void CheckHyperTouch();
     void ThrowWeapon(Player& player, int ownerID);
     void PickupWeapon(Player& player);
     void CheckMementoMori(Player& attacker, Player& target, bool judgeValue);
@@ -64,6 +65,8 @@ private:
     int prevTex;     // 前フレームの描画テクスチャ
     int blurMode;    // 0=クリア 1=弱 2=強
     int blurTimer;   // 切り替えまでのカウントダウン
+
+    int hyperPlayerID;  // ハイパー強い側のプレイヤーID（1か2）
 
     bool p1Glowing;
     bool p2Glowing;

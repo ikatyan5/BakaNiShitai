@@ -16,7 +16,7 @@ enum RestrictionType {
     REST_SCREEN_FLIP,         // 〇 画面上下反転
     REST_MASH_MOVE,           // 〇 連打移動
     REST_METEOR,              // 〇 隕石避けモード
-    REST_ONIIGOKKO,           // 鬼ごっこモード
+    REST_HYPETSUYOI,          // ハイパー強いモード
     REST_JUMP_LIMIT,          // 〇 ジャンプ制限（空中のみ横移動）
     REST_SCREEN_BLUR,         // 〇 画面ぼやけ
     REST_TYPE_MAX
