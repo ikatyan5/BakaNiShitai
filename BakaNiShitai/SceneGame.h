@@ -58,6 +58,11 @@ private:
     int mementoMoriWinnerID;    // ENDする側
     bool mementoMoriPending;    // END待ち状態か
 
+    int currentTex;  // 今フレームの描画テクスチャ
+    int prevTex;     // 前フレームの描画テクスチャ
+    int blurMode;    // 0=クリア 1=弱 2=強
+    int blurTimer;   // 切り替えまでのカウントダウン
+
     bool p1Glowing;
     bool p2Glowing;
 

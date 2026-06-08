@@ -21,6 +21,11 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     mementoMoriWinnerID = 0;
     mementoMoriPending = false;
 
+    currentTex = MakeScreen(1280, 920, TRUE);
+    prevTex = MakeScreen(1280, 920, TRUE);
+    blurMode = 0;
+    blurTimer = 0;
+
     p1Glowing = false;
     p2Glowing = false;
 
@@ -223,15 +228,23 @@ void SceneGame::SpawnWeapon() {
             if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
 #ifdef _DEBUG
                 WeaponType type = DBG_FORCE_WEAPON ? DBG_WEAPON_TYPE : (WeaponType)(rand() % WEAPON_TYPE_MAX);
+                if (!DBG_FORCE_WEAPON) {
 #else
                 WeaponType type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
+                {
 #endif
-                // 投げダメなし制限中は杖を出さない
-                if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
-                    while (type == WEAPON_STICK) {
-                        type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
+                    if (restrictionManager.IsActive(REST_STICK_ONLY)) {
+                        type = WEAPON_STICK;
                     }
-                }
+                    else if (restrictionManager.IsActive(REST_BOOMERANG_ONLY)) {
+                        type = WEAPON_BOOMERANG;
+                    }
+                    else if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
+                        while (type == WEAPON_STICK) {
+                            type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
+                        }
+                    }
+                }                
                 weapons[i].Init(type, *imgMgr);
                 weapons[i].weaponState = Weapon::WEAPON_FALLING;
                 weapons[i].x = (float)(rand() % 1100 + 90);
@@ -297,6 +310,18 @@ void SceneGame::Update() {
             timeTimer = matchTime * 60;
             state = STATE_HIT;
             JUDGE = false;
+        }
+
+        if (restrictionManager.IsActive(REST_SCREEN_BLUR)) {
+            if (blurTimer > 0) blurTimer--;
+            else {
+                blurMode = rand() % 3;
+                blurTimer = 120 + rand() % 181;
+            }
+        }
+        else {
+            blurMode = 0;
+            blurTimer = 0;
         }
 
         // 爆発中はプレイヤーの更新を止める
@@ -405,7 +430,10 @@ void SceneGame::Update() {
 }
 
 void SceneGame::Draw() {
+    ClearDrawScreen();
     if (state == STATE_PLAYING) {
+        SetDrawScreen(currentTex);
+        ClearDrawScreen();
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
@@ -417,6 +445,19 @@ void SceneGame::Draw() {
         orbManager.Draw();
         itemManager.Draw();
         DrawUI();
+        SetDrawScreen(DX_SCREEN_BACK);
+        DrawGraph(0, 0, currentTex, TRUE);
+
+        // ぼかし先に重ねる
+        if (blurMode != 0) {
+            int alpha = (blurMode == 1) ? 100 : 180;
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+            DrawGraph(0, 0, prevTex, TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+
+        // 重ねた後にコピー
+        GetDrawScreenGraph(0, 0, 1280, 920, prevTex);
 
 #ifdef _DEBUG
         const TCHAR* restrictionNames[] = {
@@ -440,6 +481,7 @@ void SceneGame::Draw() {
         for (int i = 0; i < restrictionManager.activeCount; i++) {
             DrawString(10, 10 + i * 20, restrictionNames[restrictionManager.active[i]], GetColor(255, 255, 0));
         }
+        DrawFormatString(10, 200, GetColor(255, 0, 0), _T("blurMode: %d"), blurMode);
 #endif
     }
     else if (state == STATE_HIT) {

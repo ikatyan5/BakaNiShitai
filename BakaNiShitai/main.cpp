@@ -20,7 +20,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     SceneGame sceneGame;
     sceneGame.Init(imageManager);
 
-    while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {
+    while (ProcessMessage() == 0) {
         sceneGame.Update();
         sceneGame.Draw();
 
