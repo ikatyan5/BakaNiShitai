@@ -19,6 +19,10 @@ const int WEAPON_SPAWN_INTERVAL = 180;		// 武器がスポーンする間隔
 const int WEAPON_GROUND_TIME = 300;			// 地面に落ちてから消えるまでの時間
 const float WEAPON_GROUND_OFFSET = 15.0f;	// 地面にめり込む量
 const int PARRY_FRAME = 6;					// はたき返し判定フレーム ×６して
+const int BARE_HAND_CHARGE_FRAMES = 7;  // 素手の構えフレーム
+const int BARE_HAND_ATTACK_FRAMES = 8;  // 素手の攻撃判定フレーム
+
+
 // アイテム関係
 const int ITEM_SPAWN_INTERVAL = 300; // アイテムがスポーンする間隔
 

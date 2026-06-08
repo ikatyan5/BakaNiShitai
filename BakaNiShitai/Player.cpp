@@ -96,8 +96,8 @@ void Player::UpdateInput(const RestrictionManager& restrictions) {
 	else {
 		vx = 0;
 		if (PlayerID == 1) {
-			if (CheckHitKey(KEY_INPUT_A)) { vx = isBlinking ? -(moveSpeed + 3.0f) : -moveSpeed; facingRight = false; }
-			if (CheckHitKey(KEY_INPUT_D)) { vx = isBlinking ? (moveSpeed + 3.0f) : moveSpeed; facingRight = true; }
+			if (CheckHitKey(KEY_INPUT_A)) { vx = isBlinking ? -(moveSpeed + 8.0f) : -moveSpeed; facingRight = false; }
+			if (CheckHitKey(KEY_INPUT_D)) { vx = isBlinking ? (moveSpeed + 8.0f) : moveSpeed; facingRight = true; }
 			if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
 				vy = 0;
 				if (CheckHitKey(KEY_INPUT_W)) vy = -moveSpeed;
@@ -105,8 +105,8 @@ void Player::UpdateInput(const RestrictionManager& restrictions) {
 			}
 		}
 		else if (PlayerID == 2) {
-			if (CheckHitKey(KEY_INPUT_LEFT)) { vx = isBlinking ? -(moveSpeed + 3.0f) : -moveSpeed; facingRight = false; }
-			if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = isBlinking ? (moveSpeed + 3.0f) : moveSpeed; facingRight = true; }
+			if (CheckHitKey(KEY_INPUT_LEFT)) { vx = isBlinking ? -(moveSpeed + 8.0f) : -moveSpeed; facingRight = false; }
+			if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = isBlinking ? (moveSpeed + 8.0f) : moveSpeed; facingRight = true; }
 			if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
 				vy = 0;
 				if (CheckHitKey(KEY_INPUT_UP)) vy = -moveSpeed;
@@ -148,7 +148,8 @@ void Player::UpdateJump(const RestrictionManager& restrictions) {
 
 // 攻撃モーション全体のフレーム数を取得する関数
 int Player::GetAttackFrames(Weapon* weapons) {
-	if (holdingWeaponIndex == -1) return 15; // 素手は固定
+	if (holdingWeaponIndex == -1)
+		return BARE_HAND_CHARGE_FRAMES + BARE_HAND_ATTACK_FRAMES;
 	WeaponType type = (WeaponType)weapons[holdingWeaponIndex].weaponType;
 	return WEAPON_DATA[type].chargeFrames + WEAPON_DATA[type].attackFrames;
 }
@@ -371,8 +372,8 @@ void Player::Draw(Weapon* weapons) {
 bool Player::CheckAttackHit(Player& other, Weapon* weapons) {
 	if (!attacking) return false;
 
-	int charge = 7;
-	int atkFrames = 8; // 素手のデフォルト
+	int charge = BARE_HAND_CHARGE_FRAMES;
+	int atkFrames = BARE_HAND_ATTACK_FRAMES;
 	if (holdingWeaponIndex != -1) {
 		WeaponType type = (WeaponType)weapons[holdingWeaponIndex].weaponType;
 		charge = WEAPON_DATA[type].chargeFrames;

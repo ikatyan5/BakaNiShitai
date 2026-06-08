@@ -78,35 +78,68 @@ void SceneGame::ResetGame(bool keepWinCount) {
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {
     if (!attacker.attacking) return;
-    if (attacker.attackTimer >= 7) return;
-    bool isFirstFrame = (attacker.attackTimer == PARRY_FRAME);
-    if (attacker.holdingWeaponIndex == -1) return;
 
-    Weapon& held = weapons[attacker.holdingWeaponIndex];
-    if (held.parryRemain <= 0) return;
+    bool isMeleeNoRest = restrictionManager.IsActive(REST_MELEE_NO_DAMAGE);
+    bool isBareHand = attacker.holdingWeaponIndex == -1;
+
+    // ’Êí‚Í‘fŽè‚Å‚Í‚½‚«—Ž‚Æ‚µ•s‰Â
+    if (isBareHand && !isMeleeNoRest) return;
+
+    // ’e‚«—P—\ƒtƒŒ[ƒ€i§ŒÀ’†‚Í‰„’·j
+    int parryLimit = isMeleeNoRest ? 10 : 7; // §ŒÀ’†‚Í—P—\‚ð‘‚â‚·
+    if (attacker.attackTimer >= parryLimit) return;
+
+    int chargeFrames = (attacker.holdingWeaponIndex == -1)
+        ? BARE_HAND_CHARGE_FRAMES
+        : WEAPON_DATA[weapons[attacker.holdingWeaponIndex].weaponType].chargeFrames;
+
+    bool isParryFrame = (attacker.attackTimer == chargeFrames - 1);
 
     float atkX = attacker.facingRight ? attacker.x + 50.0f : attacker.x - 50.0f;
     float atkY = attacker.y - 50.0f;
 
-    orbManager.CheckParry(atkX, atkY, 40.0f, 80.0f, ownerID);
+    if (!isBareHand) {
+        Weapon& held = weapons[attacker.holdingWeaponIndex];
+        if (held.parryRemain <= 0) return;
+        orbManager.CheckParry(atkX, atkY, 40.0f, 80.0f, ownerID);
+    }
+
+    bool parried = false;
+    bool anyThrownInRange = false;
 
     for (int i = 0; i < WEAPON_MAX; i++) {
-        if (weapons[i].ownerID == ownerID) continue;
         if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
-        if (weapons[i].CheckParry(atkX, atkY, 40.0f, 80.0f)) {
-            if (isFirstFrame) {
-                weapons[i].vx = -weapons[i].vx;
+
+        bool inRange = weapons[i].CheckParry(atkX, atkY, 40.0f, 80.0f);
+        if (inRange) anyThrownInRange = true;
+
+        if (inRange) {
+            if (isParryFrame) {
+                weapons[i].vx = -weapons[i].vx * (isMeleeNoRest ? 1.5f : 1.0f);
             }
             else {
-                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-                held.parryRemain--;
-                if (held.parryRemain <= 0) {
-                    held.weaponState = Weapon::WEAPON_INACTIVE;
-                    attacker.holdingWeaponIndex = -1;
+                if (!isBareHand) {
+                    Weapon& held = weapons[attacker.holdingWeaponIndex];
+                    weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                    held.parryRemain--;
+                    if (held.parryRemain <= 0) {
+                        held.weaponState = Weapon::WEAPON_INACTIVE;
+                        attacker.holdingWeaponIndex = -1;
+                    }
+                }
+                else {
+                    // ‘fŽè‚Å‚Í‚½‚«—Ž‚Æ‚µ¬Œ÷
+                    weapons[i].vx = -weapons[i].vx * 1.5f;
                 }
             }
+            parried = true;
             break;
         }
+    }
+
+    // ‘fŽè‚Å‚Í‚½‚«—Ž‚Æ‚µŽ¸”s‚µ‚½‚çEND
+    if (isMeleeNoRest && isBareHand && anyThrownInRange && !parried) {
+        EnterHitState(ownerID == 1, true);
     }
 }
 
@@ -180,7 +213,11 @@ void SceneGame::PickupWeapon(Player& player) {
 
 void SceneGame::SpawnWeapon() {
     weaponSpawnTimer++;
-    if (weaponSpawnTimer >= WEAPON_SPAWN_INTERVAL) {
+    int spawnInterval = WEAPON_SPAWN_INTERVAL;
+    if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
+        spawnInterval = WEAPON_SPAWN_INTERVAL * 1.1; // 1.1”{‚É‰„’·
+    }
+    if (weaponSpawnTimer >= spawnInterval) {
         weaponSpawnTimer = 0;
         for (int i = 0; i < WEAPON_MAX; i++) {
             if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
@@ -305,8 +342,25 @@ void SceneGame::Update() {
         CheckWeaponHit(player2, player1, false, 2);
 
         // ‹ßÚUŒ‚ƒqƒbƒg”»’è
-        if (player1.CheckAttackHit(player2, weapons)) EnterHitState(false, true);
-        if (player2.CheckAttackHit(player1, weapons)) EnterHitState(true, true);
+        if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
+            // •ŠíŽ‚¿‚Å“–‚½‚Á‚½‚ç‘¬“xƒ_ƒEƒ“‚Ì‚Ý
+            if (player1.CheckAttackHit(player2, weapons)) {
+                if (player1.holdingWeaponIndex != -1) {
+                    player2.moveSpeed = 5.0f * 0.6f;
+                    player2.speedDownTimer = 180;
+                }
+            }
+            if (player2.CheckAttackHit(player1, weapons)) {
+                if (player2.holdingWeaponIndex != -1) {
+                    player1.moveSpeed = 5.0f * 0.6f;
+                    player1.speedDownTimer = 180;
+                }
+            }
+        }
+        else {
+            if (player1.CheckAttackHit(player2, weapons)) EnterHitState(false, true);
+            if (player2.CheckAttackHit(player1, weapons)) EnterHitState(true, true);
+        }
 
         ThrowWeapon(player1, 1);
         ThrowWeapon(player2, 2);

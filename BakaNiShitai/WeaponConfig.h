@@ -28,7 +28,7 @@ struct WeaponData {
 };
 
 const WeaponData WEAPON_DATA[] = {
-    //  hitW    hitH    scale  isRanged  parry  throwSpeed  hitDur  parryW  parryH  charge  atkFrames
+    //  hitW    hitH   scale  isRanged  parry  throwSpeed  hitDur  parryW  parryH  charge  atkFrames
       { 60.0f, 100.0f, 1.5f,  true,     2,     8.0f,       7,      60.0f,  100.0f, 10,     6  }, // KAMA
       { 60.0f,  90.0f, 1.5f,  true,     3,     10.0f,      7,      60.0f,   90.0f,  8,     6  }, // KONBOU
       { 70.0f,  70.0f, 1.5f,  true,     2,     13.0f,      7,      70.0f,   70.0f, 10,     6  }, // KEN
