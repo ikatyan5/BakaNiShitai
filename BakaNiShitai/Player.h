@@ -29,6 +29,7 @@ public:
 	bool isReadyThrow;
 	bool canAttack;
 	bool isGlowing;
+	int speedDownTimer; // 移動速度低下時間
 
 	int animFrame;   // 今何枚目か
 	int animTimer;   // 切り替えカウンター
@@ -67,5 +68,4 @@ private:
 	int mashCount;		// 連打カウント
 	int mashDecay;		// カウントが減るまでのタイマー
 	int airTime;		// 空中にいたフレーム数
-
 };

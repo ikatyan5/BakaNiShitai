@@ -1,6 +1,7 @@
 #pragma once
 #include "Item.h"
 #include "ImageManager.h"
+#include "RestrictionManager.h"
 
 class Player;
 
@@ -18,9 +19,9 @@ enum ItemType {
 class ItemManager {
 public:
     void Init(ImageManager& imgMgr);
-    void Update(Player& player1, Player& player2);
+    void Update(Player& player1, Player& player2, const RestrictionManager& restrictions);
     void Draw();
-    void SpawnItem();
+    void SpawnItem(const RestrictionManager& restrictions);
 
     int bombImage;
     bool hitOccurred;  // ”š”­ƒqƒbƒg‚ª‚ ‚Á‚½‚©

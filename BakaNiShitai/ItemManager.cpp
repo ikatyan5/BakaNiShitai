@@ -21,7 +21,7 @@ void ItemManager::Init(ImageManager& imgMgr_) {
     isExploding = false;
 }
 
-void ItemManager::Update(Player& player1, Player& player2) {
+void ItemManager::Update(Player& player1, Player& player2, const RestrictionManager& restrictions) {
     // 爆発チェック
     auto checkExplode = [&](Player& player) {
         if (!player.wantExplode) return;
@@ -48,7 +48,7 @@ void ItemManager::Update(Player& player1, Player& player2) {
     itemSpawnTimer++;
     if (itemSpawnTimer >= ITEM_SPAWN_INTERVAL) {
         itemSpawnTimer = 0;
-        SpawnItem();
+        SpawnItem(restrictions);
     }
 
     isExploding = false;
@@ -120,13 +120,32 @@ void ItemManager::Draw() {
     }
 }
 
-void ItemManager::SpawnItem() {
+void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
     for (int i = 0; i < ITEM_MAX; i++) {
         if (items[i] == nullptr) {
 #ifdef _DEBUG
             ItemType type = DBG_FORCE_ITEM ? DBG_ITEM_TYPE : (ItemType)(rand() % ITEM_TYPE_MAX);
+            // デバッグ時も制限チェックを通す
+            if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
+                int roll = rand() % 10;
+                if (roll < 4)      type = ITEM_POTION_PURPLE;
+                else if (roll < 6) type = ITEM_POTION_BLUE;
+                else if (roll < 8) type = ITEM_POTION_YELLOW;
+                else               type = ITEM_HANKACHI;
+            }
 #else
-            ItemType type = (ItemType)(rand() % ITEM_TYPE_MAX);
+            ItemType type;
+            if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
+                // 赤ポーション除外・紫多め
+                int roll = rand() % 10;
+                if (roll < 4)      type = ITEM_POTION_PURPLE; // 40%
+                else if (roll < 6) type = ITEM_POTION_BLUE;   // 20%
+                else if (roll < 8) type = ITEM_POTION_YELLOW; // 20%
+                else               type = ITEM_HANKACHI;       // 20%
+            }
+            else {
+                type = (ItemType)(rand() % ITEM_TYPE_MAX);
+            }
 #endif
 
             if (type == ITEM_POTION_BLUE) {

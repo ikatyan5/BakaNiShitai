@@ -12,10 +12,10 @@ const bool DBG_FORCE_ITEM = false;
 const ItemType DBG_ITEM_TYPE = ITEM_POTION_YELLOW;
 
 // 武器強制スポーン
-const bool DBG_FORCE_WEAPON = true;
+const bool DBG_FORCE_WEAPON = false;
 const WeaponType DBG_WEAPON_TYPE = WEAPON_MEMENTO_MORI;
 
 // 制限強制適用
-const bool DBG_FORCE_RESTRICTION = false;
-const RestrictionType DBG_RESTRICTION_TYPE = REST_HOVER_JUMP;
+const bool DBG_FORCE_RESTRICTION = true;
+const RestrictionType DBG_RESTRICTION_TYPE = REST_THROW_NO_DAMAGE;
 #endif

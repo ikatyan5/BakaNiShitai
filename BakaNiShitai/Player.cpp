@@ -34,6 +34,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	mashCount = 0;
 	mashDecay = 0;
 	airTime = 0;
+	speedDownTimer = 0;
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
 		playerGlowImage[i] = imgMgr.player3[i];
@@ -204,6 +205,13 @@ void Player::UpdateAnim() {
 			canAttack = true;
 		}
 	}
+	if (speedDownTimer > 0) {
+		speedDownTimer--;
+		if (speedDownTimer <= 0) {
+			moveSpeed = 5.0f; // Œ³‚É–ß‚·
+		}
+	}
+
 
 	animTimer++;
 

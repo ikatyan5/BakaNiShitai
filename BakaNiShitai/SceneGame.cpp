@@ -53,6 +53,10 @@ void SceneGame::InitPlayers(bool keepWinCount) {
 
 void SceneGame::ResetGame(bool keepWinCount) {
     InitPlayers(keepWinCount);
+    if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
+        player1.moveSpeed = 5.0f * 1.2f;
+        player2.moveSpeed = 5.0f * 1.2f;
+    }
     for (int i = 0; i < WEAPON_MAX; i++) {
         weapons[i].Init(WEAPON_KAMA, *imgMgr);
     }
@@ -107,6 +111,29 @@ void SceneGame::CheckParry(Player& attacker, int ownerID) {
 }
 
 void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue, int targetID) {
+    // 投げものダメージなしの場合
+    if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
+            if (weapons[i].CheckHit(
+                target.x, target.y - PLAYER_HIT_CY,
+                PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
+                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                if (target.holdingWeaponIndex != -1) {
+                    // 武器を持ってたら消す
+                    weapons[target.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
+                    target.holdingWeaponIndex = -1;
+                }
+                else {
+                    // 武器を持ってなかったら移動速度ダウン 0.5秒間
+                    target.moveSpeed = 5.0f * 0.6f;
+                    target.speedDownTimer = 30;
+                }
+            }
+        }
+        return;
+    }
+    // 通常処理
     for (int i = 0; i < WEAPON_MAX; i++) {
         if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
         if (weapons[i].CheckHit(
@@ -162,6 +189,12 @@ void SceneGame::SpawnWeapon() {
 #else
                 WeaponType type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
 #endif
+                // 投げダメなし制限中は杖を出さない
+                if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
+                    while (type == WEAPON_STICK) {
+                        type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
+                    }
+                }
                 weapons[i].Init(type, *imgMgr);
                 weapons[i].weaponState = Weapon::WEAPON_FALLING;
                 weapons[i].x = (float)(rand() % 1100 + 90);
@@ -234,7 +267,7 @@ void SceneGame::Update() {
             player1.Update(stage, weapons, restrictionManager);
             player2.Update(stage, weapons, restrictionManager);
         }
-        itemManager.Update(player1, player2);
+        itemManager.Update(player1, player2, restrictionManager);
         orbManager.Update(player1, player2);
         // 爆発ヒット判定
         if (itemManager.hitOccurred) {
