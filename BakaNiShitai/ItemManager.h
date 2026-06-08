@@ -22,6 +22,8 @@ public:
     void Update(Player& player1, Player& player2, const RestrictionManager& restrictions);
     void Draw();
     void SpawnItem(const RestrictionManager& restrictions);
+    void CheckExplode(Player& player);
+    void TryPickup(Player& player, int index);
 
     int bombImage;
     bool hitOccurred;  // ”š”­ƒqƒbƒg‚ª‚ ‚Á‚½‚©

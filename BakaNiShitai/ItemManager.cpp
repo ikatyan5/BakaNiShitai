@@ -24,28 +24,9 @@ void ItemManager::Init(ImageManager& imgMgr_) {
 
 void ItemManager::Update(Player& player1, Player& player2, const RestrictionManager& restrictions) {
     // 爆発チェック
-    auto checkExplode = [&](Player& player) {
-        if (!player.wantExplode) return;
-        player.wantExplode = false;
-        // 爆発オブジェクトをスポーン
-        for (int i = 0; i < ITEM_MAX; i++) {
-            if (items[i] == nullptr) {
-                ItemPotionRed* explosion = new ItemPotionRed();
-                explosion->x = player.x;
-                explosion->y = player.y - 60.0f;
-                explosion->exploding = true;
-                explosion->explodeTimer = 180;
-                explosion->bombImage = bombImage;
-                explosion->ownerID = player.PlayerID;
-                explosion->itemState = Item::ITEM_EXPLODING;
-                items[i] = explosion;
-                break;
-            }
-        }
-    };
+    CheckExplode(player1);
+    CheckExplode(player2);
 
-    checkExplode(player1);
-    checkExplode(player2);
     itemSpawnTimer++;
     if (itemSpawnTimer >= ITEM_SPAWN_INTERVAL) {
         itemSpawnTimer = 0;
@@ -61,6 +42,7 @@ void ItemManager::Update(Player& player1, Player& player2, const RestrictionMana
         ItemPotionRed* red = dynamic_cast<ItemPotionRed*>(items[i]);
         if (red && red->exploding) {
             isExploding = true;
+
         }
 
         if (red) {
@@ -92,21 +74,8 @@ void ItemManager::Update(Player& player1, Player& player2, const RestrictionMana
         }
 
         // 拾う処理
-        auto tryPickup = [&](Player& player) {
-            if (items[i] == nullptr) return;
-            if (items[i]->itemState != Item::ITEM_GROUND &&
-                items[i]->itemState != Item::ITEM_FALLING) return;
-            // ハイパー強い側は取得不可
-            if (hyperPlayerID != 0 && player.PlayerID == hyperPlayerID) return;
-            float dx = fabsf(player.x - items[i]->x);
-            float dy = fabsf(player.y - items[i]->y);
-            if (dx < 80.0f && dy < 150.0f) {
-                items[i]->OnPickup(player);
-            }
-            };
-
-        tryPickup(player1);
-        tryPickup(player2);
+        TryPickup(player1, i);
+        TryPickup(player2, i);
 
         if (items[i] == nullptr) continue;
         if (items[i]->itemState == Item::ITEM_INACTIVE) {
@@ -216,5 +185,37 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
             items[i]->itemState = Item::ITEM_FALLING;
             break;
         }
+    }
+}
+
+void ItemManager::CheckExplode(Player& player) {
+    if (!player.wantExplode) return;
+    player.wantExplode = false;
+    for (int i = 0; i < ITEM_MAX; i++) {
+        if (items[i] == nullptr) {
+            ItemPotionRed* explosion = new ItemPotionRed();
+            explosion->x = player.x;
+            explosion->y = player.y - 60.0f;
+            explosion->exploding = true;
+            explosion->explodeTimer = 180;
+            explosion->bombImage = bombImage;
+            explosion->ownerID = player.PlayerID;
+            explosion->itemState = Item::ITEM_EXPLODING;
+            explosion->explodePhase = ItemPotionRed::EXPLODE_WINDUP;
+            items[i] = explosion;
+            break;
+        }
+    }
+}
+
+void ItemManager::TryPickup(Player& player, int index) {
+    if (items[index] == nullptr) return;
+    if (items[index]->itemState != Item::ITEM_GROUND &&
+        items[index]->itemState != Item::ITEM_FALLING) return;
+    if (hyperPlayerID != 0 && player.PlayerID == hyperPlayerID) return;
+    float dx = fabsf(player.x - items[index]->x);
+    float dy = fabsf(player.y - items[index]->y);
+    if (dx < 80.0f && dy < 150.0f) {
+        items[index]->OnPickup(player);
     }
 }

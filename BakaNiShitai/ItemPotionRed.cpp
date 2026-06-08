@@ -14,7 +14,11 @@ void ItemPotionRed::OnPickup(Player& player) {
 void ItemPotionRed::Update() {
     if (exploding && itemState == ITEM_EXPLODING) {
         explodeTimer -= 3;
+        if (explodeTimer <= 40 && explodePhase == EXPLODE_WINDUP) {
+            explodePhase = EXPLODE_ACTIVE;
+        }
         if (explodeTimer <= 0) {
+            explodePhase = EXPLODE_NONE;
             itemState = ITEM_INACTIVE;
         }
     }
@@ -37,10 +41,8 @@ void ItemPotionRed::Draw() {
 }
 
 bool ItemPotionRed::CheckExplodeHit(Player& target) {
-    if (!exploding) return false;
-    if (explodeTimer > 40) return false;
+    if (explodePhase != EXPLODE_ACTIVE) return false;
     float range = 150.0f;
-    // プレイヤーの当たり判定の一番近い点を求める
     float closestX = max(target.x - PLAYER_HIT_W / 2, min(x, target.x + PLAYER_HIT_W / 2));
     float closestY = max((target.y - PLAYER_HIT_CY) - PLAYER_HIT_H / 2, min(y, (target.y - PLAYER_HIT_CY) + PLAYER_HIT_H / 2));
     float dx = x - closestX;
