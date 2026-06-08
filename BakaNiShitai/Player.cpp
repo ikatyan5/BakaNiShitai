@@ -38,6 +38,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	speedDownTimer = 0;
 	stanTimer = 0;
 	isStunned = false;
+	hasShield = false;
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
 		playerGlowImage[i] = imgMgr.player3[i];
@@ -322,6 +323,14 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 			x - 32.0f, y - PLAYER_HIT_CY - 120.0f,
 			x + 32.0f, y - PLAYER_HIT_CY - 56.0f,
 			imgMgr.stan[stanFrame], TRUE
+		);
+	}
+
+	if (hasShield) {
+		DrawExtendGraphF(
+			x - 48.0f, y - PLAYER_HIT_CY - 64.0f,
+			x + 48.0f, y - PLAYER_HIT_CY + 64.0f,
+			imgMgr.shield, TRUE
 		);
 	}
 

@@ -35,6 +35,7 @@ public:
 
     // エフェクト
     int mementoMoriEffect;
+    int shield;
     int stan[2];
 
     // アイテム

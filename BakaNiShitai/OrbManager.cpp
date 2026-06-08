@@ -31,9 +31,13 @@ void OrbManager::Update(Player& player1, Player& player2) {
 
         auto checkHit = [&](Player& target, int winnerID) {
             if (!orbs[i].active) return;
-            if (orbs[i].ownerID == target.PlayerID) return; // é©ï™Ç…ÇÕìñÇΩÇÁÇ»Ç¢
+            if (orbs[i].ownerID == target.PlayerID) return;
             if (orbs[i].CheckHit(target.x, target.y - PLAYER_HIT_CY, PLAYER_HIT_W, PLAYER_HIT_H)) {
                 orbs[i].active = false;
+                if (target.hasShield) {
+                    target.hasShield = false;
+                    return; // ÉVÅ[ÉãÉhÇ≈ñ≥å¯âª
+                }
                 hitOccurred = true;
                 hitWinnerID = winnerID;
             }

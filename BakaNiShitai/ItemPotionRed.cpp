@@ -7,6 +7,7 @@ void ItemPotionRed::OnPickup(Player& player) {
     player.isBlinking = true;
     player.blinkTimer = 180; // 3•b‚­‚ç‚¢
     player.canAttack = false;
+    player.hasShield = true;
     ownerID = player.PlayerID;
     itemState = ITEM_INACTIVE;
 }

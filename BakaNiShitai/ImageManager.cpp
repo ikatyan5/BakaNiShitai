@@ -59,7 +59,7 @@ void ImageManager::Load() {
 
     // エフェクト画像
     mementoMoriEffect = LoadGraph(_T("Image/Effect/memento_mori_Effect.png"));
-
+    shield = LoadGraph(_T("Image/Effect/shield.png"));
     int srcStan = LoadGraph(_T("Image/Effect/stan.png"));
     for (int i = 0; i < 2; i++) {
         stan[i] = DerivationGraph(32 * i, 0, 32, 32, srcStan);

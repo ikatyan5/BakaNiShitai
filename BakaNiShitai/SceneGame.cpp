@@ -250,11 +250,14 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
     }
     // ’Êíˆ—
     for (int i = 0; i < WEAPON_MAX; i++) {
-        if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
         if (weapons[i].CheckHit(
             target.x, target.y - PLAYER_HIT_CY,
             PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
             weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+            if (target.hasShield) {
+                target.hasShield = false;
+                return;
+            }
             EnterHitState(judgeValue, true);
             return;
         }
