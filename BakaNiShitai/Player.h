@@ -33,6 +33,11 @@ public:
 
 	int animFrame;   // 今何枚目か
 	int animTimer;   // 切り替えカウンター
+	int pikohanRespawnTimer;
+	int stanTimer;      // スタン残りフレーム
+	bool isStunned;     // スタン中かどうか
+
+	void EnterStun();   // スタン開始
 
 	void Init(float startX, float startY, int id, bool facingR, ImageManager& imgMgr, int keepWinCount = 0);
 	bool GetOnGround() { return onGround; }
@@ -48,17 +53,15 @@ public:
 	void UpdatePosition(Stage& stage);
 	void UpdateJump(const RestrictionManager& restrictions);
 	void UpdateAnim();
-	void UpdateAttack(Weapon* weapons);
+	void UpdateAttack(Weapon* weapons, const RestrictionManager& restrictions);
 	void Update(Stage& stage, Weapon* weapons, const RestrictionManager& restrictions);
 	void ApplyGravity(const RestrictionManager& restrictions);
-	void Draw(Weapon* weapons);
+	void Draw(Weapon* weapons, ImageManager& imgMgr);
 private:
 	int playerImage[7];
 	int playerGlowImage[7];
-
 	float weaponDrawX;
 	float weaponDrawY;
-
 	bool prevJumpKey; // 前フレームのジャンプキー状態
 	bool prevAttackKey;
 	bool prevThrowKey;

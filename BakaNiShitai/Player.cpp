@@ -24,6 +24,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	prevJumpKey = false;
 	weaponDrawX = 0.0f;
 	weaponDrawY = 0.0f;
+	pikohanRespawnTimer = 0;
 	prevAttackKey = false;
 	prevThrowKey = false;
 	prevLeftKey = false;
@@ -35,6 +36,8 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	mashDecay = 0;
 	airTime = 0;
 	speedDownTimer = 0;
+	stanTimer = 0;
+	isStunned = false;
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
 		playerGlowImage[i] = imgMgr.player3[i];
@@ -43,6 +46,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 
 // 左右移動とキー入力処理
 void Player::UpdateInput(const RestrictionManager& restrictions) {
+	if (isStunned) { vx = 0; return; }
 	if (attacking){ vx = 0; return; }
 	if (restrictions.IsActive(REST_JUMP_LIMIT) && onGround) return;
 
@@ -155,9 +159,11 @@ int Player::GetAttackFrames(Weapon* weapons) {
 }
 
 // 攻撃の処理
-void Player::UpdateAttack(Weapon* weapons) {
+void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restrictions) {
+	if (isStunned) return;
 	if (!canAttack) return;
-
+	// メテオ中は素手攻撃不可
+	if (restrictions.IsActive(REST_METEOR) && holdingWeaponIndex == -1) return;
 	if (attackTimer > 0) {
 		attackTimer--;
 		if (attackTimer == 0) attacking = false;
@@ -169,6 +175,7 @@ void Player::UpdateAttack(Weapon* weapons) {
 		isReadyThrow = CheckHitKey(KEY_INPUT_G) && holdingWeaponIndex != -1;
 		if (throwKey && !prevThrowKey && attackTimer == 0 && holdingWeaponIndex != -1) {
 			wantThrow = true;
+			isReadyThrow = false;
 			attackTimer = 15;
 		}
 		else if (attackKey && !prevAttackKey && attackTimer == 0) {
@@ -184,6 +191,7 @@ void Player::UpdateAttack(Weapon* weapons) {
 		isReadyThrow = (GetMouseInput() & MOUSE_INPUT_RIGHT) && holdingWeaponIndex != -1;
 		if (throwKey && !prevThrowKey && attackTimer == 0 && holdingWeaponIndex != -1) {
 			wantThrow = true;
+			isReadyThrow = false;
 			attackTimer = 15;
 		}
 		else if (attackKey && !prevAttackKey && attackTimer == 0) {
@@ -206,13 +214,20 @@ void Player::UpdateAnim() {
 			canAttack = true;
 		}
 	}
+	// 減速タイマー
 	if (speedDownTimer > 0) {
 		speedDownTimer--;
 		if (speedDownTimer <= 0) {
 			moveSpeed = 5.0f; // 元に戻す
 		}
 	}
-
+	// スタンタイマー
+	if (stanTimer > 0) {
+		stanTimer--;
+		if (stanTimer <= 0) {
+			isStunned = false;
+		}
+	}
 
 	animTimer++;
 
@@ -245,7 +260,7 @@ void Player::Update(Stage& stage, Weapon* weapons, const RestrictionManager& res
 	ApplyGravity(restrictions);
 	UpdatePosition(stage);
 	UpdateJump(restrictions);
-	UpdateAttack(weapons);
+	UpdateAttack(weapons, restrictions);
 	UpdateAnim();
 }
 
@@ -281,7 +296,7 @@ void Player::ApplyGravity(const RestrictionManager& restrictions) {
 	}
 }
 
-void Player::Draw(Weapon* weapons) {
+void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 	// 点滅処理
 	if (isBlinking) {
 		int interval = (blinkTimer > 60) ? 10 : 5;
@@ -300,6 +315,16 @@ void Player::Draw(Weapon* weapons) {
 	else {
 		DrawExtendGraphF(drawX + 96, drawY, drawX, drawY + 128, drawImage[animFrame], TRUE);
 	}
+	// スタンエフェクト
+	if (isStunned) {
+		int stanFrame = (stanTimer / 8) % 2; // 8フレームごとに切り替え
+		DrawExtendGraphF(
+			x - 32.0f, y - PLAYER_HIT_CY - 120.0f,
+			x + 32.0f, y - PLAYER_HIT_CY - 56.0f,
+			imgMgr.stan[stanFrame], TRUE
+		);
+	}
+
 	// 武器の追従描画
 	if (holdingWeaponIndex != -1) {
 		weaponDrawX = facingRight ? x + 60.0f : x - 60.0f;
@@ -367,6 +392,11 @@ void Player::Draw(Weapon* weapons) {
 	}
 
 #endif
+}
+
+void Player::EnterStun() {
+	stanTimer = 120; // 2秒
+	isStunned = true;
 }
 
 bool Player::CheckAttackHit(Player& other, Weapon* weapons) {

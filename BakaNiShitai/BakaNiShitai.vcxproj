@@ -134,6 +134,8 @@
     <ClCompile Include="ItemPotionRed.cpp" />
     <ClCompile Include="ItemPotionYellow.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Meteor.cpp" />
+    <ClCompile Include="MeteorManager.cpp" />
     <ClCompile Include="Orb.cpp" />
     <ClCompile Include="OrbManager.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -154,6 +156,8 @@
     <ClInclude Include="ItemPotionPurple.h" />
     <ClInclude Include="ItemPotionRed.h" />
     <ClInclude Include="ItemPotionYellow.h" />
+    <ClInclude Include="Meteor.h" />
+    <ClInclude Include="MeteorManager.h" />
     <ClInclude Include="Orb.h" />
     <ClInclude Include="OrbManager.h" />
     <ClInclude Include="Player.h" />

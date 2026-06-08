@@ -29,19 +29,19 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     p1Glowing = false;
     p2Glowing = false;
 
-	InitPlayers(false);
-
-    for (int i = 0; i < WEAPON_MAX; i++) {
-        weapons[i].Init(WEAPON_KAMA, *imgMgr);
-    }
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
+    meteorManager.Init();
     restrictionManager.Init();
 
 #ifdef _DEBUG
     restrictionManager.SelectRandom(); // デバッグ時は最初から制限をかける
 #endif
     stage.Init(1);
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        weapons[i].Init(WEAPON_KAMA, *imgMgr);
+    }
+    InitPlayers(false);
 }
 
 void SceneGame::InitPlayers(bool keepWinCount) {
@@ -54,17 +54,29 @@ void SceneGame::InitPlayers(bool keepWinCount) {
 
     player1.Init(p1Right ? rightX : leftX, 360.0f, 1, p1Right, *imgMgr, p1Win);
     player2.Init(p1Right ? leftX : rightX, 360.0f, 2, !p1Right, *imgMgr, p2Win);
+
+    // メテオ中は最初からピコハンを持たせる
+    if (restrictionManager.IsActive(REST_METEOR)) {
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
+                weapons[i].Init(WEAPON_PIKOHAN, *imgMgr);
+                weapons[i].weaponState = Weapon::WEAPON_HELD;
+                player1.holdingWeaponIndex = i;
+                break;
+            }
+        }
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
+                weapons[i].Init(WEAPON_PIKOHAN, *imgMgr);
+                weapons[i].weaponState = Weapon::WEAPON_HELD;
+                player2.holdingWeaponIndex = i;
+                break;
+            }
+        }
+    }
 }
 
 void SceneGame::ResetGame(bool keepWinCount) {
-    InitPlayers(keepWinCount);
-    if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
-        player1.moveSpeed = 5.0f * 1.2f;
-        player2.moveSpeed = 5.0f * 1.2f;
-    }
-    for (int i = 0; i < WEAPON_MAX; i++) {
-        weapons[i].Init(WEAPON_KAMA, *imgMgr);
-    }
     isDraw = false;
     p1HpIndex = 0;
     p2HpIndex = 0;
@@ -73,12 +85,21 @@ void SceneGame::ResetGame(bool keepWinCount) {
     timeTimer = matchTime * 60;
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
+    meteorManager.Init();
     restrictionManager.SelectRandom();
     weaponSpawnTimer = 0;
     mementoMoriTimer = 0;
     mementoMoriShooterID = 0;
     mementoMoriWinnerID = 0;
     mementoMoriPending = false;
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        weapons[i].Init(WEAPON_KAMA, *imgMgr);
+    }
+    InitPlayers(keepWinCount);
+    if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
+        player1.moveSpeed = 5.0f * 1.2f;
+        player2.moveSpeed = 5.0f * 1.2f;
+    }
 }
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {
@@ -171,6 +192,20 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
         }
         return;
     }
+    // メテオ中はピコハン投げ当たりでスタン
+    if (restrictionManager.IsActive(REST_METEOR)) {
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
+            if (weapons[i].weaponType != WEAPON_PIKOHAN) continue;
+            if (weapons[i].CheckHit(
+                target.x, target.y - PLAYER_HIT_CY,
+                PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
+                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                target.EnterStun();
+            }
+        }
+        return;
+    }
     // 通常処理
     for (int i = 0; i < WEAPON_MAX; i++) {
         if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
@@ -194,6 +229,10 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
             player.holdingWeaponIndex = -1;
         }
         else {
+            // ピコハン投げたらリスポーンタイマーセット
+            if (weapons[idx].weaponType == WEAPON_PIKOHAN) {
+                player.pikohanRespawnTimer = 180;
+            }
             weapons[idx].Throw(player.x, player.y - 50.0f, player.facingRight, ownerID,
                 (WeaponType)weapons[idx].weaponType, *imgMgr);
             player.holdingWeaponIndex = -1;
@@ -217,6 +256,8 @@ void SceneGame::PickupWeapon(Player& player) {
 }
 
 void SceneGame::SpawnWeapon() {
+    // メテオ中は武器スポーンしない
+    if (restrictionManager.IsActive(REST_METEOR)) return;
     weaponSpawnTimer++;
     int spawnInterval = WEAPON_SPAWN_INTERVAL;
     if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
@@ -233,6 +274,7 @@ void SceneGame::SpawnWeapon() {
                 WeaponType type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
                 {
 #endif
+
                     if (restrictionManager.IsActive(REST_STICK_ONLY)) {
                         type = WEAPON_STICK;
                     }
@@ -244,13 +286,20 @@ void SceneGame::SpawnWeapon() {
                             type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
                         }
                     }
-                }                
-                weapons[i].Init(type, *imgMgr);
-                weapons[i].weaponState = Weapon::WEAPON_FALLING;
-                weapons[i].x = (float)(rand() % 1100 + 90);
-                weapons[i].y = 0.0f;
-                weapons[i].angle = 0.0f;
-                break;
+                    else {
+                        // 通常時はピコハンを出さない
+                        while (type == WEAPON_PIKOHAN) {
+                            type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
+                        }
+                    }
+
+                    weapons[i].Init(type, *imgMgr);
+                    weapons[i].weaponState = Weapon::WEAPON_FALLING;
+                    weapons[i].x = (float)(rand() % 1100 + 90);
+                    weapons[i].y = 0.0f;
+                    weapons[i].angle = 0.0f;
+                    break;
+                }
             }
         }
     }
@@ -324,6 +373,14 @@ void SceneGame::Update() {
             blurTimer = 0;
         }
 
+        if (restrictionManager.IsActive(REST_METEOR)) {
+            meteorManager.Update(player1, player2);
+            if (meteorManager.hitOccurred) {
+                meteorManager.hitOccurred = false;
+                EnterHitState(meteorManager.hitWinnerID == 2, true);
+            }
+        }
+
         // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding && !mementoMoriPending) {
             player1.Update(stage, weapons, restrictionManager);
@@ -358,6 +415,24 @@ void SceneGame::Update() {
             }
         }
 
+        // ピコハンリスポーン
+        auto checkPikohanRespawn = [&](Player& player) {
+            if (player.pikohanRespawnTimer <= 0) return;
+            player.pikohanRespawnTimer--;
+            if (player.pikohanRespawnTimer == 0) {
+                for (int i = 0; i < WEAPON_MAX; i++) {
+                    if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
+                        weapons[i].Init(WEAPON_PIKOHAN, *imgMgr);
+                        weapons[i].weaponState = Weapon::WEAPON_HELD;
+                        player.holdingWeaponIndex = i;
+                        break;
+                    }
+                }
+            }
+            };
+        checkPikohanRespawn(player1);
+        checkPikohanRespawn(player2);
+
         // はたき落とし判定
         CheckParry(player1, 1);
         CheckParry(player2, 2);
@@ -379,6 +454,28 @@ void SceneGame::Update() {
                 if (player2.holdingWeaponIndex != -1) {
                     player1.moveSpeed = 5.0f * 0.6f;
                     player1.speedDownTimer = 180;
+                }
+            }
+        }
+        else if (restrictionManager.IsActive(REST_METEOR)) {
+            if (player1.CheckAttackHit(player2, weapons)) {
+                if (player1.holdingWeaponIndex != -1 &&
+                    weapons[player1.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
+                    player2.EnterStun();
+                    // ピコハン消してリスポーンタイマーセット
+                    weapons[player1.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
+                    player1.holdingWeaponIndex = -1;
+                    player1.pikohanRespawnTimer = 180;
+                }
+            }
+            if (player2.CheckAttackHit(player1, weapons)) {
+                if (player2.holdingWeaponIndex != -1 &&
+                    weapons[player2.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
+                    player1.EnterStun();
+                    // ピコハン消してリスポーンタイマーセット
+                    weapons[player2.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
+                    player2.holdingWeaponIndex = -1;
+                    player2.pikohanRespawnTimer = 180;
                 }
             }
         }
@@ -440,15 +537,23 @@ void SceneGame::Draw() {
         }
         DrawMementoMori(player1);
         DrawMementoMori(player2);
-        player1.Draw(weapons);
-        player2.Draw(weapons);
+        player1.Draw(weapons, *imgMgr);
+        player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
+        if (restrictionManager.IsActive(REST_METEOR)) {
+            meteorManager.Draw(*imgMgr);
+        }
         itemManager.Draw();
         DrawUI();
         SetDrawScreen(DX_SCREEN_BACK);
-        DrawGraph(0, 0, currentTex, TRUE);
 
-        // ぼかし先に重ねる
+        if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
+            DrawExtendGraphF(0, 920, 1280, 0, currentTex, TRUE);
+        }
+        else {
+            DrawGraph(0, 0, currentTex, TRUE);
+        }
+
         if (blurMode != 0) {
             int alpha = (blurMode == 1) ? 100 : 180;
             SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
@@ -489,8 +594,8 @@ void SceneGame::Draw() {
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
         }
-        player1.Draw(weapons);
-        player2.Draw(weapons);
+        player1.Draw(weapons, *imgMgr);
+        player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
         itemManager.Draw();
         if (!isDraw) {
@@ -508,8 +613,8 @@ void SceneGame::Draw() {
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
         }
-        player1.Draw(weapons);
-        player2.Draw(weapons);
+        player1.Draw(weapons, *imgMgr);
+        player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
         itemManager.Draw();
         if (isDraw) {

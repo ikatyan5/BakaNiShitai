@@ -49,15 +49,21 @@ void ImageManager::Load() {
     weaponImages[WEAPON_STICK] = LoadGraph(_T("Image/Weapon/stick.png"));
     weaponImages[WEAPON_BOOMERANG] = LoadGraph(_T("Image/Weapon/boomerang.png"));
     weaponImages[WEAPON_MEMENTO_MORI] = LoadGraph(_T("Image/Weapon/memento_mori.png"));
+    weaponImages[WEAPON_PIKOHAN] = LoadGraph(_T("Image/Weapon/pikohan.png"));
 
     int srcOrb = LoadGraph(_T("Image/Weapon/orb.png"));
     for (int i = 0; i < 3; i++) {
         orbs[i] = DerivationGraph(32 * i, 0, 32, 32, srcOrb);
     }
+    meteo = LoadGraph(_T("Image/Weapon/meteo.png"));
 
     // エフェクト画像
     mementoMoriEffect = LoadGraph(_T("Image/Effect/memento_mori_Effect.png"));
 
+    int srcStan = LoadGraph(_T("Image/Effect/stan.png"));
+    for (int i = 0; i < 2; i++) {
+        stan[i] = DerivationGraph(32 * i, 0, 32, 32, srcStan);
+    }
 
     // アイテム画像
     potionBlue = LoadGraph(_T("Image/Item/potionBlue.png"));

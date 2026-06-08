@@ -133,15 +133,29 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else if (roll < 8) type = ITEM_POTION_YELLOW;
                 else               type = ITEM_HANKACHI;
             }
+            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_METEOR)) {
+                int roll = rand() % 4;
+                if (roll == 0)      type = ITEM_POTION_BLUE;
+                else if (roll == 1) type = ITEM_POTION_PURPLE;
+                else if (roll == 2) type = ITEM_POTION_YELLOW;
+                else                type = ITEM_HANKACHI;
+            }
 #else
             ItemType type;
             if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
-                // 赤ポーション除外・紫多め
                 int roll = rand() % 10;
-                if (roll < 4)      type = ITEM_POTION_PURPLE; // 40%
-                else if (roll < 6) type = ITEM_POTION_BLUE;   // 20%
-                else if (roll < 8) type = ITEM_POTION_YELLOW; // 20%
-                else               type = ITEM_HANKACHI;       // 20%
+                if (roll < 4)      type = ITEM_POTION_PURPLE;
+                else if (roll < 6) type = ITEM_POTION_BLUE;
+                else if (roll < 8) type = ITEM_POTION_YELLOW;
+                else               type = ITEM_HANKACHI;
+            }
+            else if (restrictions.IsActive(REST_METEOR)) {
+                // 赤ポーション除外
+                int roll = rand() % 4;
+                if (roll == 0)      type = ITEM_POTION_BLUE;
+                else if (roll == 1) type = ITEM_POTION_PURPLE;
+                else if (roll == 2) type = ITEM_POTION_YELLOW;
+                else                type = ITEM_HANKACHI;
             }
             else {
                 type = (ItemType)(rand() % ITEM_TYPE_MAX);

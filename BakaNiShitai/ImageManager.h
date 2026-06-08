@@ -29,10 +29,13 @@ public:
     int stick;
     int boomerang;
     int memento_mori;
+    int pikohan;
     int orbs[3];
+    int meteo;
 
     // エフェクト
     int mementoMoriEffect;
+    int stan[2];
 
     // アイテム
     int potionBlue;

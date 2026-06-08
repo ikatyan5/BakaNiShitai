@@ -1,0 +1,101 @@
+// MeteorManager.cpp
+#include "MeteorManager.h"
+#include "Player.h"
+#include "Config.h"
+#include <cmath>
+#include <cstdlib>
+
+void MeteorManager::Init() {
+    hitOccurred = false;
+    hitWinnerID = 0;
+    spawnTimer = 0;
+    elapsedFrames = 0;
+    for (int i = 0; i < METEOR_MAX; i++) {
+        meteors[i].Init();
+    }
+}
+
+float MeteorManager::GetCurrentSpeed() {
+    float t = elapsedFrames / 1800.0f;
+    if (t > 1.0f) t = 1.0f;
+    return 4.0f + t * 16.0f;
+}
+
+int MeteorManager::GetCurrentInterval() {
+    float t = elapsedFrames / 1800.0f;
+    if (t > 1.0f) t = 1.0f;
+    return (int)(180.0f - t * 120.0f);
+}
+
+void MeteorManager::Spawn() {
+    for (int i = 0; i < METEOR_MAX; i++) {
+        if (!meteors[i].active) {
+            float targetX = (float)(rand() % 1100 + 90);
+            float targetY = 800.0f; // 地面のY座標
+            float startX = (float)(rand() % 1280);
+            float startY = 0.0f;
+            float speed = GetCurrentSpeed();
+
+            float dx = targetX - startX;
+            float dy = targetY - startY;
+            float dist = sqrtf(dx * dx + dy * dy);
+
+            meteors[i].x = startX;
+            meteors[i].y = startY;
+            meteors[i].vx = (dx / dist) * speed;
+            meteors[i].vy = (dy / dist) * speed;
+            meteors[i].targetX = targetX;
+            meteors[i].targetY = targetY;
+            meteors[i].active = true;
+            return;
+        }
+    }
+}
+
+void MeteorManager::Update(Player& player1, Player& player2) {
+    hitOccurred = false;
+    elapsedFrames++;
+
+    spawnTimer++;
+    if (spawnTimer >= GetCurrentInterval()) {
+        spawnTimer = 0;
+        Spawn();
+    }
+
+    for (int i = 0; i < METEOR_MAX; i++) {
+        if (!meteors[i].active) continue;
+        meteors[i].Update();
+
+        auto checkHit = [&](Player& target, int winnerID) {
+            if (!meteors[i].active) return;
+            float dx = meteors[i].x - target.x;
+            float dy = meteors[i].y - (target.y - PLAYER_HIT_CY);
+            if (fabsf(dx) < (96.0f + PLAYER_HIT_W) / 2 &&
+                fabsf(dy) < (96.0f + PLAYER_HIT_H) / 2) {
+                meteors[i].active = false;
+                hitOccurred = true;
+                hitWinnerID = winnerID;
+            }
+            };
+        checkHit(player1, 2);
+        if (!hitOccurred) checkHit(player2, 1);
+    }
+}
+
+void MeteorManager::Draw(ImageManager& imgMgr) {
+    for (int i = 0; i < METEOR_MAX; i++) {
+        if (!meteors[i].active) continue;
+
+
+        // 予告マーカー（地面に丸）
+        DrawCircleAA(meteors[i].targetX, 800.0f, 20.0f, 16,
+            GetColor(255, 100, 0), FALSE);
+
+        // 隕石本体
+        DrawRotaGraphF(
+            meteors[i].x, meteors[i].y,
+            4.0, meteors[i].angle,
+            imgMgr.meteo, TRUE, FALSE
+        );
+    }
+}
