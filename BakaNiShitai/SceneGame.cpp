@@ -178,6 +178,7 @@ void SceneGame::CheckMementoMori(Player& attacker, Player& target, bool judgeVal
     Weapon& held = weapons[attacker.holdingWeaponIndex];
     if (held.weaponType != WEAPON_MEMENTO_MORI) return;
     if (!attacker.attacking) return;
+    if (mementoMoriPending)return;
 
     int atkFrames = WEAPON_DATA[WEAPON_MEMENTO_MORI].attackFrames;
     if (attacker.attackTimer != atkFrames) return;
@@ -185,8 +186,6 @@ void SceneGame::CheckMementoMori(Player& attacker, Player& target, bool judgeVal
     float hitH = WEAPON_DATA[WEAPON_MEMENTO_MORI].hitH;
     bool hit = fabsf((target.y - PLAYER_HIT_CY) - (attacker.y - PLAYER_HIT_CY)) < (hitH + PLAYER_HIT_H) / 2;
 
-    held.weaponState = Weapon::WEAPON_INACTIVE;
-    attacker.holdingWeaponIndex = -1;
     mementoMoriPending = true;
     mementoMoriShooterID = attacker.PlayerID;
     mementoMoriTimer = 30;
@@ -228,9 +227,11 @@ void SceneGame::Update() {
 
         // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding && !mementoMoriPending) {
+            // 制限系
             bool gravCtrl = restrictionManager.IsActive(REST_GRAVITY_CONTROL);
-            player1.Update(stage, weapons, gravCtrl);
-            player2.Update(stage, weapons, gravCtrl);
+            bool jumpLimit = restrictionManager.IsActive(REST_JUMP_LIMIT);
+            player1.Update(stage, weapons, gravCtrl, jumpLimit);
+            player2.Update(stage, weapons, gravCtrl, jumpLimit);
         }
         itemManager.Update(player1, player2);
         orbManager.Update(player1, player2);
@@ -321,10 +322,10 @@ void SceneGame::Draw() {
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
         }
-        player1.Draw(weapons);
-        player2.Draw(weapons);
         DrawMementoMori(player1);
         DrawMementoMori(player2);
+        player1.Draw(weapons);
+        player2.Draw(weapons);
         orbManager.Draw();
         itemManager.Draw();
         DrawUI();

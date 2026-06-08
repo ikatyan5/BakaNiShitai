@@ -36,9 +36,12 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 }
 
 // 左右移動とキー入力処理
-void Player::UpdateInput() {
+void Player::UpdateInput(bool jumpLimitActive) {
 	vx = 0;
 	if (attacking)return;
+
+	// ジャンプ制限中は地面にいるとき横移動できない
+	if (jumpLimitActive && onGround) return;
 
 	if (PlayerID == 1) {
 		if (CheckHitKey(KEY_INPUT_A)) { vx = isBlinking ? -(moveSpeed + 3.0f) : -moveSpeed; facingRight = false; }
@@ -149,8 +152,8 @@ void Player::UpdateAnim() {
 	}
 }
 
-void Player::Update(Stage& stage, Weapon* weapons, bool canGravityControl) {
-	UpdateInput();
+void Player::Update(Stage& stage, Weapon* weapons, bool canGravityControl, bool jumpLimitActive){
+	UpdateInput(jumpLimitActive);
 	ApplyGravity(canGravityControl);
 	UpdatePosition(stage);
 	UpdateJump();
@@ -230,11 +233,16 @@ void Player::Draw(Weapon* weapons) {
 				weaponAngle = facingRight ? -0.8f : 0.8f;
 			}
 			else {
-				weaponDrawY = y - 20.0f;
+				// メメントモリだけY軸を上げる
+				if (weapons[holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI) {
+					weaponDrawY = y - 40.0f;
+				}
+				else {
+					weaponDrawY = y - 20.0f;
+				}
 				weaponAngle = facingRight ? 0.8f : -0.8f;
 			}
 		}
-
 		DrawRotaGraphF(weaponDrawX, weaponDrawY, 1.5, weaponAngle,
 			weapons[holdingWeaponIndex].weaponImage, TRUE, !facingRight);
 	}

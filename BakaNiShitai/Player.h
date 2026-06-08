@@ -42,12 +42,12 @@ public:
 	bool CheckHit(float ax, float ay, float aw, float ah,
 		float bx, float by, float bw, float bh);
 	bool CheckAttackHit(Player& other, Weapon* weapons);
-	void UpdateInput();
+	void UpdateInput(bool jumpLimitActive = false);
 	void UpdatePosition(Stage& stage);
 	void UpdateJump();
 	void UpdateAnim();
 	void UpdateAttack(Weapon* weapons);
-	void Update(Stage& stage, Weapon* weapons, bool canGravityControl);
+	void Update(Stage& stage, Weapon* weapons, bool canGravityControl, bool jumpLimitActive);
 	void ApplyGravity(bool canGravityControl);
 	void Draw(Weapon* weapons);
 private:
