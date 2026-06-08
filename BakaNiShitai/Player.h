@@ -45,7 +45,7 @@ public:
 	bool CheckAttackHit(Player& other, Weapon* weapons);
 	void UpdateInput(const RestrictionManager& restrictions);
 	void UpdatePosition(Stage& stage);
-	void UpdateJump();
+	void UpdateJump(const RestrictionManager& restrictions);
 	void UpdateAnim();
 	void UpdateAttack(Weapon* weapons);
 	void Update(Stage& stage, Weapon* weapons, const RestrictionManager& restrictions);
@@ -66,5 +66,6 @@ private:
 
 	int mashCount;		// 連打カウント
 	int mashDecay;		// カウントが減るまでのタイマー
+	int airTime;		// 空中にいたフレーム数
 
 };

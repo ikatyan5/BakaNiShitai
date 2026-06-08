@@ -6,7 +6,7 @@
 enum RestrictionType {
     REST_NONE,
     REST_GRAVITY_ZERO,        // 〇 重力ゼロ
-    REST_HOVER_JUMP,          // ホバリングジャンプ
+    REST_HOVER_JUMP,          // 〇 ホバリングジャンプ
     REST_THROW_NO_DAMAGE,     // 投げダメなし
     REST_MELEE_NO_DAMAGE,     // 近接ダメなし（弾き延長）
     REST_STICK_ONLY,          // 杖だけ

@@ -33,6 +33,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	canAttack = true;
 	mashCount = 0;
 	mashDecay = 0;
+	airTime = 0;
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
 		playerGlowImage[i] = imgMgr.player3[i];
@@ -115,14 +116,31 @@ void Player::UpdateInput(const RestrictionManager& restrictions) {
 }
 
 // ジャンプの処理
-void Player::UpdateJump() {
+void Player::UpdateJump(const RestrictionManager& restrictions) {
 	bool jumpKey = false;
 	if (PlayerID == 1) jumpKey = CheckHitKey(KEY_INPUT_W) || CheckHitKey(KEY_INPUT_SPACE);
 	if (PlayerID == 2) jumpKey = CheckHitKey(KEY_INPUT_UP);
 
-	if (jumpKey && !prevJumpKey && jumpCount > 0) {
-		vy = jumpPower;
-		jumpCount--;
+	if (restrictions.IsActive(REST_HOVER_JUMP)) {
+		// ホバリング：ジャンプ回数無制限・ジャンプ力低め
+		if (jumpKey && !prevJumpKey) {
+			vy = jumpPower * 0.9f;
+		}
+		// 空中にいる時間で落下加速
+		if (!onGround) {
+			airTime++;
+			vy += airTime * 0.01f;
+		}
+		else {
+			airTime = 0;
+		}
+	}
+	else {
+		// 通常ジャンプ
+		if (jumpKey && !prevJumpKey && jumpCount > 0) {
+			vy = jumpPower;
+			jumpCount--;
+		}
 	}
 	prevJumpKey = jumpKey;
 }
@@ -217,7 +235,7 @@ void Player::Update(Stage& stage, Weapon* weapons, const RestrictionManager& res
 	UpdateInput(restrictions);
 	ApplyGravity(restrictions);
 	UpdatePosition(stage);
-	UpdateJump();
+	UpdateJump(restrictions);
 	UpdateAttack(weapons);
 	UpdateAnim();
 }
