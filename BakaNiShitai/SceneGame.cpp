@@ -32,6 +32,10 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
     restrictionManager.Init();
+
+#ifdef _DEBUG
+    restrictionManager.SelectRandom(); // デバッグ時は最初から制限をかける
+#endif
     stage.Init(1);
 }
 
@@ -175,7 +179,6 @@ void SceneGame::CheckMementoMori(Player& attacker, Player& target, bool judgeVal
     if (held.weaponType != WEAPON_MEMENTO_MORI) return;
     if (!attacker.attacking) return;
 
-    int charge = WEAPON_DATA[WEAPON_MEMENTO_MORI].chargeFrames;
     int atkFrames = WEAPON_DATA[WEAPON_MEMENTO_MORI].attackFrames;
     if (attacker.attackTimer != atkFrames) return;
 
@@ -225,8 +228,9 @@ void SceneGame::Update() {
 
         // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding && !mementoMoriPending) {
-            player1.Update(stage, weapons);
-            player2.Update(stage, weapons);
+            bool gravCtrl = restrictionManager.IsActive(REST_GRAVITY_CONTROL);
+            player1.Update(stage, weapons, gravCtrl);
+            player2.Update(stage, weapons, gravCtrl);
         }
         itemManager.Update(player1, player2);
         orbManager.Update(player1, player2);

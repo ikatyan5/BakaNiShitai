@@ -47,8 +47,8 @@ public:
 	void UpdateJump();
 	void UpdateAnim();
 	void UpdateAttack(Weapon* weapons);
-	void Update(Stage& stage, Weapon* weapons);
-	void ApplyGravity();
+	void Update(Stage& stage, Weapon* weapons, bool canGravityControl);
+	void ApplyGravity(bool canGravityControl);
 	void Draw(Weapon* weapons);
 private:
 	int playerImage[7];

@@ -149,9 +149,9 @@ void Player::UpdateAnim() {
 	}
 }
 
-void Player::Update(Stage& stage, Weapon* weapons) {
+void Player::Update(Stage& stage, Weapon* weapons, bool canGravityControl) {
 	UpdateInput();
-	ApplyGravity();
+	ApplyGravity(canGravityControl);
 	UpdatePosition(stage);
 	UpdateJump();
 	UpdateAttack(weapons);
@@ -178,8 +178,16 @@ void Player::UpdatePosition(Stage& stage) {
 	}
 }
 
-void Player::ApplyGravity() {
+void Player::ApplyGravity(bool canGravityControl) {
 	vy += GRAVITY;
+
+	// 重力操作制限中、空中で下キーを押したら急落下
+	if (canGravityControl && !onGround) {
+		bool downKey = (PlayerID == 1)
+			? CheckHitKey(KEY_INPUT_S)
+			: CheckHitKey(KEY_INPUT_DOWN);
+		if (downKey) vy += GRAVITY * 8.0f;
+	}
 }
 
 void Player::Draw(Weapon* weapons) {
