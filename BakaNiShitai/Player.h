@@ -3,6 +3,7 @@
 #include "Weapon.h"
 #include "Stage.h"
 #include "ImageManager.h"
+#include "RestrictionManager.h"
 
 class Player
 {
@@ -42,13 +43,13 @@ public:
 	bool CheckHit(float ax, float ay, float aw, float ah,
 		float bx, float by, float bw, float bh);
 	bool CheckAttackHit(Player& other, Weapon* weapons);
-	void UpdateInput(bool jumpLimitActive = false);
+	void UpdateInput(const RestrictionManager& restrictions);
 	void UpdatePosition(Stage& stage);
 	void UpdateJump();
 	void UpdateAnim();
 	void UpdateAttack(Weapon* weapons);
-	void Update(Stage& stage, Weapon* weapons, bool canGravityControl, bool jumpLimitActive);
-	void ApplyGravity(bool canGravityControl);
+	void Update(Stage& stage, Weapon* weapons, const RestrictionManager& restrictions);
+	void ApplyGravity(const RestrictionManager& restrictions);
 	void Draw(Weapon* weapons);
 private:
 	int playerImage[7];
@@ -60,4 +61,10 @@ private:
 	bool prevJumpKey; // 前フレームのジャンプキー状態
 	bool prevAttackKey;
 	bool prevThrowKey;
+	bool prevLeftKey;
+	bool prevRightKey;
+
+	int mashCount;		// 連打カウント
+	int mashDecay;		// カウントが減るまでのタイマー
+
 };

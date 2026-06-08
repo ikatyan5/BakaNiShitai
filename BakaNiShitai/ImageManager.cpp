@@ -32,6 +32,8 @@ void ImageManager::Load() {
     p3Score[0] = DerivationGraph(0, 0, 32, 32, srcP3Score); // F•t‚«
     p3Score[1] = DerivationGraph(32, 0, 32, 32, srcP3Score); // ˜g‚Ì‚İ
 
+    surpMark = LoadGraph(_T("Image/UI/surprise_mark.png"));
+
     int srcNum = LoadGraph(_T("Image/UI/number.png"));
     for (int i = 0; i < 10; i++) {
         numbers[i] = DerivationGraph(i * 32, 0, 32, 32, srcNum);

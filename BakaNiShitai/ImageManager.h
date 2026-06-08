@@ -17,6 +17,7 @@ public:
     int p2Score[2];
     int p3Score[2];
     int numbers[10];
+    int surpMark;
 
     // •Ší‰æ‘œ
     int kama;

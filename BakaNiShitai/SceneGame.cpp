@@ -227,11 +227,8 @@ void SceneGame::Update() {
 
         // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding && !mementoMoriPending) {
-            // 制限系
-            bool gravCtrl = restrictionManager.IsActive(REST_GRAVITY_CONTROL);
-            bool jumpLimit = restrictionManager.IsActive(REST_JUMP_LIMIT);
-            player1.Update(stage, weapons, gravCtrl, jumpLimit);
-            player2.Update(stage, weapons, gravCtrl, jumpLimit);
+            player1.Update(stage, weapons, restrictionManager);
+            player2.Update(stage, weapons, restrictionManager);
         }
         itemManager.Update(player1, player2);
         orbManager.Update(player1, player2);

@@ -26,9 +26,13 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	weaponDrawY = 0.0f;
 	prevAttackKey = false;
 	prevThrowKey = false;
+	prevLeftKey = false;
+	prevRightKey = false;
 	isReadyThrow = false;
 	isGlowing = false;
 	canAttack = true;
+	mashCount = 0;
+	mashDecay = 0;
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
 		playerGlowImage[i] = imgMgr.player3[i];
@@ -36,20 +40,77 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 }
 
 // 左右移動とキー入力処理
-void Player::UpdateInput(bool jumpLimitActive) {
-	vx = 0;
-	if (attacking)return;
+void Player::UpdateInput(const RestrictionManager& restrictions) {
+	if (attacking) return;
+	if (restrictions.IsActive(REST_JUMP_LIMIT) && onGround) return;
 
-	// ジャンプ制限中は地面にいるとき横移動できない
-	if (jumpLimitActive && onGround) return;
+	bool mashMove = restrictions.IsActive(REST_MASH_MOVE);
 
-	if (PlayerID == 1) {
-		if (CheckHitKey(KEY_INPUT_A)) { vx = isBlinking ? -(moveSpeed + 3.0f) : -moveSpeed; facingRight = false; }
-		if (CheckHitKey(KEY_INPUT_D)) { vx = isBlinking ? (moveSpeed + 3.0f) : moveSpeed; facingRight = true; }
+	if (mashMove) {
+		// 連打カウントの減衰
+		if (mashDecay > 0) mashDecay--;
+		else if (mashCount > 0) mashCount--;
+
+		// vxを毎フレーム減衰させる（摩擦）
+		vx *= 0.95f;
+
+		if (PlayerID == 1) {
+			bool leftKey = CheckHitKey(KEY_INPUT_A);
+			bool rightKey = CheckHitKey(KEY_INPUT_D);
+			if (leftKey && !prevLeftKey) {
+				mashCount = min(mashCount + 1, 5);
+				mashDecay = 8;
+				vx -= (moveSpeed + mashCount * 1.5f);
+				facingRight = false;
+			}
+			if (rightKey && !prevRightKey) {
+				mashCount = min(mashCount + 1, 5);
+				mashDecay = 8;
+				vx += (moveSpeed + mashCount * 1.5f);
+				facingRight = true;
+			}
+			prevLeftKey = leftKey;
+			prevRightKey = rightKey;
+		}
+		else if (PlayerID == 2) {
+			bool leftKey = CheckHitKey(KEY_INPUT_LEFT);
+			bool rightKey = CheckHitKey(KEY_INPUT_RIGHT);
+			if (leftKey && !prevLeftKey) {
+				mashCount = min(mashCount + 1, 5);
+				mashDecay = 8;
+				vx -= (moveSpeed + mashCount * 1.5f);
+				facingRight = false;
+			}
+			if (rightKey && !prevRightKey) {
+				mashCount = min(mashCount + 1, 5);
+				mashDecay = 8;
+				vx += (moveSpeed + mashCount * 1.5f);
+				facingRight = true;
+			}
+			prevLeftKey = leftKey;
+			prevRightKey = rightKey;
+		}
 	}
-	else if (PlayerID == 2) {
-		if (CheckHitKey(KEY_INPUT_LEFT)) { vx = isBlinking ? -(moveSpeed + 3.0f) : -moveSpeed; facingRight = false; }
-		if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = isBlinking ? (moveSpeed + 3.0f) : moveSpeed; facingRight = true; }
+	else {
+		vx = 0;
+		if (PlayerID == 1) {
+			if (CheckHitKey(KEY_INPUT_A)) { vx = isBlinking ? -(moveSpeed + 3.0f) : -moveSpeed; facingRight = false; }
+			if (CheckHitKey(KEY_INPUT_D)) { vx = isBlinking ? (moveSpeed + 3.0f) : moveSpeed; facingRight = true; }
+			if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
+				vy = 0;
+				if (CheckHitKey(KEY_INPUT_W)) vy = -moveSpeed;
+				if (CheckHitKey(KEY_INPUT_S)) vy = moveSpeed;
+			}
+		}
+		else if (PlayerID == 2) {
+			if (CheckHitKey(KEY_INPUT_LEFT)) { vx = isBlinking ? -(moveSpeed + 3.0f) : -moveSpeed; facingRight = false; }
+			if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = isBlinking ? (moveSpeed + 3.0f) : moveSpeed; facingRight = true; }
+			if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
+				vy = 0;
+				if (CheckHitKey(KEY_INPUT_UP)) vy = -moveSpeed;
+				if (CheckHitKey(KEY_INPUT_DOWN)) vy = moveSpeed;
+			}
+		}
 	}
 }
 
@@ -152,9 +213,9 @@ void Player::UpdateAnim() {
 	}
 }
 
-void Player::Update(Stage& stage, Weapon* weapons, bool canGravityControl, bool jumpLimitActive){
-	UpdateInput(jumpLimitActive);
-	ApplyGravity(canGravityControl);
+void Player::Update(Stage& stage, Weapon* weapons, const RestrictionManager& restrictions) {
+	UpdateInput(restrictions);
+	ApplyGravity(restrictions);
 	UpdatePosition(stage);
 	UpdateJump();
 	UpdateAttack(weapons);
@@ -181,15 +242,15 @@ void Player::UpdatePosition(Stage& stage) {
 	}
 }
 
-void Player::ApplyGravity(bool canGravityControl) {
-	vy += GRAVITY;
+void Player::ApplyGravity(const RestrictionManager& restrictions) {
+	if (restrictions.IsActive(REST_GRAVITY_ZERO)) return; // 重力ゼロなら何もしない
 
-	// 重力操作制限中、空中で下キーを押したら急落下
-	if (canGravityControl && !onGround) {
+	vy += GRAVITY;
+	if (restrictions.IsActive(REST_GRAVITY_CONTROL) && !onGround) {
 		bool downKey = (PlayerID == 1)
 			? CheckHitKey(KEY_INPUT_S)
 			: CheckHitKey(KEY_INPUT_DOWN);
-		if (downKey) vy += GRAVITY * 8.0f;
+		if (downKey) vy += GRAVITY * 4.0f;
 	}
 }
 

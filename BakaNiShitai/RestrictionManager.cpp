@@ -22,22 +22,9 @@ void RestrictionManager::SelectRandom() {
     }
 #endif
 
-    // REST_NONEとREST_TYPE_MAXを除いた範囲からランダムに選ぶ
-    // 同じ制限が重複しないようにする
-    int attempts = 0;
-    while (activeCount < RESTRICTION_MAX && attempts < 100) {
-        attempts++;
-        RestrictionType picked = (RestrictionType)(rand() % (REST_TYPE_MAX - 1) + 1);
-
-        // 重複チェック
-        bool duplicate = false;
-        for (int i = 0; i < activeCount; i++) {
-            if (active[i] == picked) { duplicate = true; break; }
-        }
-        if (!duplicate) {
-            active[activeCount++] = picked;
-        }
-    }
+    RestrictionType picked = (RestrictionType)(rand() % (REST_TYPE_MAX - 1) + 1);
+    active[0] = picked;
+    activeCount = 1;
 }
 
 bool RestrictionManager::IsActive(RestrictionType type) const {
