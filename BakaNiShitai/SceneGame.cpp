@@ -11,7 +11,7 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     HIT_TIMER = 0;
     RESULT_TIMER = 0;
     weaponSpawnTimer = 0;
-    nextScene = -1;
+    nextScene = SCENE_NONE;
 
     matchTime = DEFAULT_TIME;
     timeTimer = matchTime * 60;
@@ -730,11 +730,8 @@ void SceneGame::Update() {
         }
     }
     else if (state == STATE_GAMEEND) {
-        // Rキーでリスタート
         if (CheckHitKey(KEY_INPUT_R)) {
-            ResetGame(false);
-            state = STATE_PLAYING;
-            nextScene = -1;
+            nextScene = SCENE_MENU;
         }
     }
 }
@@ -932,6 +929,6 @@ void SceneGame::EnterHitState(bool judgeValue, bool addScore) {
     state = STATE_HIT;
 }
 
-int SceneGame::GetNextScene() {
+SceneID SceneGame::GetNextScene() {
     return nextScene;
 }

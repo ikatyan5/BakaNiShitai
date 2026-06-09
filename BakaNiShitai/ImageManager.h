@@ -19,7 +19,12 @@ public:
     int numbers[10];
     int setsunaP1[2];
     int setsunaP2[2];
+    int pressAnyKey[2];
+    int menuTatakau[2];
+    int menuTutorial[2];
+    int menuSetting[2];
     int surpMark;
+    int titleLogo;
 
     // •Ší‰æ‘œ
     int kama;

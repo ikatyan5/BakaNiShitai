@@ -33,7 +33,20 @@ void ImageManager::Load() {
     p3Score[1] = DerivationGraph(32, 0, 32, 32, srcP3Score); // ˜g‚Ì‚Ý
 
     surpMark = LoadGraph(_T("Image/UI/surprise_mark.png"));
+    titleLogo = LoadGraph(_T("Image/UI/Title.png"));
 
+    int srcPressAnyKey = LoadGraph(_T("Image/UI/nankaose.png"));
+    pressAnyKey[0] = DerivationGraph(0, 0, 600, 200, srcPressAnyKey);
+    pressAnyKey[1] = DerivationGraph(600, 0, 600, 200, srcPressAnyKey);
+    int srcTatakau = LoadGraph(_T("Image/UI/tatakau.png"));
+    menuTatakau[0] = DerivationGraph(0, 0, 300, 200, srcTatakau);   // ”ñ‘I‘ð
+    menuTatakau[1] = DerivationGraph(300, 0, 300, 200, srcTatakau); // ‘I‘ð’†
+    int srcTutorial = LoadGraph(_T("Image/UI/tutorial.png"));
+    menuTutorial[0] = DerivationGraph(0, 0, 300, 200, srcTutorial);
+    menuTutorial[1] = DerivationGraph(300, 0, 300, 200, srcTutorial);
+    int srcSetting = LoadGraph(_T("Image/UI/setting.png"));
+    menuSetting[0] = DerivationGraph(0, 0, 300, 200, srcSetting);
+    menuSetting[1] = DerivationGraph(300, 0, 300, 200, srcSetting);
     int srcNum = LoadGraph(_T("Image/UI/number.png"));
     for (int i = 0; i < 10; i++) {
         numbers[i] = DerivationGraph(i * 32, 0, 32, 32, srcNum);

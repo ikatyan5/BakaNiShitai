@@ -1,9 +1,10 @@
+// BaseScene.h
 #pragma once
-
+#include "SceneID.h"
 class BaseScene {
 public:
     virtual ~BaseScene() {}
     virtual void Update() = 0;
     virtual void Draw() = 0;
-    virtual int GetNextScene() { return -1; } // -1‚Í‘JˆÚ‚È‚µ
+    virtual SceneID GetNextScene() { return SCENE_NONE; }
 };

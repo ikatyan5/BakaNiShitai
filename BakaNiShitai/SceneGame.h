@@ -1,5 +1,6 @@
 #pragma once
 #include "BaseScene.h"
+#include "SceneID.h"
 #include "Player.h"
 #include "Weapon.h"
 #include "Stage.h"
@@ -18,7 +19,7 @@ public:
     void Draw() override;
     void DrawUI();
     void EnterHitState(bool judgeValue, bool addScore = false);
-    int GetNextScene() override;
+    SceneID GetNextScene() override;
     void SpawnWeapon();
     void CheckParry(Player& attacker, int ownerID);
     void CheckWeaponHit(Player& target, Player& attacker, bool judgeValue, int targetID);
@@ -89,5 +90,5 @@ private:
     int p1HpIndex = 0;
     int p2HpIndex = 0;
 
-    int nextScene;
+    SceneID nextScene = SCENE_NONE;
 };
