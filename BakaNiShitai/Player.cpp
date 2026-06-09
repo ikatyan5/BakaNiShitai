@@ -49,7 +49,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 void Player::UpdateInput(const RestrictionManager& restrictions) {
 	if (isStunned) { vx = 0; return; }
 	if (attacking){ vx = 0; return; }
-	if (restrictions.IsActive(REST_JUMP_LIMIT) && onGround) return;
+	if (restrictions.IsActive(REST_JUMP_LIMIT) && onGround) { vx = 0; return; }
 
 	bool mashMove = restrictions.IsActive(REST_MASH_MOVE);
 

@@ -24,6 +24,7 @@ public:
     void CheckWeaponHit(Player& target, Player& attacker, bool judgeValue, int targetID);
     void CheckHyperTouch();
     void ThrowWeapon(Player& player, int ownerID);
+    void CheckStickOrb(Player& player, int ownerID);
     void PickupWeapon(Player& player);
     void CheckMementoMori(Player& attacker, Player& target, bool judgeValue);
     void DrawMementoMori(Player& attacker);
@@ -40,7 +41,7 @@ private:
     Player player2;
     Stage stage;
 
-    static const int WEAPON_MAX = 8;
+    static const int WEAPON_MAX = 16;
     Weapon weapons[WEAPON_MAX];
     ImageManager* imgMgr;
     ItemManager itemManager;

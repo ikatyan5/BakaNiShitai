@@ -282,22 +282,30 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
     if (!player.wantThrow) return;
     if (player.holdingWeaponIndex != -1) {
         int idx = player.holdingWeaponIndex;
-        if (weapons[idx].weaponType == WEAPON_STICK) {
-            orbManager.Launch(player.x, player.y - 50.0f, player.facingRight, ownerID);
-            weapons[idx].weaponState = Weapon::WEAPON_INACTIVE;
-            player.holdingWeaponIndex = -1;
+        // ピコハン投げたらリスポーンタイマーセット
+        if (weapons[idx].weaponType == WEAPON_PIKOHAN) {
+            player.pikohanRespawnTimer = 180;
         }
-        else {
-            // ピコハン投げたらリスポーンタイマーセット
-            if (weapons[idx].weaponType == WEAPON_PIKOHAN) {
-                player.pikohanRespawnTimer = 180;
-            }
-            weapons[idx].Throw(player.x, player.y - 50.0f, player.facingRight, ownerID,
-                (WeaponType)weapons[idx].weaponType, *imgMgr);
-            player.holdingWeaponIndex = -1;
-        }
+        weapons[idx].Throw(player.x, player.y - 50.0f, player.facingRight, ownerID,
+        (WeaponType)weapons[idx].weaponType, *imgMgr);
+        player.holdingWeaponIndex = -1;
+
     }
     player.wantThrow = false;
+}
+
+void SceneGame::CheckStickOrb(Player& player, int ownerID) {
+    if (player.holdingWeaponIndex == -1) return;
+    Weapon& held = weapons[player.holdingWeaponIndex];
+    if (held.weaponType != WEAPON_STICK) return;
+    if (!player.attacking) return;
+    if (held.orbFired) return;
+
+    int charge = WEAPON_DATA[WEAPON_STICK].chargeFrames;
+    if (player.attackTimer != charge) return;
+
+    orbManager.Launch(player.x, player.y - 50.0f, player.facingRight, ownerID);
+    held.orbFired = true;
 }
 
 void SceneGame::PickupWeapon(Player& player) {
@@ -353,13 +361,13 @@ void SceneGame::SpawnWeapon() {
                         }
                     }
 
-                    weapons[i].Init(type, *imgMgr);
-                    weapons[i].weaponState = Weapon::WEAPON_FALLING;
-                    weapons[i].x = (float)(rand() % 1100 + 90);
-                    weapons[i].y = 0.0f;
-                    weapons[i].angle = 0.0f;
-                    break;
                 }
+                weapons[i].Init(type, *imgMgr);
+                weapons[i].weaponState = Weapon::WEAPON_FALLING;
+                weapons[i].x = (float)(rand() % 1100 + 90);
+                weapons[i].y = 0.0f;
+                weapons[i].angle = 0.0f;
+                break;
             }
         }
     }
@@ -512,6 +520,9 @@ void SceneGame::Update() {
             };
         checkPikohanRespawn(player1);
         checkPikohanRespawn(player2);
+
+        CheckStickOrb(player1, 1);
+        CheckStickOrb(player2, 2);
 
         // はたき落とし判定
         CheckParry(player1, 1);
