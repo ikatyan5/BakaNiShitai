@@ -16,6 +16,6 @@ const bool DBG_FORCE_WEAPON = false;
 const WeaponType DBG_WEAPON_TYPE = WEAPON_MEMENTO_MORI;
 
 // êßå¿ã≠êßìKóp
-const bool DBG_FORCE_RESTRICTION = false;
-const RestrictionType DBG_RESTRICTION_TYPE = REST_METEOR;
+const bool DBG_FORCE_RESTRICTION = true;
+const RestrictionType DBG_RESTRICTION_TYPE = REST_SETSUNA;
 #endif

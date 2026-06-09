@@ -21,8 +21,9 @@ private:
 
     int spawnTimer;
     int elapsedFrames;
-
+    int edgeSpawnTimer;
+    bool edgeSpawnLeft;
     float GetCurrentSpeed();
     int GetCurrentInterval();
-    void Spawn();
+    void Spawn(float targetX);
 };

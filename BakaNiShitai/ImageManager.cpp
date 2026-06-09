@@ -39,6 +39,13 @@ void ImageManager::Load() {
         numbers[i] = DerivationGraph(i * 32, 0, 32, 32, srcNum);
     }
 
+    int srcSetsunaP1 = LoadGraph(_T("Image/UI/setsunaPlayer1.png"));
+    int srcSetsunaP2 = LoadGraph(_T("Image/UI/setsunaPlayer2.png"));
+    setsunaP1[0] = DerivationGraph(0, 0, 640, 200, srcSetsunaP1); // ’Êí
+    setsunaP1[1] = DerivationGraph(640, 0, 640, 200, srcSetsunaP1);
+    setsunaP2[0] = DerivationGraph(0, 0, 640, 200, srcSetsunaP2);
+    setsunaP2[1] = DerivationGraph(640, 0, 640, 200, srcSetsunaP2);
+
     // •Ší‰æ‘œ
     weaponImages[WEAPON_KAMA] = LoadGraph(_T("Image/Weapon/kama.png"));
     weaponImages[WEAPON_KONBOU] = LoadGraph(_T("Image/Weapon/konbou.png"));

@@ -37,6 +37,7 @@ public:
 	int stanTimer;      // スタン残りフレーム
 	bool isStunned;     // スタン中かどうか
 	bool hasShield;       // シールド持ちか
+	bool freezeAnim; // アニメ固定フラグ
 	void EnterStun();   // スタン開始
 
 	void Init(float startX, float startY, int id, bool facingR, ImageManager& imgMgr, int keepWinCount = 0);

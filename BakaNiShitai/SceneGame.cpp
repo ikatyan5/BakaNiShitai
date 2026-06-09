@@ -29,6 +29,13 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     p1Glowing = false;
     p2Glowing = false;
 
+    setsunaPhase = SETSUNA_SLIDE;
+    setsunaPhaseTimer = 0;
+    setsunaP1UIX = 1280.0f;
+    setsunaP2UIX = -1280.0f;
+
+    setsunaSignVisible = false;
+
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
     meteorManager.Init();
@@ -51,8 +58,34 @@ void SceneGame::InitPlayers(bool keepWinCount) {
 
     int p1Win = keepWinCount ? player1.winCount : 0;
     int p2Win = keepWinCount ? player2.winCount : 0;
-    player1.Init(p1Right ? rightX : leftX, 360.0f, 1, p1Right, *imgMgr, p1Win);
-    player2.Init(p1Right ? leftX : rightX, 360.0f, 2, !p1Right, *imgMgr, p2Win);
+    if (restrictionManager.IsActive(REST_SETSUNA)) {
+        player1.Init(p1Right ? rightX : leftX, 530.0f, 1, p1Right, *imgMgr, p1Win);
+        player2.Init(p1Right ? leftX : rightX, 530.0f, 2, !p1Right, *imgMgr, p2Win);
+    }
+    else {
+        player1.Init(p1Right ? rightX : leftX, 360.0f, 1, p1Right, *imgMgr, p1Win);
+        player2.Init(p1Right ? leftX : rightX, 360.0f, 2, !p1Right, *imgMgr, p2Win);
+    }
+
+    // 刹那の見切り：両プレイヤーにメメントモリを持たせる
+    if (restrictionManager.IsActive(REST_SETSUNA)) {
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
+                weapons[i].Init(WEAPON_MEMENTO_MORI, *imgMgr);
+                weapons[i].weaponState = Weapon::WEAPON_HELD;
+                player1.holdingWeaponIndex = i;
+                break;
+            }
+        }
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
+                weapons[i].Init(WEAPON_MEMENTO_MORI, *imgMgr);
+                weapons[i].weaponState = Weapon::WEAPON_HELD;
+                player2.holdingWeaponIndex = i;
+                break;
+            }
+        }
+    }
 
     // 弱い側にピコハンを持たせる
     if (restrictionManager.IsActive(REST_HYPETSUYOI)) {
@@ -114,11 +147,16 @@ void SceneGame::ResetGame(bool keepWinCount) {
     restrictionManager.SelectRandom();
     hyperPlayerID = 0;
     itemManager.hyperPlayerID = 0;
+    setsunaPhase = SETSUNA_SLIDE;
+    setsunaPhaseTimer = 0;
+    setsunaP1UIX = 1280.0f;
+    setsunaP2UIX = -1280.0f;
     weaponSpawnTimer = 0;
     mementoMoriTimer = 0;
     mementoMoriShooterID = 0;
     mementoMoriWinnerID = 0;
     mementoMoriPending = false;
+    setsunaSignVisible = false;
     for (int i = 0; i < WEAPON_MAX; i++) {
         weapons[i].Init(WEAPON_KAMA, *imgMgr);
     }
@@ -320,10 +358,12 @@ void SceneGame::PickupWeapon(Player& player) {
     }
 }
 
-void SceneGame::SpawnWeapon() {
+void SceneGame::SpawnWeapon()
+{
     // メテオ中・ハイパー強い中は武器スポーンしない
     if (restrictionManager.IsActive(REST_METEOR)) return;
     if (restrictionManager.IsActive(REST_HYPETSUYOI)) return;
+    if (restrictionManager.IsActive(REST_SETSUNA)) return;
     weaponSpawnTimer++;
     int spawnInterval = WEAPON_SPAWN_INTERVAL;
     if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
@@ -366,17 +406,17 @@ void SceneGame::SpawnWeapon() {
                 weapons[i].y = 0.0f;
                 weapons[i].angle = 0.0f;
                 break;
+                }
             }
         }
     }
-}
 
 void SceneGame::CheckMementoMori(Player& attacker, Player& target, bool judgeValue) {
     if (attacker.holdingWeaponIndex == -1) return;
     Weapon& held = weapons[attacker.holdingWeaponIndex];
     if (held.weaponType != WEAPON_MEMENTO_MORI) return;
     if (!attacker.attacking) return;
-    if (mementoMoriPending)return;
+    if (mementoMoriPending) return;
 
     int atkFrames = WEAPON_DATA[WEAPON_MEMENTO_MORI].attackFrames;
     if (attacker.attackTimer != atkFrames) return;
@@ -403,7 +443,6 @@ void SceneGame::DrawMementoMori(Player& attacker) {
     float cy = attacker.y - PLAYER_HIT_CY;
     float drawY = cy - hitH / 2;
 
-    // 48pxのタイルを横に並べて1280px埋める
     for (int x = 0; x < 1280; x += 48) {
         DrawExtendGraphF(x, drawY, x + 48, drawY + 20, imgMgr->mementoMoriEffect, TRUE);
     }
@@ -452,12 +491,57 @@ void SceneGame::Update() {
             }
         }
 
+        if (restrictionManager.IsActive(REST_SETSUNA)) {
+            const float SLIDE_SPEED = 1280.0f / 60.0f; // 1秒でスライドイン
+
+            if (setsunaPhase == SETSUNA_SLIDE) {
+                player1.canAttack = false;
+                player2.canAttack = false;
+                setsunaP1UIX -= SLIDE_SPEED;
+                setsunaP2UIX += SLIDE_SPEED;
+                if (setsunaP1UIX <= 0.0f) {
+                    setsunaP1UIX = 0.0f;
+                    setsunaP2UIX = 0.0f;
+                    setsunaPhase = SETSUNA_READY;
+                    setsunaPhaseTimer = 60; // Ready表示1秒
+                }
+            }
+            else if (setsunaPhase == SETSUNA_READY) {
+                player1.canAttack = false;
+                player2.canAttack = false;
+                setsunaPhaseTimer--;
+                if (setsunaPhaseTimer <= 0) {
+                    setsunaPhase = SETSUNA_WAIT;
+                    setsunaPhaseTimer = 180 + rand() % 420; // 3～10秒
+                }
+            }
+            else if (setsunaPhase == SETSUNA_WAIT) {
+                player1.canAttack = false;
+                player2.canAttack = false;
+                // フライングチェック
+                bool p1Attack = CheckHitKey(KEY_INPUT_F);
+                bool p2Attack = GetMouseInput() & MOUSE_INPUT_LEFT;
+                if (p1Attack) { EnterHitState(true, true); }
+                else if (p2Attack) { EnterHitState(false, true); }
+
+                setsunaPhaseTimer--;
+                if (setsunaPhaseTimer <= 0) {
+                    setsunaPhase = SETSUNA_ACTIVE;
+                    player1.canAttack = true;
+                    player2.canAttack = true;
+                    setsunaSignVisible = true;
+                }
+            }
+        }
+
         // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding && !mementoMoriPending) {
             player1.Update(stage, weapons, restrictionManager);
             player2.Update(stage, weapons, restrictionManager);
         }
-        itemManager.Update(player1, player2, restrictionManager);
+        if (!restrictionManager.IsActive(REST_SETSUNA)) {
+            itemManager.Update(player1, player2, restrictionManager);
+        }
         orbManager.Update(player1, player2);
         // 爆発ヒット判定
         if (itemManager.hitOccurred) {
@@ -570,8 +654,14 @@ void SceneGame::Update() {
         }
         else {
             if (player1.CheckAttackHit(player2, weapons)) {
-                if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID == 2) {
-                    // ハイパー強い側(2P)にはスタンのみ・ピコハン消費
+                if (restrictionManager.IsActive(REST_SETSUNA)) {
+                    // 刹那中は無視
+                }
+                else if (player1.holdingWeaponIndex != -1 &&
+                    weapons[player1.holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI) {
+                    // メメントモリはCheckMementoMoriで処理
+                }
+                else if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID == 2) {
                     if (player1.holdingWeaponIndex != -1 &&
                         weapons[player1.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
                         player2.EnterStun();
@@ -585,8 +675,14 @@ void SceneGame::Update() {
                 }
             }
             if (player2.CheckAttackHit(player1, weapons)) {
-                if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID == 1) {
-                    // ハイパー強い側(1P)にはスタンのみ・ピコハン消費
+                if (restrictionManager.IsActive(REST_SETSUNA)) {
+                    // 刹那中は無視
+                }
+                else if (player2.holdingWeaponIndex != -1 &&
+                    weapons[player2.holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI) {
+                    // メメントモリはCheckMementoMoriで処理
+                }
+                else if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID == 1) {
                     if (player2.holdingWeaponIndex != -1 &&
                         weapons[player2.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
                         player1.EnterStun();
@@ -703,6 +799,10 @@ void SceneGame::Draw() {
         for (int i = 0; i < restrictionManager.activeCount; i++) {
             DrawString(10, 10 + i * 20, restrictionNames[restrictionManager.active[i]], GetColor(255, 255, 0));
         }
+
+        TCHAR buf2[64];
+        wsprintf(buf2, _T("setsunaPhase:%d"), (int)setsunaPhase);
+        DrawString(10, 120, buf2, GetColor(255, 255, 0));
 #endif
     }
     else if (state == STATE_HIT) {
@@ -710,6 +810,8 @@ void SceneGame::Draw() {
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
         }
+        DrawMementoMori(player1);
+        DrawMementoMori(player2);
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
@@ -789,6 +891,25 @@ void SceneGame::DrawUI()
     int ones = sec % 10;
     DrawExtendGraphF(UI_TIME_X, UI_TIME_Y, UI_TIME_X + UI_NUMBER_SIZE, UI_TIME_Y + UI_NUMBER_SIZE, imgMgr->numbers[tens], TRUE);
     DrawExtendGraphF(638.0f, UI_TIME_Y, 638.0f + UI_NUMBER_SIZE, UI_TIME_Y + UI_NUMBER_SIZE, imgMgr->numbers[ones], TRUE);
+
+    if (setsunaSignVisible) {
+        DrawExtendGraphF(563.0f, 347.0f, 717.0f, 501.0f, imgMgr->surpMark, TRUE);
+    }
+
+    if (restrictionManager.IsActive(REST_SETSUNA)) {
+        // 上部UI（P1）
+        DrawExtendGraphF(
+            setsunaP1UIX, 0.0f,
+            setsunaP1UIX + 1280.0f, 300.0f,
+            imgMgr->setsunaP1[0], TRUE
+        );
+        // 下部UI（P2）
+        DrawExtendGraphF(
+            setsunaP2UIX, 620.0f,
+            setsunaP2UIX + 1280.0f, 920.0f,
+            imgMgr->setsunaP2[0], TRUE
+        );
+    }
 }
 
 void SceneGame::EnterHitState(bool judgeValue, bool addScore) {
@@ -806,6 +927,8 @@ void SceneGame::EnterHitState(bool judgeValue, bool addScore) {
     HIT_TIMER = 60;
     RESULT_TIMER = 120;
     timeTimer = matchTime * 60;
+    player1.freezeAnim = false;
+    player2.freezeAnim = false;
     state = STATE_HIT;
 }
 

@@ -39,6 +39,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	stanTimer = 0;
 	isStunned = false;
 	hasShield = false;
+	freezeAnim = false;
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
 		playerGlowImage[i] = imgMgr.player3[i];
@@ -50,6 +51,20 @@ void Player::UpdateInput(const RestrictionManager& restrictions) {
 	if (isStunned) { vx = 0; return; }
 	if (attacking){ vx = 0; return; }
 	if (restrictions.IsActive(REST_JUMP_LIMIT) && onGround) { vx = 0; return; }
+
+	// 刹那の見切り：向き変えのみ可、移動禁止
+	if (restrictions.IsActive(REST_SETSUNA)) {
+		vx = 0;
+		if (PlayerID == 1) {
+			if (CheckHitKey(KEY_INPUT_A)) facingRight = false;
+			if (CheckHitKey(KEY_INPUT_D)) facingRight = true;
+		}
+		else {
+			if (CheckHitKey(KEY_INPUT_LEFT)) facingRight = false;
+			if (CheckHitKey(KEY_INPUT_RIGHT)) facingRight = true;
+		}
+		return;
+	}
 
 	bool mashMove = restrictions.IsActive(REST_MASH_MOVE);
 
@@ -123,6 +138,7 @@ void Player::UpdateInput(const RestrictionManager& restrictions) {
 
 // ジャンプの処理
 void Player::UpdateJump(const RestrictionManager& restrictions) {
+	if (restrictions.IsActive(REST_SETSUNA)) return;
 	if (isStunned) { vy = 0; return; }
 	bool jumpKey = false;
 	if (PlayerID == 1) jumpKey = CheckHitKey(KEY_INPUT_W) || CheckHitKey(KEY_INPUT_SPACE);
@@ -206,6 +222,7 @@ void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restriction
 }
 
 void Player::UpdateAnim() {
+	if (freezeAnim) return;
 	if (animFrame == 6) return;
 	// 点滅処理
 	if (isBlinking) {
@@ -287,6 +304,7 @@ void Player::UpdatePosition(Stage& stage) {
 }
 
 void Player::ApplyGravity(const RestrictionManager& restrictions) {
+	if (restrictions.IsActive(REST_SETSUNA)) return;
 	if (restrictions.IsActive(REST_GRAVITY_ZERO)) return; // 重力ゼロなら何もしない
 
 	vy += GRAVITY;

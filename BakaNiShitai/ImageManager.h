@@ -17,6 +17,8 @@ public:
     int p2Score[2];
     int p3Score[2];
     int numbers[10];
+    int setsunaP1[2];
+    int setsunaP2[2];
     int surpMark;
 
     // •Ší‰æ‘œ

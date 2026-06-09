@@ -62,12 +62,26 @@ private:
     int mementoMoriWinnerID;    // ENDする側
     bool mementoMoriPending;    // END待ち状態か
 
+    bool setsunaSignVisible; // ！表示フラグ
+
     int currentTex;  // 今フレームの描画テクスチャ
     int prevTex;     // 前フレームの描画テクスチャ
     int blurMode;    // 0=クリア 1=弱 2=強
     int blurTimer;   // 切り替えまでのカウントダウン
 
     int hyperPlayerID;  // ハイパー強い側のプレイヤーID（1か2）
+
+    // 刹那の見切り
+    enum SetsunaPhase {
+        SETSUNA_SLIDE,   // スライドイン中
+        SETSUNA_READY,   // Ready表示中
+        SETSUNA_WAIT,    // ！待機中
+        SETSUNA_ACTIVE,  // ！表示中・攻撃可能
+    };
+    SetsunaPhase setsunaPhase;
+    int setsunaPhaseTimer;
+    float setsunaP1UIX;
+    float setsunaP2UIX;
 
     bool p1Glowing;
     bool p2Glowing;

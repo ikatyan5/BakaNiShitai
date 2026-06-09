@@ -10,6 +10,8 @@ void MeteorManager::Init() {
     hitWinnerID = 0;
     spawnTimer = 0;
     elapsedFrames = 0;
+    edgeSpawnTimer = 0;
+    edgeSpawnLeft = true;
     for (int i = 0; i < METEOR_MAX; i++) {
         meteors[i].Init();
     }
@@ -27,25 +29,21 @@ int MeteorManager::GetCurrentInterval() {
     return (int)(180.0f - t * 40.0f);
 }
 
-void MeteorManager::Spawn() {
+void MeteorManager::Spawn(float targetX) {
     for (int i = 0; i < METEOR_MAX; i++) {
         if (!meteors[i].active) {
-            float targetX = (float)(rand() % 1100 + 90);
-            float targetY = 800.0f; // ’n–Ê‚ÌYÀ•W
             float startX = (float)(rand() % 1280);
             float startY = 0.0f;
             float speed = GetCurrentSpeed();
-
             float dx = targetX - startX;
-            float dy = targetY - startY;
+            float dy = 800.0f - startY;
             float dist = sqrtf(dx * dx + dy * dy);
-
             meteors[i].x = startX;
             meteors[i].y = startY;
             meteors[i].vx = (dx / dist) * speed;
             meteors[i].vy = (dy / dist) * speed;
             meteors[i].targetX = targetX;
-            meteors[i].targetY = targetY;
+            meteors[i].targetY = 800.0f;
             meteors[i].active = true;
             return;
         }
@@ -59,13 +57,22 @@ void MeteorManager::Update(Player& player1, Player& player2) {
     spawnTimer++;
     if (spawnTimer >= GetCurrentInterval()) {
         spawnTimer = 0;
-        Spawn();
+        Spawn((float)(rand() % 1100 + 90));
+    }
+
+    edgeSpawnTimer++;
+    if (edgeSpawnTimer >= 150) {
+        edgeSpawnTimer = 0;
+        float targetX = edgeSpawnLeft
+            ? (float)(rand() % 200)
+            : (float)(rand() % 200 + 1080);
+        edgeSpawnLeft = !edgeSpawnLeft;
+        Spawn(targetX);
     }
 
     for (int i = 0; i < METEOR_MAX; i++) {
         if (!meteors[i].active) continue;
         meteors[i].Update();
-
         auto checkHit = [&](Player& target, int winnerID) {
             if (!meteors[i].active) return;
             float dx = meteors[i].x - target.x;
