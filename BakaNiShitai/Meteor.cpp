@@ -14,5 +14,5 @@ void Meteor::Update() {
     x += vx;
     y += vy;
     angle += 0.1f;
-    if (y > 920.0f) active = false;
+    if (y > 1220.0f) active = false;
 }

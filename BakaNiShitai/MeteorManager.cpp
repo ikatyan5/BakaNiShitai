@@ -18,13 +18,13 @@ void MeteorManager::Init() {
 float MeteorManager::GetCurrentSpeed() {
     float t = elapsedFrames / 1800.0f;
     if (t > 1.0f) t = 1.0f;
-    return 4.0f + t * 16.0f;
+    return 4.0f + t * 18.0f;
 }
 
 int MeteorManager::GetCurrentInterval() {
     float t = elapsedFrames / 1800.0f;
     if (t > 1.0f) t = 1.0f;
-    return (int)(180.0f - t * 120.0f);
+    return (int)(180.0f - t * 40.0f);
 }
 
 void MeteorManager::Spawn() {

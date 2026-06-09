@@ -13,6 +13,7 @@ public:
 
     bool hitOccurred;
     int hitWinnerID;
+    
 
 private:
     static const int METEOR_MAX = 8;

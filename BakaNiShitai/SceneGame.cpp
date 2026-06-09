@@ -131,22 +131,22 @@ void SceneGame::ResetGame(bool keepWinCount) {
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {
     if (!attacker.attacking) return;
-
     bool isMeleeNoRest = restrictionManager.IsActive(REST_MELEE_NO_DAMAGE);
     bool isBareHand = attacker.holdingWeaponIndex == -1;
-
-    // ’Êí‚Í‘fè‚Å‚Í‚½‚«—‚Æ‚µ•s‰Â
     if (isBareHand && !isMeleeNoRest) return;
-
-    // ’e‚«—P—\ƒtƒŒ[ƒ€i§ŒÀ’†‚Í‰„’·j
-    int parryLimit = isMeleeNoRest ? 10 : 7; // §ŒÀ’†‚Í—P—\‚ğ‘‚â‚·
-    if (attacker.attackTimer >= parryLimit) return;
 
     int chargeFrames = (attacker.holdingWeaponIndex == -1)
         ? BARE_HAND_CHARGE_FRAMES
         : WEAPON_DATA[weapons[attacker.holdingWeaponIndex].weaponType].chargeFrames;
+    int attackFrames = (attacker.holdingWeaponIndex == -1)
+        ? BARE_HAND_ATTACK_FRAMES
+        : WEAPON_DATA[weapons[attacker.holdingWeaponIndex].weaponType].attackFrames;
 
-    bool isParryFrame = (attacker.attackTimer == chargeFrames - 1);
+    // UŒ‚”»’è‚ªo‚Ä‚é‹æŠÔ‚©‚Ç‚¤‚©iƒJƒEƒ“ƒgƒ_ƒEƒ“•û®j
+    if (attacker.attackTimer >= chargeFrames) return;           // ‚Ü‚¾\‚¦’†
+    if (attacker.attackTimer < chargeFrames - attackFrames) return; // ”»’èI‚í‚è
+
+    bool isParryFrame = (attacker.attackTimer == chargeFrames - 1); // ”»’è‚ªo‚½Å‰‚Ì1ƒtƒŒ[ƒ€
 
     float atkX = attacker.facingRight ? attacker.x + 50.0f : attacker.x - 50.0f;
     float atkY = attacker.y - 50.0f;
@@ -159,19 +159,19 @@ void SceneGame::CheckParry(Player& attacker, int ownerID) {
 
     bool parried = false;
     bool anyThrownInRange = false;
-
     for (int i = 0; i < WEAPON_MAX; i++) {
         if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
-
         bool inRange = weapons[i].CheckParry(atkX, atkY, 40.0f, 80.0f);
         if (inRange) anyThrownInRange = true;
-
         if (inRange) {
             if (isParryFrame) {
+                // ’e‚«•Ô‚µ
                 weapons[i].vx = -weapons[i].vx * (isMeleeNoRest ? 1.5f : 1.0f);
+                return;
             }
             else {
                 if (!isBareHand) {
+                    // ‚Í‚½‚«—‚Æ‚µ
                     Weapon& held = weapons[attacker.holdingWeaponIndex];
                     weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
                     held.parryRemain--;
@@ -181,7 +181,6 @@ void SceneGame::CheckParry(Player& attacker, int ownerID) {
                     }
                 }
                 else {
-                    // ‘fè‚Å‚Í‚½‚«—‚Æ‚µ¬Œ÷
                     weapons[i].vx = -weapons[i].vx * 1.5f;
                 }
             }
@@ -190,7 +189,6 @@ void SceneGame::CheckParry(Player& attacker, int ownerID) {
         }
     }
 
-    // ‘fè‚Å‚Í‚½‚«—‚Æ‚µ¸”s‚µ‚½‚çEND
     if (isMeleeNoRest && isBareHand && anyThrownInRange && !parried) {
         EnterHitState(ownerID == 1, true);
     }

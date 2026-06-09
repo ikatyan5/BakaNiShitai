@@ -105,8 +105,8 @@ void Player::UpdateInput(const RestrictionManager& restrictions) {
 			if (CheckHitKey(KEY_INPUT_D)) { vx = isBlinking ? (moveSpeed + 8.0f) : moveSpeed; facingRight = true; }
 			if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
 				vy = 0;
-				if (CheckHitKey(KEY_INPUT_W)) vy = -moveSpeed;
-				if (CheckHitKey(KEY_INPUT_S)) vy = moveSpeed;
+				if (CheckHitKey(KEY_INPUT_W)) vy = -moveSpeed - 8.0f;
+				if (CheckHitKey(KEY_INPUT_S)) vy = moveSpeed + 8.0f;
 			}
 		}
 		else if (PlayerID == 2) {
@@ -114,8 +114,8 @@ void Player::UpdateInput(const RestrictionManager& restrictions) {
 			if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = isBlinking ? (moveSpeed + 8.0f) : moveSpeed; facingRight = true; }
 			if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
 				vy = 0;
-				if (CheckHitKey(KEY_INPUT_UP)) vy = -moveSpeed;
-				if (CheckHitKey(KEY_INPUT_DOWN)) vy = moveSpeed;
+				if (CheckHitKey(KEY_INPUT_UP)) vy = -moveSpeed - 8.0f;
+				if (CheckHitKey(KEY_INPUT_DOWN)) vy = moveSpeed + 8.0f;
 			}
 		}
 	}
@@ -123,6 +123,7 @@ void Player::UpdateInput(const RestrictionManager& restrictions) {
 
 // ジャンプの処理
 void Player::UpdateJump(const RestrictionManager& restrictions) {
+	if (isStunned) { vy = 0; return; }
 	bool jumpKey = false;
 	if (PlayerID == 1) jumpKey = CheckHitKey(KEY_INPUT_W) || CheckHitKey(KEY_INPUT_SPACE);
 	if (PlayerID == 2) jumpKey = CheckHitKey(KEY_INPUT_UP);
@@ -289,7 +290,7 @@ void Player::ApplyGravity(const RestrictionManager& restrictions) {
 	if (restrictions.IsActive(REST_GRAVITY_ZERO)) return; // 重力ゼロなら何もしない
 
 	vy += GRAVITY;
-	if (restrictions.IsActive(REST_GRAVITY_CONTROL) && !onGround) {
+	if (restrictions.IsActive(REST_GRAVITY_CONTROL)|| isBlinking && !onGround) {
 		bool downKey = (PlayerID == 1)
 			? CheckHitKey(KEY_INPUT_S)
 			: CheckHitKey(KEY_INPUT_DOWN);
@@ -357,7 +358,7 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 			else {
 				// メメントモリだけY軸を上げる
 				if (weapons[holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI) {
-					weaponDrawY = y - 40.0f;
+					weaponDrawY = y - 43.0f;
 				}
 				else {
 					weaponDrawY = y - 20.0f;
