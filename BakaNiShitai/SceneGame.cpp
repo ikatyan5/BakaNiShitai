@@ -22,7 +22,7 @@ static const TCHAR* RESTRICTION_NAMES[] = {
     _T("なんか画面おかしくね？"),
 };
 
-void SceneGame::Init(ImageManager& imgMgr_) {
+void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings) {
     imgMgr = &imgMgr_;
     state = STATE_COUNTDOWN;
     countdownTimer = 180; // 3秒
@@ -31,6 +31,11 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     RESULT_TIMER = 0;
     weaponSpawnTimer = 0;
     nextScene = SCENE_NONE;
+
+    player1.useGamepad = settings.p1UseGamepad;
+    player1.padID = settings.p1PadID;
+    player2.useGamepad = settings.p2UseGamepad;
+    player2.padID = settings.p2PadID;
 
     matchTime = DEFAULT_TIME;
     timeTimer = matchTime * 60;
@@ -54,7 +59,7 @@ void SceneGame::Init(ImageManager& imgMgr_) {
     setsunaP2UIX = -1280.0f;
 
     setsunaSignVisible = false;
-
+    this->settings = &settings;
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
     meteorManager.Init();
@@ -80,10 +85,21 @@ void SceneGame::InitPlayers(bool keepWinCount) {
     if (restrictionManager.IsActive(REST_SETSUNA)) {
         player1.Init(p1Right ? rightX : leftX, 530.0f, 1, p1Right, *imgMgr, p1Win);
         player2.Init(p1Right ? leftX : rightX, 530.0f, 2, !p1Right, *imgMgr, p2Win);
+        
+        player1.useGamepad = settings->p1UseGamepad;
+        player1.padID = settings->p1PadID;
+        player2.useGamepad = settings->p2UseGamepad;
+        player2.padID = settings->p2PadID;
     }
+
     else {
         player1.Init(p1Right ? rightX : leftX, 360.0f, 1, p1Right, *imgMgr, p1Win);
         player2.Init(p1Right ? leftX : rightX, 360.0f, 2, !p1Right, *imgMgr, p2Win);
+    
+        player1.useGamepad = settings->p1UseGamepad;
+        player1.padID = settings->p1PadID;
+        player2.useGamepad = settings->p2UseGamepad;
+        player2.padID = settings->p2PadID;
     }
 
     // 刹那の見切り：両プレイヤーにメメントモリを持たせる
@@ -750,6 +766,7 @@ void SceneGame::Update() {
         }
     }
     else if (state == STATE_GAMEEND) {
+
         if (CheckHitKey(KEY_INPUT_R)) {
             nextScene = SCENE_MENU;
         }

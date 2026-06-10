@@ -9,10 +9,11 @@
 #include "OrbManager.h"
 #include "MeteorManager.h"
 #include "RestrictionManager.h"
+#include "GameSettings.h"
 
 class SceneGame : public BaseScene {
 public:
-    void Init(ImageManager& imgMgr);
+    void Init(ImageManager& imgMgr, GameSettings& settings);
     void InitPlayers(bool keepWinCount = false);
     void ResetGame(bool keepWinCount);
     void Update() override;
@@ -46,6 +47,7 @@ private:
     static const int WEAPON_MAX = 16;
     Weapon weapons[WEAPON_MAX];
     ImageManager* imgMgr;
+    GameSettings* settings;
     ItemManager itemManager;
     OrbManager orbManager;
     MeteorManager meteorManager;

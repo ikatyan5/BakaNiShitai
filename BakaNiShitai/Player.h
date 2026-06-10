@@ -38,6 +38,11 @@ public:
 	bool isStunned;     // スタン中かどうか
 	bool hasShield;       // シールド持ちか
 	bool freezeAnim; // アニメ固定フラグ
+	bool dashAttack;
+	
+	bool useGamepad; // trueならコントローラー入力を使う
+	int padID;       // DX_INPUT_PAD1 or DX_INPUT_PAD2
+
 	void EnterStun();   // スタン開始
 
 	void Init(float startX, float startY, int id, bool facingR, ImageManager& imgMgr, int keepWinCount = 0);
@@ -50,7 +55,7 @@ public:
 	bool CheckHit(float ax, float ay, float aw, float ah,
 		float bx, float by, float bw, float bh);
 	bool CheckAttackHit(Player& other, Weapon* weapons);
-	void UpdateInput(const RestrictionManager& restrictions);
+	void UpdateInput(const RestrictionManager& restrictions, Weapon* weapons);
 	void UpdatePosition(Stage& stage);
 	void UpdateJump(const RestrictionManager& restrictions);
 	void UpdateAnim(Weapon* weapons);

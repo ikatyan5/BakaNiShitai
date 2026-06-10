@@ -6,4 +6,5 @@ enum SceneID {
     SCENE_MENU,
     SCENE_GAME,
     SCENE_TUTORIAL,
+    SCENE_SETTINGS,
 };

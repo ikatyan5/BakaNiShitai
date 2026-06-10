@@ -5,9 +5,11 @@
 #include "SceneTitle.h"
 #include "SceneMenu.h"
 #include "SceneGame.h"
+#include "SceneSettings.h"
+#include "GameSettings.h"
 #include <ctime>
 
-BaseScene* CreateScene(SceneID id, ImageManager& imgMgr) {
+BaseScene* CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings) {
     switch (id) {
     case SCENE_TITLE: {
         auto* s = new SceneTitle();
@@ -21,7 +23,12 @@ BaseScene* CreateScene(SceneID id, ImageManager& imgMgr) {
     }
     case SCENE_GAME: {
         auto* s = new SceneGame();
-        s->Init(imgMgr);
+        s->Init(imgMgr, settings);
+        return s;
+    }
+    case SCENE_SETTINGS: {
+        auto* s = new SceneSettings();
+        s->Init(imgMgr,settings);
         return s;
     }
     default:
@@ -33,6 +40,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     ChangeWindowMode(TRUE);
     SetGraphMode(1280, 920, 32);
     if (DxLib_Init() == -1) return -1;
+    int padNum = GetJoypadNum();
+    printfDx(_T("接続パッド数=%d\n"), padNum);
     SetBackgroundColor(135, 206, 235);
     SetWaitVSyncFlag(TRUE);
     SetMainWindowText(_T("君たちを\"バカ\"にしたい"));
@@ -43,7 +52,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     imageManager.Load();
 
     SceneID currentID = SCENE_TITLE;
-    BaseScene* currentScene = CreateScene(currentID, imageManager);
+    GameSettings settings;
+    BaseScene* currentScene = CreateScene(currentID, imageManager, settings);
 
     while (ProcessMessage() == 0) {
         LONGLONG start = GetNowHiPerformanceCount();
@@ -56,7 +66,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         if (next != SCENE_NONE) {
             delete currentScene;
             currentID = next;
-            currentScene = CreateScene(currentID, imageManager);
+            currentScene = CreateScene(currentID, imageManager, settings);
         }
         while (GetNowHiPerformanceCount() - start < 16667) {}
     }

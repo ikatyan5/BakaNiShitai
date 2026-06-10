@@ -40,6 +40,10 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	isStunned = false;
 	hasShield = false;
 	freezeAnim = false;
+	dashAttack = false;
+	useGamepad = false;
+	padID = DX_INPUT_PAD1;
+
 	for (int i = 0; i < 7; i++) {
 		playerImage[i] = (id == 1) ? imgMgr.player1[i] : imgMgr.player2[i];
 		playerGlowImage[i] = imgMgr.player3[i];
@@ -47,15 +51,36 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 }
 
 // 左右移動とキー入力処理
-void Player::UpdateInput(const RestrictionManager& restrictions) {
+void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons){
 	if (isStunned) { vx = 0; return; }
-	if (attacking){ vx = 0; return; }
+	if (attacking) {
+		if (dashAttack) {
+			int charge = (holdingWeaponIndex == -1)
+				? BARE_HAND_CHARGE_FRAMES
+				: WEAPON_DATA[weapons[holdingWeaponIndex].weaponType].chargeFrames;
+			if (attackTimer < charge) {
+				vx = 0;
+				dashAttack = false;
+			}
+		}
+		else {
+			vx = 0;
+		}
+		return;
+	}
 	if (restrictions.IsActive(REST_JUMP_LIMIT) && onGround) { vx = 0; return; }
 
 	// 刹那の見切り：向き変えのみ可、移動禁止
 	if (restrictions.IsActive(REST_SETSUNA)) {
 		vx = 0;
-		if (PlayerID == 1) {
+		if (useGamepad) {
+			int pad = GetJoypadInputState(padID);
+			int stickX = 0, stickY = 0;
+			GetJoypadAnalogInput(&stickX, &stickY, padID);
+			if ((pad & PAD_INPUT_LEFT) || stickX < -500)  facingRight = false;
+			if ((pad & PAD_INPUT_RIGHT) || stickX > 500) facingRight = true;
+		}
+		else if (PlayerID == 1) {
 			if (CheckHitKey(KEY_INPUT_A)) facingRight = false;
 			if (CheckHitKey(KEY_INPUT_D)) facingRight = true;
 		}
@@ -69,69 +94,75 @@ void Player::UpdateInput(const RestrictionManager& restrictions) {
 	bool mashMove = restrictions.IsActive(REST_MASH_MOVE);
 
 	if (mashMove) {
-		// 連打カウントの減衰
 		if (mashDecay > 0) mashDecay--;
 		else if (mashCount > 0) mashCount--;
-
-		// vxを毎フレーム減衰させる（摩擦）
 		vx *= 0.95f;
 
-		if (PlayerID == 1) {
-			bool leftKey = CheckHitKey(KEY_INPUT_A);
-			bool rightKey = CheckHitKey(KEY_INPUT_D);
-			if (leftKey && !prevLeftKey) {
-				mashCount = min(mashCount + 1, 5);
-				mashDecay = 8;
-				vx -= (moveSpeed + mashCount * 1.5f);
-				facingRight = false;
-			}
-			if (rightKey && !prevRightKey) {
-				mashCount = min(mashCount + 1, 5);
-				mashDecay = 8;
-				vx += (moveSpeed + mashCount * 1.5f);
-				facingRight = true;
-			}
-			prevLeftKey = leftKey;
-			prevRightKey = rightKey;
+		bool leftKey, rightKey;
+		if (useGamepad) {
+			int pad = GetJoypadInputState(padID);
+			int stickX = 0, stickY = 0;
+			GetJoypadAnalogInput(&stickX, &stickY, padID);
+			leftKey = (pad & PAD_INPUT_LEFT) || stickX < -500;
+			rightKey = (pad & PAD_INPUT_RIGHT) || stickX > 500;
 		}
-		else if (PlayerID == 2) {
-			bool leftKey = CheckHitKey(KEY_INPUT_LEFT);
-			bool rightKey = CheckHitKey(KEY_INPUT_RIGHT);
-			if (leftKey && !prevLeftKey) {
-				mashCount = min(mashCount + 1, 5);
-				mashDecay = 8;
-				vx -= (moveSpeed + mashCount * 1.5f);
-				facingRight = false;
-			}
-			if (rightKey && !prevRightKey) {
-				mashCount = min(mashCount + 1, 5);
-				mashDecay = 8;
-				vx += (moveSpeed + mashCount * 1.5f);
-				facingRight = true;
-			}
-			prevLeftKey = leftKey;
-			prevRightKey = rightKey;
+		else if (PlayerID == 1) {
+			leftKey = CheckHitKey(KEY_INPUT_A);
+			rightKey = CheckHitKey(KEY_INPUT_D);
 		}
+		else {
+			leftKey = CheckHitKey(KEY_INPUT_LEFT);
+			rightKey = CheckHitKey(KEY_INPUT_RIGHT);
+		}
+
+		if (leftKey && !prevLeftKey) {
+			mashCount = min(mashCount + 1, 5);
+			mashDecay = 8;
+			vx -= (moveSpeed + mashCount * 1.5f);
+			facingRight = false;
+		}
+		if (rightKey && !prevRightKey) {
+			mashCount = min(mashCount + 1, 5);
+			mashDecay = 8;
+			vx += (moveSpeed + mashCount * 1.5f);
+			facingRight = true;
+		}
+		prevLeftKey = leftKey;
+		prevRightKey = rightKey;
 	}
 	else {
 		vx = 0;
-		if (PlayerID == 1) {
-			if (CheckHitKey(KEY_INPUT_A)) { vx = isBlinking ? -(moveSpeed + 8.0f) : -moveSpeed; facingRight = false; }
-			if (CheckHitKey(KEY_INPUT_D)) { vx = isBlinking ? (moveSpeed + 8.0f) : moveSpeed; facingRight = true; }
-			if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
-				vy = 0;
-				if (CheckHitKey(KEY_INPUT_W)) vy = -moveSpeed - 8.0f;
-				if (CheckHitKey(KEY_INPUT_S)) vy = moveSpeed + 8.0f;
-			}
+		bool leftKey, rightKey, upKey, downKey;
+
+		if (useGamepad) {
+			int pad = GetJoypadInputState(padID);
+			int stickX = 0, stickY = 0;
+			GetJoypadAnalogInput(&stickX, &stickY, padID);
+			leftKey = (pad & PAD_INPUT_LEFT) || stickX < -500;
+			rightKey = (pad & PAD_INPUT_RIGHT) || stickX > 500;
+			upKey = (pad & PAD_INPUT_UP) || stickY < -500;
+			downKey = (pad & PAD_INPUT_DOWN) || stickY > 500;
 		}
-		else if (PlayerID == 2) {
-			if (CheckHitKey(KEY_INPUT_LEFT)) { vx = isBlinking ? -(moveSpeed + 8.0f) : -moveSpeed; facingRight = false; }
-			if (CheckHitKey(KEY_INPUT_RIGHT)) { vx = isBlinking ? (moveSpeed + 8.0f) : moveSpeed; facingRight = true; }
-			if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
-				vy = 0;
-				if (CheckHitKey(KEY_INPUT_UP)) vy = -moveSpeed - 8.0f;
-				if (CheckHitKey(KEY_INPUT_DOWN)) vy = moveSpeed + 8.0f;
-			}
+		else if (PlayerID == 1) {
+			leftKey = CheckHitKey(KEY_INPUT_A);
+			rightKey = CheckHitKey(KEY_INPUT_D);
+			upKey = CheckHitKey(KEY_INPUT_W);
+			downKey = CheckHitKey(KEY_INPUT_S);
+		}
+		else {
+			leftKey = CheckHitKey(KEY_INPUT_LEFT);
+			rightKey = CheckHitKey(KEY_INPUT_RIGHT);
+			upKey = CheckHitKey(KEY_INPUT_UP);
+			downKey = CheckHitKey(KEY_INPUT_DOWN);
+		}
+
+		if (leftKey) { vx = isBlinking ? -(moveSpeed + 8.0f) : -moveSpeed; facingRight = false; }
+		if (rightKey) { vx = isBlinking ? (moveSpeed + 8.0f) : moveSpeed; facingRight = true; }
+
+		if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
+			vy = 0;
+			if (upKey)   vy = -moveSpeed - 8.0f;
+			if (downKey) vy = moveSpeed + 8.0f;
 		}
 	}
 }
@@ -141,8 +172,16 @@ void Player::UpdateJump(const RestrictionManager& restrictions) {
 	if (restrictions.IsActive(REST_SETSUNA)) return;
 	if (isStunned) { vy = 0; return; }
 	bool jumpKey = false;
-	if (PlayerID == 1) jumpKey = CheckHitKey(KEY_INPUT_W) || CheckHitKey(KEY_INPUT_SPACE);
-	if (PlayerID == 2) jumpKey = CheckHitKey(KEY_INPUT_UP);
+	if (useGamepad) {
+		int pad = GetJoypadInputState(padID);
+		jumpKey = ((pad & PAD_INPUT_1) || (pad & PAD_INPUT_2));
+	}
+	else if (PlayerID == 1) {
+		jumpKey = CheckHitKey(KEY_INPUT_W) || CheckHitKey(KEY_INPUT_SPACE);
+	}
+	else {
+		jumpKey = CheckHitKey(KEY_INPUT_UP);
+	}
 
 	if (restrictions.IsActive(REST_HOVER_JUMP)) {
 		// ホバリング：ジャンプ回数無制限・ジャンプ力低め
@@ -187,7 +226,29 @@ void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restriction
 		if (attackTimer == 0) attacking = false;
 	}
 
-	if (PlayerID == 1) {
+	if (useGamepad) {
+		int pad = GetJoypadInputState(padID);
+		bool modKey = ((pad & PAD_INPUT_5) || (pad & PAD_INPUT_6));
+		bool attackKey = ((pad & PAD_INPUT_3) || (pad & PAD_INPUT_4));
+		bool throwKey = modKey && attackKey;
+		isReadyThrow = modKey && holdingWeaponIndex != -1;
+		if (throwKey && !prevThrowKey && attackTimer == 0 && holdingWeaponIndex != -1) {
+			wantThrow = true;
+			isReadyThrow = false;
+			attackTimer = 15;
+		}
+		else if (attackKey && !prevAttackKey && attackTimer == 0) {
+			attacking = true;
+			attackTimer = GetAttackFrames(weapons);
+			if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
+				bool movingKey = (vx != 0);
+				dashAttack = movingKey;
+			}
+		}
+		prevAttackKey = attackKey;
+		prevThrowKey = throwKey;
+	}
+	else if (PlayerID == 1) {
 		bool attackKey = CheckHitKey(KEY_INPUT_F);
 		bool throwKey = CheckHitKey(KEY_INPUT_G) && CheckHitKey(KEY_INPUT_F);
 		isReadyThrow = CheckHitKey(KEY_INPUT_G) && holdingWeaponIndex != -1;
@@ -199,6 +260,10 @@ void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restriction
 		else if (attackKey && !prevAttackKey && attackTimer == 0) {
 			attacking = true;
 			attackTimer = GetAttackFrames(weapons);
+			if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
+				bool movingKey = (vx != 0);
+				dashAttack = movingKey;
+			}
 		}
 		prevAttackKey = attackKey;
 		prevThrowKey = throwKey;
@@ -215,6 +280,10 @@ void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restriction
 		else if (attackKey && !prevAttackKey && attackTimer == 0) {
 			attacking = true;
 			attackTimer = GetAttackFrames(weapons);
+			if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
+				bool movingKey = (vx != 0);
+				dashAttack = movingKey;
+			}
 		}
 		prevAttackKey = attackKey;
 		prevThrowKey = throwKey;
@@ -278,7 +347,7 @@ void Player::UpdateAnim(Weapon* weapons) {
 }
 
 void Player::Update(Stage& stage, Weapon* weapons, const RestrictionManager& restrictions) {
-	UpdateInput(restrictions);
+	UpdateInput(restrictions, weapons);
 	ApplyGravity(restrictions);
 	UpdatePosition(stage);
 	UpdateJump(restrictions);
@@ -292,6 +361,11 @@ void Player::UpdatePosition(Stage& stage) {
 	y += vy;
 
 	onGround = false;
+
+	if (y < 50.0f) {
+		y = 50.0f;
+		vy = 0.0f;
+	}
 
 	// 左右ラップ
 	if (x < 0.0f) x = 1280.0f;
@@ -308,13 +382,23 @@ void Player::UpdatePosition(Stage& stage) {
 
 void Player::ApplyGravity(const RestrictionManager& restrictions) {
 	if (restrictions.IsActive(REST_SETSUNA)) return;
-	if (restrictions.IsActive(REST_GRAVITY_ZERO)) return; // 重力ゼロなら何もしない
+	if (restrictions.IsActive(REST_GRAVITY_ZERO)) return;
 
 	vy += GRAVITY;
-	if (restrictions.IsActive(REST_GRAVITY_CONTROL)|| isBlinking && !onGround) {
-		bool downKey = (PlayerID == 1)
-			? CheckHitKey(KEY_INPUT_S)
-			: CheckHitKey(KEY_INPUT_DOWN);
+	if (restrictions.IsActive(REST_GRAVITY_CONTROL) || isBlinking && !onGround) {
+		bool downKey = false;
+		if (useGamepad) {
+			int pad = GetJoypadInputState(padID);
+			int stickX = 0, stickY = 0;
+			GetJoypadAnalogInput(&stickX, &stickY, padID);
+			downKey = (pad & PAD_INPUT_DOWN) || stickY > 500;
+		}
+		else if (PlayerID == 1) {
+			downKey = CheckHitKey(KEY_INPUT_S);
+		}
+		else {
+			downKey = CheckHitKey(KEY_INPUT_DOWN);
+		}
 		if (downKey) vy += GRAVITY * 4.0f;
 	}
 }

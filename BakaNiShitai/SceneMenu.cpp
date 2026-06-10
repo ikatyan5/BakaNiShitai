@@ -15,7 +15,7 @@ void SceneMenu::Init(ImageManager& imgMgr_) {
     selectIndex = 0;
     prevUp = false;
     prevDown = false;
-    prevEnter = false;
+    prevEnter = true;
 }
 
 void SceneMenu::Update() {
@@ -31,7 +31,7 @@ void SceneMenu::Update() {
     }
     if (enter && !prevEnter) {
         if (selectIndex == 0) nextScene = SCENE_GAME;
-        // チュートリ・設定は後で
+        if (selectIndex == 2) nextScene = SCENE_SETTINGS;
     }
 
     prevUp = up;
@@ -57,7 +57,7 @@ void SceneMenu::Draw() {
         if (i == 2) img = imgMgr->menuSetting[idx];
 
         float y = startY + i * gap;
-        if (i == 1 || i == 2) {
+        if (i == 1) {
             float textX = centerX + itemW + 20.0f;
             float textY = y + itemH / 2.0f - 8.0f;
             DrawStringF(textX, textY, _T("（まだできてないよ～）"), GetColor(180, 180, 180));
