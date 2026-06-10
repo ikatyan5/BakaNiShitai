@@ -93,4 +93,9 @@ void ImageManager::Load() {
     potionYellow = LoadGraph(_T("Image/Item/potionYellow.png"));
     hankachi = LoadGraph(_T("Image/Item/hankachi.png"));
 	bomb = LoadGraph(_T("Image/Item/bomb.png"));
+
+    // çLçê
+    adImages[0] = LoadGraph(_T("Image/UI/AD1.png"));
+    adImages[1] = LoadGraph(_T("Image/UI/AD2.png"));
+    adImages[2] = LoadGraph(_T("Image/UI/AD3.png"));
 }

@@ -23,6 +23,7 @@ public:
     int menuTatakau[2];
     int menuTutorial[2];
     int menuSetting[2];
+    int adImages[3];
     int surpMark;
     int titleLogo;
 
@@ -47,7 +48,7 @@ public:
 
     // ƒAƒCƒeƒ€
     int potionBlue;
-	int potionRed;
+    int potionRed;
     int potionPurple;
     int potionYellow;
     int hankachi;

@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AdManager.cpp" />
     <ClCompile Include="ImageManager.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="ItemHankachi.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="Weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AdManager.h" />
     <ClInclude Include="BaseScene.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="DebugConfig.h" />

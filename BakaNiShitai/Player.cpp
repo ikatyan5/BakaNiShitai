@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Config.h"
 #include <cmath>
+#include <algorithm>
 
 void Player::Init(float startX, float startY, int id, bool facingR, ImageManager& imgMgr, int keepWinCount) {
 	x = startX;
@@ -66,6 +67,7 @@ void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons
 		else {
 			vx = 0;
 		}
+		if (restrictions.IsActive(REST_GRAVITY_ZERO)) vy = 0;
 		return;
 	}
 	if (restrictions.IsActive(REST_JUMP_LIMIT) && onGround) { vx = 0; return; }
@@ -161,8 +163,10 @@ void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons
 
 		if (restrictions.IsActive(REST_GRAVITY_ZERO)) {
 			vy = 0;
-			if (upKey)   vy = -moveSpeed - 8.0f;
-			if (downKey) vy = moveSpeed + 8.0f;
+			if (upKey)   vy = -moveSpeed - 6.0f;
+			if (downKey) vy = moveSpeed + 6.0f;
+			if (leftKey)  vx = isBlinking ? -(moveSpeed + 8.0f) : -(moveSpeed + 8.0f);
+			if (rightKey) vx = isBlinking ? (moveSpeed + 8.0f) : (moveSpeed + 8.0f);
 		}
 	}
 }
@@ -384,9 +388,22 @@ void Player::ApplyGravity(const RestrictionManager& restrictions) {
 	if (restrictions.IsActive(REST_SETSUNA)) return;
 	if (restrictions.IsActive(REST_GRAVITY_ZERO)) return;
 
-	vy += GRAVITY;
-	if (restrictions.IsActive(REST_GRAVITY_CONTROL) || isBlinking && !onGround) {
-		bool downKey = false;
+	static const float GRAVITY_LEVELS[] = {
+		GRAVITY * 0.1f,
+		GRAVITY * 0.4f,
+		GRAVITY * 1.0f,
+		GRAVITY * 2.0f,
+		GRAVITY * 4.0f,
+	};
+
+	float currentGravity = restrictions.IsActive(REST_GRAVITY_INSANE)
+		? GRAVITY_LEVELS[gravityInsaneLevel]
+		: GRAVITY;
+
+	vy += currentGravity;
+
+	bool downKey = false;
+	if (!restrictions.IsActive(REST_GRAVITY_INSANE)) {
 		if (useGamepad) {
 			int pad = GetJoypadInputState(padID);
 			int stickX = 0, stickY = 0;
@@ -399,7 +416,7 @@ void Player::ApplyGravity(const RestrictionManager& restrictions) {
 		else {
 			downKey = CheckHitKey(KEY_INPUT_DOWN);
 		}
-		if (downKey) vy += GRAVITY * 4.0f;
+		if (downKey && !onGround) vy += GRAVITY * 4.0f;
 	}
 }
 
@@ -507,6 +524,13 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 	}
 
 #endif
+}
+
+void Player::SwapImageWith(Player& other) {
+	for (int i = 0; i < 7; i++) {
+		std::swap(playerImage[i], other.playerImage[i]);
+		std::swap(playerGlowImage[i], other.playerGlowImage[i]);
+	}
 }
 
 void Player::EnterStun() {

@@ -12,7 +12,7 @@ enum RestrictionType {
     REST_STICK_ONLY,          // 〇 杖だけ
     REST_BOOMERANG_ONLY,      // 〇 ブーメランだけ
     REST_SETSUNA,             // 〇 刹那の見切り
-    REST_GRAVITY_CONTROL,     // 〇 重力操作（下キーで急落下）
+    REST_GRAVITY_INSANE,      // 〇 重力ランダム
     REST_SCREEN_FLIP,         // 〇 画面上下反転
     REST_MASH_MOVE,           // 〇 連打移動
     REST_METEOR,              // 〇 隕石避けモード

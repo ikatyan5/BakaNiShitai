@@ -13,7 +13,7 @@ static const TCHAR* RESTRICTION_NAMES[] = {
     _T("杖ばっか降ってくるぞ！"),
     _T("ブーメランばっか降ってくるぞ！"),
     _T("！マークが出たら攻撃だ！"),
-    _T("重力を操作できるようになった！"),
+    _T("重力がおかしくなったぞ！"),
     _T("画面がひっくり返るぞ！"),
     _T("横移動は連打しろ！"),
     _T("隕石が降ってくるぞ 相手をスタンさせよう！"),
@@ -63,6 +63,7 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings) {
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
     meteorManager.Init();
+    adManager.Init(*imgMgr);
     restrictionManager.Init();
 
 #ifdef _DEBUG
@@ -73,6 +74,10 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings) {
         weapons[i].Init(WEAPON_KAMA, *imgMgr);
     }
     InitPlayers(false);
+    gravityInsaneLevel = 2;
+    gravityInsaneTimer = 120 + rand() % 60;
+    player1.gravityInsaneLevel = gravityInsaneLevel;
+    player2.gravityInsaneLevel = gravityInsaneLevel;
 }
 
 void SceneGame::InitPlayers(bool keepWinCount) {
@@ -181,13 +186,31 @@ void SceneGame::ResetGame(bool keepWinCount) {
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
     meteorManager.Init();
+    adManager.Init(*imgMgr);
     restrictionManager.SelectRandom();
+    InitPlayers(keepWinCount);
     hyperPlayerID = 0;
     itemManager.hyperPlayerID = 0;
     setsunaPhase = SETSUNA_SLIDE;
     setsunaPhaseTimer = 0;
     setsunaP1UIX = 1280.0f;
     setsunaP2UIX = -1280.0f;
+    gravityInsaneLevel = 2;
+    gravityInsaneTimer = 120 + rand() % 60;
+    player1.gravityInsaneLevel = gravityInsaneLevel;
+    player2.gravityInsaneLevel = gravityInsaneLevel;
+    // スワップ状態をリセット
+    if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
+        if (flipPattern == 1 || flipPattern == 2) {
+            player1.SwapImageWith(player2);
+        }
+    }
+    flipPattern = rand() % 3;
+    flipTimer = 420 + rand() % 180;
+    // 新パターンがスワップ込みなら適用
+    if (flipPattern == 1 || flipPattern == 2) {
+        player1.SwapImageWith(player2);
+    }
     weaponSpawnTimer = 0;
     mementoMoriTimer = 0;
     mementoMoriShooterID = 0;
@@ -197,7 +220,6 @@ void SceneGame::ResetGame(bool keepWinCount) {
     for (int i = 0; i < WEAPON_MAX; i++) {
         weapons[i].Init(WEAPON_KAMA, *imgMgr);
     }
-    InitPlayers(keepWinCount);
     if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
         player1.moveSpeed = 5.0f * 1.2f;
         player2.moveSpeed = 5.0f * 1.2f;
@@ -571,6 +593,20 @@ void SceneGame::Update() {
             }
         }
 
+        if (restrictionManager.IsActive(REST_GRAVITY_INSANE)) {
+            if (gravityInsaneTimer > 0) gravityInsaneTimer--;
+            else {
+                int newLevel;
+                do {
+                    newLevel = rand() % 5;
+                } while (newLevel == gravityInsaneLevel);
+                gravityInsaneLevel = newLevel;
+                gravityInsaneTimer = 120 + rand() % 60;
+                player1.gravityInsaneLevel = gravityInsaneLevel;
+                player2.gravityInsaneLevel = gravityInsaneLevel;
+            }
+        }
+
         // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding && !mementoMoriPending) {
             player1.Update(stage, weapons, restrictionManager);
@@ -580,6 +616,29 @@ void SceneGame::Update() {
             itemManager.Update(player1, player2, restrictionManager);
         }
         orbManager.Update(player1, player2);
+        if (restrictionManager.IsActive(REST_SCREEN_BLUR)) {
+            adManager.Update();
+        }
+
+        if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
+            if (flipTimer > 0) flipTimer--;
+            else {
+                if (flipPattern == 1 || flipPattern == 2) {
+                    player1.SwapImageWith(player2);
+                }
+                int newPattern;
+                do {
+                    newPattern = rand() % 3;
+                } while (newPattern == flipPattern);
+                flipPattern = newPattern;
+
+                flipTimer = 420 + rand() % 180;
+                if (flipPattern == 1 || flipPattern == 2) {
+                    player1.SwapImageWith(player2);
+                }
+            }
+        }
+
         // 爆発ヒット判定
         if (itemManager.hitOccurred) {
             itemManager.hitOccurred = false;
@@ -798,17 +857,25 @@ void SceneGame::Draw() {
         }
         itemManager.Draw();
         DrawUI();
+        adManager.Draw();
         SetDrawScreen(DX_SCREEN_BACK);
 
         if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
-            DrawExtendGraphF(0, 920, 1280, 0, currentTex, TRUE);
+            bool flipUD = (flipPattern == 0 || flipPattern == 1); // 上下反転
+            bool flipLR = (flipPattern == 0 || flipPattern == 2); // 左右反転
+
+            float left = flipLR ? 1280.0f : 0.0f;
+            float right = flipLR ? 0.0f : 1280.0f;
+            float top = flipUD ? 920.0f : 0.0f;
+            float bottom = flipUD ? 0.0f : 920.0f;
+            DrawExtendGraphF(left, top, right, bottom, currentTex, TRUE);
         }
         else {
             DrawGraph(0, 0, currentTex, TRUE);
         }
 
         if (blurMode != 0) {
-            int alpha = (blurMode == 1) ? 100 : 180;
+            int alpha = (blurMode == 1) ? 180 : 250;
             SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
             DrawGraph(0, 0, prevTex, TRUE);
             SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);

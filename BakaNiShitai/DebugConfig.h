@@ -17,5 +17,5 @@ const WeaponType DBG_WEAPON_TYPE = WEAPON_MEMENTO_MORI;
 
 // êßå¿ã≠êßìKóp
 const bool DBG_FORCE_RESTRICTION = true;
-const RestrictionType DBG_RESTRICTION_TYPE = REST_GRAVITY_ZERO;
+const RestrictionType DBG_RESTRICTION_TYPE = REST_NONE;
 #endif

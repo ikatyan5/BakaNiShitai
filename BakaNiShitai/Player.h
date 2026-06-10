@@ -42,6 +42,7 @@ public:
 	
 	bool useGamepad; // trueならコントローラー入力を使う
 	int padID;       // DX_INPUT_PAD1 or DX_INPUT_PAD2
+	int gravityInsaneLevel; // REST_GRAVITY_INSANEの重力段階
 
 	void EnterStun();   // スタン開始
 
@@ -63,6 +64,7 @@ public:
 	void Update(Stage& stage, Weapon* weapons, const RestrictionManager& restrictions);
 	void ApplyGravity(const RestrictionManager& restrictions);
 	void Draw(Weapon* weapons, ImageManager& imgMgr);
+	void SwapImageWith(Player& other);
 private:
 	int playerImage[7];
 	int playerGlowImage[7];

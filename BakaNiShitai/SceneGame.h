@@ -8,6 +8,7 @@
 #include "ItemManager.h"
 #include "OrbManager.h"
 #include "MeteorManager.h"
+#include "AdManager.h"
 #include "RestrictionManager.h"
 #include "GameSettings.h"
 
@@ -51,6 +52,7 @@ private:
     ItemManager itemManager;
     OrbManager orbManager;
     MeteorManager meteorManager;
+    AdManager adManager;
     RestrictionManager restrictionManager;
     bool JUDGE;
     int HIT_TIMER;
@@ -76,6 +78,12 @@ private:
     int blurTimer;   // 切り替えまでのカウントダウン
 
     int hyperPlayerID;  // ハイパー強い側のプレイヤーID（1か2）
+
+    int gravityInsaneLevel;  // 0～4の重力段階
+    int gravityInsaneTimer;  // 切り替えまでのカウントダウン
+
+    int flipPattern;   // 0=上下+左右  1=上下+スワップ  2=左右+スワップ
+    int flipTimer;     // 切り替えまでのカウントダウン
 
     // 刹那の見切り
     enum SetsunaPhase {
