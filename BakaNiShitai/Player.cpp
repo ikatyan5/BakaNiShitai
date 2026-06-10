@@ -221,7 +221,7 @@ void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restriction
 	}
 }
 
-void Player::UpdateAnim() {
+void Player::UpdateAnim(Weapon* weapons) {
 	if (freezeAnim) return;
 	if (animFrame == 6) return;
 	// “_–Åˆ—
@@ -255,9 +255,12 @@ void Player::UpdateAnim() {
 		animFrame = 5;
 	}
 	else if (attacking) {
-		// UŒ‚’†‚Í[3]‚Æ[4]‚ğØ‚è‘Ö‚¦
-		if (animTimer < 8) animFrame = 3;
-		else animFrame = 4;
+		int charge = (holdingWeaponIndex == -1)
+			? BARE_HAND_CHARGE_FRAMES
+			: WEAPON_DATA[weapons[holdingWeaponIndex].weaponType].chargeFrames;
+
+		if (animTimer < charge) animFrame = 3;  // \‚¦’†
+		else animFrame = 4;                      // UŒ‚’†
 	}
 	else if (!onGround) {
 		animFrame = 1;
@@ -280,7 +283,7 @@ void Player::Update(Stage& stage, Weapon* weapons, const RestrictionManager& res
 	UpdatePosition(stage);
 	UpdateJump(restrictions);
 	UpdateAttack(weapons, restrictions);
-	UpdateAnim();
+	UpdateAnim(weapons);
 }
 
 void Player::UpdatePosition(Stage& stage) {

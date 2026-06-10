@@ -42,7 +42,7 @@ void SceneMenu::Update() {
 void SceneMenu::Draw() {
     ClearDrawScreen();
     //DrawBoxF(0.0f, 0.0f, 1280.0f, 920.0f, GetColor(255, 255, 255), TRUE);
-
+    DrawStringF(630.0f, 100.0f, _T("ENTER ‚ÅŒˆ’è‚¾"), GetColor(0, 0, 0));
     float startY = 250.0f;
     float gap = 220.0f;
     float itemW = 300.0f;
@@ -57,6 +57,11 @@ void SceneMenu::Draw() {
         if (i == 2) img = imgMgr->menuSetting[idx];
 
         float y = startY + i * gap;
+        if (i == 1 || i == 2) {
+            float textX = centerX + itemW + 20.0f;
+            float textY = y + itemH / 2.0f - 8.0f;
+            DrawStringF(textX, textY, _T("i‚Ü‚¾‚Å‚«‚Ä‚È‚¢‚æ`j"), GetColor(180, 180, 180));
+        }
         DrawExtendGraphF(centerX, y, centerX + itemW, y + itemH, img, TRUE);
     }
 }

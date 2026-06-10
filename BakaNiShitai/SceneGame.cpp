@@ -4,9 +4,28 @@
 #include "DebugConfig.h"
 #include <cmath>
 
+static const TCHAR* RESTRICTION_NAMES[] = {
+    _T("NONE"),
+    _T("重力がなくなった！"),
+    _T("ジャンプ回数が無制限に！"),
+    _T("武器を投げてもダメージがないぞ！"),
+    _T("近接ダメージがゼロだ！"),
+    _T("杖ばっか降ってくるぞ！"),
+    _T("ブーメランばっか降ってくるぞ！"),
+    _T("！マークが出たら攻撃だ！"),
+    _T("重力を操作できるようになった！"),
+    _T("画面がひっくり返るぞ！"),
+    _T("横移動は連打しろ！"),
+    _T("隕石が降ってくるぞ 相手をスタンさせよう！"),
+    _T("強いやつから逃げ切れ 触れられたら負けだぞ！"),
+    _T("地上で移動できないぞ！"),
+    _T("なんか画面おかしくね？"),
+};
+
 void SceneGame::Init(ImageManager& imgMgr_) {
     imgMgr = &imgMgr_;
-    state = STATE_PLAYING;
+    state = STATE_COUNTDOWN;
+    countdownTimer = 180; // 3秒
     JUDGE = false;
     HIT_TIMER = 0;
     RESULT_TIMER = 0;
@@ -138,6 +157,8 @@ void SceneGame::ResetGame(bool keepWinCount) {
     isDraw = false;
     p1HpIndex = 0;
     p2HpIndex = 0;
+    state = STATE_COUNTDOWN;
+    countdownTimer = 180; // 3秒
     p1Glowing = false;
     p2Glowing = false;
     timeTimer = matchTime * 60;
@@ -725,7 +746,6 @@ void SceneGame::Update() {
             else {
                 // ラウンド間リセット
                 ResetGame(true);
-                state = STATE_PLAYING;
             }
         }
     }
@@ -734,6 +754,12 @@ void SceneGame::Update() {
             nextScene = SCENE_MENU;
         }
     }
+    else if (state == STATE_COUNTDOWN) {
+        countdownTimer--;
+        if (countdownTimer <= 0) {
+            state = STATE_PLAYING;
+        }
+}
 }
 
 void SceneGame::Draw() {
@@ -775,31 +801,9 @@ void SceneGame::Draw() {
         GetDrawScreenGraph(0, 0, 1280, 920, prevTex);
 
 #ifdef _DEBUG
-        const TCHAR* restrictionNames[] = {
-            _T("NONE"),
-            _T("GRAVITY_ZERO"),
-            _T("HOVER_JUMP"),
-            _T("THROW_NO_DAMAGE"),
-            _T("MELEE_NO_DAMAGE"),
-            _T("STICK_ONLY"),
-            _T("BOOMERANG_ONLY"),
-            _T("SETSUNA"),
-            _T("GRAVITY_CONTROL"),
-            _T("SCREEN_FLIP"),
-            _T("MASH_MOVE"),
-            _T("METEOR"),
-            _T("HYPERTSUYOI"),
-            _T("JUMP_LIMIT"),
-            _T("SCREEN_BLUR"),
-            _T("WINDOW_MOVE"),
-        };
         for (int i = 0; i < restrictionManager.activeCount; i++) {
-            DrawString(10, 10 + i * 20, restrictionNames[restrictionManager.active[i]], GetColor(255, 255, 0));
+            DrawString(10, 10 + i * 20, RESTRICTION_NAMES[restrictionManager.active[i]], GetColor(255, 255, 0));
         }
-
-        TCHAR buf2[64];
-        wsprintf(buf2, _T("setsunaPhase:%d"), (int)setsunaPhase);
-        DrawString(10, 120, buf2, GetColor(255, 255, 0));
 #endif
     }
     else if (state == STATE_HIT) {
@@ -813,14 +817,6 @@ void SceneGame::Draw() {
         player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
         itemManager.Draw();
-        if (!isDraw) {
-            if (!JUDGE) {
-                DrawString(540, 300, _T("HIT"), GetColor(255, 0, 0));
-            }
-            else {
-                DrawString(540, 300, _T("HIT"), GetColor(0, 0, 255));
-            }
-        }
         DrawUI();
     }
     else if (state == STATE_RESULT) {
@@ -832,26 +828,68 @@ void SceneGame::Draw() {
         player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
         itemManager.Draw();
-        if (isDraw) {
-            DrawString(540, 300, _T("ちんたらすんな！"), GetColor(255, 255, 0));
-        }
-        else if (!JUDGE) {
-            DrawString(540, 300, _T("Player 1 Wins!"), GetColor(255, 0, 0));
-        }
-        else {
-            DrawString(540, 300, _T("Player 2 Wins!"), GetColor(0, 0, 255));
-        }
         DrawUI();
+
+        SetFontSize(72);
+        const TCHAR* resultText = isDraw ? _T("ちんたらすんな！") :
+            !JUDGE ? _T("赤の勝ち！") :
+            _T("青の勝ち！");
+        unsigned int resultColor = isDraw ? GetColor(255, 255, 0) :
+            !JUDGE ? GetColor(255, 50, 50) :
+            GetColor(50, 50, 255);
+        int textW = GetDrawStringWidth(resultText, lstrlen(resultText));
+        DrawString((1280 - textW) / 2, 380, resultText, resultColor);
+        SetFontSize(16);
+
     }
     else if (state == STATE_GAMEEND) {
-        if (!JUDGE) {
-            DrawString(540, 350, _T("Player 1 Wins!"), GetColor(255, 0, 0));
+
+        SetFontSize(48);
+        const TCHAR* winText = !JUDGE ? _T("赤の勝ち！") : _T("青の勝ち！");
+        unsigned int winColor = !JUDGE ? GetColor(255, 50, 50) : GetColor(50, 50, 255);
+        int winW = GetDrawStringWidth(winText, lstrlen(winText));
+        DrawString((1280 - winW) / 2, 320, winText, winColor);
+
+        SetFontSize(72);
+        const TCHAR* endText = _T("ゲーム終了！");
+        int endW = GetDrawStringWidth(endText, lstrlen(endText));
+        DrawString((1280 - endW) / 2, 420, endText, GetColor(255, 255, 255));
+
+        SetFontSize(24);
+        const TCHAR* retText = _T("Rキーでメニューに戻る");
+        int retW = GetDrawStringWidth(retText, lstrlen(retText));
+        DrawString((1280 - retW) / 2, 560, retText, GetColor(0, 0, 0));
+
+        SetFontSize(16);
+    }
+    else if (state == STATE_COUNTDOWN) {
+        stage.Draw();
+        player1.Draw(weapons, *imgMgr);
+        player2.Draw(weapons, *imgMgr);
+        DrawUI();
+
+        // 今回の制限（小さめ）
+        SetFontSize(24);
+        int titleW = GetDrawStringWidth(_T("今回の制限は！"), 7);
+        DrawString((1280 - titleW) / 2, 330, _T("今回の制限は！"), GetColor(50, 50, 50));
+
+        // 制限名を大きく表示
+        SetFontSize(48);
+        for (int i = 0; i < restrictionManager.activeCount; i++) {
+            const TCHAR* text = RESTRICTION_NAMES[restrictionManager.active[i]];
+            int textW = GetDrawStringWidth(text, lstrlen(text));
+            DrawString((1280 - textW) / 2, 390 + i * 60, text, GetColor(255, 50, 50));
         }
-        else {
-            DrawString(540, 350, _T("Player 2 Wins!"), GetColor(0, 0, 255));
-        }
-        DrawString(540, 300, _T("Game Over"), GetColor(255, 255, 255));
-        DrawString(540, 250, _T("Return to R"), GetColor(255, 255, 255));
+
+        // カウントダウン数字
+        SetFontSize(72);
+        int sec = (countdownTimer / 60) + 1;
+        TCHAR buf[8];
+        wsprintf(buf, _T("%d"), sec);
+        int numW = GetDrawStringWidth(buf, lstrlen(buf));
+        DrawString((1280 - numW) / 2, 700, buf, GetColor(50, 50, 50));
+
+        SetFontSize(16);
     }
 }
 

@@ -53,7 +53,7 @@ public:
 	void UpdateInput(const RestrictionManager& restrictions);
 	void UpdatePosition(Stage& stage);
 	void UpdateJump(const RestrictionManager& restrictions);
-	void UpdateAnim();
+	void UpdateAnim(Weapon* weapons);
 	void UpdateAttack(Weapon* weapons, const RestrictionManager& restrictions);
 	void Update(Stage& stage, Weapon* weapons, const RestrictionManager& restrictions);
 	void ApplyGravity(const RestrictionManager& restrictions);

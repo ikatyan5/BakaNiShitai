@@ -31,6 +31,7 @@ public:
     void DrawMementoMori(Player& attacker);
 private:
     enum GameState {
+        STATE_COUNTDOWN,
         STATE_PLAYING,
         STATE_HIT,
         STATE_RESULT,
@@ -64,6 +65,8 @@ private:
     bool mementoMoriPending;    // END待ち状態か
 
     bool setsunaSignVisible; // ！表示フラグ
+
+    int countdownTimer;
 
     int currentTex;  // 今フレームの描画テクスチャ
     int prevTex;     // 前フレームの描画テクスチャ
