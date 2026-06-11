@@ -188,7 +188,6 @@ void SceneGame::ResetGame(bool keepWinCount) {
     meteorManager.Init();
     adManager.Init(*imgMgr);
     restrictionManager.SelectRandom();
-    InitPlayers(keepWinCount);
     hyperPlayerID = 0;
     itemManager.hyperPlayerID = 0;
     setsunaPhase = SETSUNA_SLIDE;
@@ -224,6 +223,7 @@ void SceneGame::ResetGame(bool keepWinCount) {
         player1.moveSpeed = 5.0f * 1.2f;
         player2.moveSpeed = 5.0f * 1.2f;
     }
+    InitPlayers(keepWinCount);
 }
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {

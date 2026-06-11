@@ -41,7 +41,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     SetGraphMode(1280, 920, 32);
     if (DxLib_Init() == -1) return -1;
     int padNum = GetJoypadNum();
-    printfDx(_T("接続パッド数=%d\n"), padNum);
+    //printfDx(_T("接続パッド数=%d\n"), padNum);
     SetBackgroundColor(135, 206, 235);
     SetWaitVSyncFlag(TRUE);
     SetMainWindowText(_T("君たちを\"バカ\"にしたい"));
