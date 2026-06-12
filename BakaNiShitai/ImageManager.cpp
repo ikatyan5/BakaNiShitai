@@ -70,7 +70,7 @@ void ImageManager::Load() {
     weaponImages[WEAPON_BOOMERANG] = LoadGraph(_T("Image/Weapon/boomerang.png"));
     weaponImages[WEAPON_MEMENTO_MORI] = LoadGraph(_T("Image/Weapon/memento_mori.png"));
     weaponImages[WEAPON_PIKOHAN] = LoadGraph(_T("Image/Weapon/pikohan.png"));
-    //weaponImages[WEAPON_BAT] = LoadGraph(_T("Image/Weapon/bat.png"));
+    weaponImages[WEAPON_TENSAI_TSUE] = weaponImages[WEAPON_STICK]; // 杖と同じ画像を使い回し
 
     int srcOrb = LoadGraph(_T("Image/Weapon/orb.png"));
     for (int i = 0; i < 3; i++) {
@@ -84,6 +84,14 @@ void ImageManager::Load() {
     int srcStan = LoadGraph(_T("Image/Effect/stan.png"));
     for (int i = 0; i < 2; i++) {
         stan[i] = DerivationGraph(32 * i, 0, 32, 32, srcStan);
+    }
+    int srcGyaku = LoadGraph(_T("Image/Effect/gyaku.png"));
+    for (int i = 0; i < 2; i++) {
+        gyaku[i] = DerivationGraph(32 * i, 0, 32, 32, srcGyaku);
+    }
+    int srcTensai = LoadGraph(_T("Image/Effect/tensai.png"));
+    for (int i = 0; i < 2; i++) {
+        tensai[i] = DerivationGraph(32 * i, 0, 32, 32, srcTensai);
     }
 
     // アイテム画像

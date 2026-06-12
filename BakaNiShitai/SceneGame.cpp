@@ -410,6 +410,20 @@ void SceneGame::CheckStickOrb(Player& player, int ownerID) {
     held.orbFired = true;
 }
 
+void SceneGame::CheckTensaiTsue(Player& player) {
+    if (player.holdingWeaponIndex == -1) return;
+    Weapon& held = weapons[player.holdingWeaponIndex];
+    if (held.weaponType != WEAPON_TENSAI_TSUE) return;
+    if (!player.attacking) return;
+    if (held.tensaiFired) return;
+
+    int charge = WEAPON_DATA[WEAPON_TENSAI_TSUE].chargeFrames;
+    if (player.attackTimer != charge) return;
+
+    meteorManager.SpawnTensai();
+    held.tensaiFired = true;
+}
+
 void SceneGame::PickupWeapon(Player& player) {
     if (player.holdingWeaponIndex != -1) return;
     for (int i = 0; i < WEAPON_MAX; i++) {
@@ -450,6 +464,9 @@ void SceneGame::SpawnWeapon()
                     if (restrictionManager.IsActive(REST_STICK_ONLY)) {
                         type = WEAPON_STICK;
                     }
+                    else if (restrictionManager.IsActive(REST_MASH_MOVE)) {
+                        type = WEAPON_BOOMERANG;
+                    }
                     else if (restrictionManager.IsActive(REST_BOOMERANG_ONLY)) {
                         type = WEAPON_BOOMERANG;
                     }
@@ -475,7 +492,7 @@ void SceneGame::SpawnWeapon()
                 }
             }
         }
-    }
+}
 
 void SceneGame::CheckMementoMori(Player& attacker, Player& target, bool judgeValue) {
     if (attacker.holdingWeaponIndex == -1) return;
@@ -551,6 +568,13 @@ void SceneGame::Update() {
 
         if (restrictionManager.IsActive(REST_METEOR)) {
             meteorManager.Update(player1, player2);
+            if (meteorManager.hitOccurred) {
+                meteorManager.hitOccurred = false;
+                EnterHitState(meteorManager.hitWinnerID == 2, true);
+            }
+        }
+        else if (meteorManager.HasActiveMeteor() || meteorManager.tensaiSpawnCount > 0) {
+            meteorManager.Update(player1, player2, true);
             if (meteorManager.hitOccurred) {
                 meteorManager.hitOccurred = false;
                 EnterHitState(meteorManager.hitWinnerID == 2, true);
@@ -634,7 +658,7 @@ void SceneGame::Update() {
             // ビーム当たり判定
             auto checkWallEnd = [&](Player& player, int winnerID) {
                 if (wallEndLeft && player.x < 80.0f)   EnterHitState(winnerID == 2, true);
-                if (wallEndRight && player.x > 1260.0f) EnterHitState(winnerID == 2, true);
+                if (wallEndRight && player.x > 1250.0f) EnterHitState(winnerID == 2, true);
                 };
             checkWallEnd(player1, 2);
             checkWallEnd(player2, 1);
@@ -727,8 +751,13 @@ void SceneGame::Update() {
         checkPikohanRespawn(player1);
         checkPikohanRespawn(player2);
 
+        // オーブ判定
         CheckStickOrb(player1, 1);
         CheckStickOrb(player2, 2);
+
+        // テンサイのメテオ判定
+        CheckTensaiTsue(player1);
+        CheckTensaiTsue(player2);
 
         // はたき落とし判定
         CheckParry(player1, 1);
@@ -880,7 +909,7 @@ void SceneGame::Draw() {
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
-        if (restrictionManager.IsActive(REST_METEOR)) {
+        if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
             meteorManager.Draw(*imgMgr);
         }
         itemManager.Draw();
@@ -1089,3 +1118,4 @@ void SceneGame::EnterHitState(bool judgeValue, bool addScore) {
 SceneID SceneGame::GetNextScene() {
     return nextScene;
 }
+

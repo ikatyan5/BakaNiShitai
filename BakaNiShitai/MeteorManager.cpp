@@ -12,6 +12,8 @@ void MeteorManager::Init() {
     elapsedFrames = 0;
     edgeSpawnTimer = 0;
     edgeSpawnLeft = true;
+    tensaiSpawnTimer = 0;
+    tensaiSpawnCount = 0;
     for (int i = 0; i < METEOR_MAX; i++) {
         meteors[i].Init();
     }
@@ -29,19 +31,26 @@ int MeteorManager::GetCurrentInterval() {
     return (int)(180.0f - t * 40.0f);
 }
 
-void MeteorManager::Spawn(float targetX) {
+bool MeteorManager::HasActiveMeteor() const {
+    for (int i = 0; i < METEOR_MAX; i++) {
+        if (meteors[i].active) return true;
+    }
+    return false;
+}
+
+void MeteorManager::Spawn(float targetX, float speed) {
     for (int i = 0; i < METEOR_MAX; i++) {
         if (!meteors[i].active) {
             float startX = (float)(rand() % 1280);
             float startY = 0.0f;
-            float speed = GetCurrentSpeed();
+            float s = (speed < 0.0f) ? GetCurrentSpeed() : speed;
             float dx = targetX - startX;
             float dy = 800.0f - startY;
             float dist = sqrtf(dx * dx + dy * dy);
             meteors[i].x = startX;
             meteors[i].y = startY;
-            meteors[i].vx = (dx / dist) * speed;
-            meteors[i].vy = (dy / dist) * speed;
+            meteors[i].vx = (dx / dist) * s;
+            meteors[i].vy = (dy / dist) * s;
             meteors[i].targetX = targetX;
             meteors[i].targetY = 800.0f;
             meteors[i].active = true;
@@ -50,24 +59,40 @@ void MeteorManager::Spawn(float targetX) {
     }
 }
 
-void MeteorManager::Update(Player& player1, Player& player2) {
+void MeteorManager::SpawnTensai() {
+    tensaiSpawnCount = 5;
+    tensaiSpawnTimer = 1;
+}
+
+void MeteorManager::Update(Player& player1, Player& player2, bool tensaiMode) {
     hitOccurred = false;
     elapsedFrames++;
 
-    spawnTimer++;
-    if (spawnTimer >= GetCurrentInterval()) {
-        spawnTimer = 0;
-        Spawn((float)(rand() % 1100 + 90));
+    if (tensaiSpawnCount > 0) {
+        if (tensaiSpawnTimer > 0) tensaiSpawnTimer--;
+        else {
+            Spawn((float)(rand() % 1100 + 90), 18.0f);
+            tensaiSpawnCount--;
+            tensaiSpawnTimer = 6;
+        }
     }
 
-    edgeSpawnTimer++;
-    if (edgeSpawnTimer >= 150) {
-        edgeSpawnTimer = 0;
-        float targetX = edgeSpawnLeft
-            ? (float)(rand() % 200)
-            : (float)(rand() % 200 + 1080);
-        edgeSpawnLeft = !edgeSpawnLeft;
-        Spawn(targetX);
+    // テンサイモードのときは通常スポーンをスキップ
+    if (!tensaiMode) {
+        spawnTimer++;
+        if (spawnTimer >= GetCurrentInterval()) {
+            spawnTimer = 0;
+            Spawn((float)(rand() % 1100 + 90));
+        }
+        edgeSpawnTimer++;
+        if (edgeSpawnTimer >= 150) {
+            edgeSpawnTimer = 0;
+            float targetX = edgeSpawnLeft
+                ? (float)(rand() % 200)
+                : (float)(rand() % 200 + 1080);
+            edgeSpawnLeft = !edgeSpawnLeft;
+            Spawn(targetX);
+        }
     }
 
     for (int i = 0; i < METEOR_MAX; i++) {

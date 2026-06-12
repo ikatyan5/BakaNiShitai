@@ -44,7 +44,7 @@ public:
 	int padID;       // DX_INPUT_PAD1 or DX_INPUT_PAD2
 	int gravityInsaneLevel; // REST_GRAVITY_INSANEの重力段階
 	int reverseTimer; // 操作反転タイマー
-
+	int tensaiAnimTimer;
 	void EnterStun();   // スタン開始
 
 	void Init(float startX, float startY, int id, bool facingR, ImageManager& imgMgr, int keepWinCount = 0);

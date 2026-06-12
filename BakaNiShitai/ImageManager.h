@@ -45,6 +45,8 @@ public:
     int mementoMoriEffect;
     int shield;
     int stan[2];
+    int gyaku[2];
+    int tensai[2];
 
     // ƒAƒCƒeƒ€
     int potionBlue;

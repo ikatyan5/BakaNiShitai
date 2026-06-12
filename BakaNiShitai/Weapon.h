@@ -30,6 +30,7 @@ public:
     int weaponImage;
     int groundTimer;
     bool orbFired;
+    bool tensaiFired;
     int parryRemain;        // c‚è‚Í‚½‚«—‚Æ‚µ‰ñ”
     int selfHitTimer;       // “Š‚°‚½’¼Œã‚Ì©•ª‚Ö‚Ì“–‚½‚è”»’è—P—\
     bool boomerangReturning;

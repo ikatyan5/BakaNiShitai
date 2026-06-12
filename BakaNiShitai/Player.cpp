@@ -44,6 +44,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	dashAttack = false;
 	useGamepad = false;
 	reverseTimer = 0;
+	tensaiAnimTimer = 0;
 	padID = DX_INPUT_PAD1;
 
 	for (int i = 0; i < 7; i++) {
@@ -323,7 +324,7 @@ void Player::UpdateAnim(Weapon* weapons) {
 	}
 
 	animTimer++;
-
+	tensaiAnimTimer++;
 
 	if (isReadyThrow) {
 		animFrame = 5;
@@ -447,6 +448,25 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 			x - 32.0f, y - PLAYER_HIT_CY - 120.0f,
 			x + 32.0f, y - PLAYER_HIT_CY - 56.0f,
 			imgMgr.stan[stanFrame], TRUE
+		);
+	}
+	// 左右反転エフェクト
+	if (reverseTimer > 0) {
+		int gyakuFrame = (reverseTimer / 8) % 2;
+		DrawExtendGraphF(
+			x - 32.0f, y - PLAYER_HIT_CY - 120.0f,
+			x + 32.0f, y - PLAYER_HIT_CY - 56.0f,
+			imgMgr.gyaku[gyakuFrame], TRUE
+		);
+	}
+	// テンサイエフェクト
+	if (holdingWeaponIndex != -1 &&
+		weapons[holdingWeaponIndex].weaponType == WEAPON_TENSAI_TSUE) {
+		int tensaiFrame = (tensaiAnimTimer / 8) % 2;
+		DrawExtendGraphF(
+			x - 32.0f, y - PLAYER_HIT_CY - 140.0f,
+			x + 32.0f, y - PLAYER_HIT_CY - 76.0f,
+			imgMgr.tensai[tensaiFrame], TRUE
 		);
 	}
 

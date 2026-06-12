@@ -24,6 +24,7 @@ public:
     SceneID GetNextScene() override;
     void SpawnWeapon();
     void CheckParry(Player& attacker, int ownerID);
+    void CheckTensaiTsue(Player& player);
     void CheckWeaponHit(Player& target, Player& attacker, bool judgeValue, int targetID);
     void CheckHyperTouch();
     void ThrowWeapon(Player& player, int ownerID);

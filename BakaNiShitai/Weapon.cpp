@@ -11,7 +11,8 @@ void Weapon::Init(WeaponType type, ImageManager& imgMgr) {
     weaponType = type;
     groundTimer = 0;
     selfHitTimer = 0;
-    orbFired = false;
+    orbFired = false; 
+    tensaiFired = false;
     boomerangDecel = 0.0f;
     boomerangReturning = false;
     parryRemain = WEAPON_DATA[type].parryCount;
