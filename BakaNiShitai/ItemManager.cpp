@@ -98,7 +98,15 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
     for (int i = 0; i < ITEM_MAX; i++) {
         if (items[i] == nullptr) {
 #ifdef _DEBUG
-            ItemType type = DBG_FORCE_ITEM ? DBG_ITEM_TYPE : (ItemType)(rand() % ITEM_TYPE_MAX);
+            ItemType type;
+            if (DBG_FORCE_ITEM) {
+                type = DBG_ITEM_TYPE;
+            }
+            else {
+                do {
+                    type = (ItemType)(rand() % ITEM_TYPE_MAX);
+                } while (type == ITEM_BANANA || type == ITEM_KINOKO);
+            }
             // デバッグ時も制限チェックを通す
             if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_MASH_MOVE)) {
                 type = (rand() % 2 == 0) ? ITEM_BANANA : ITEM_KINOKO;
@@ -168,7 +176,9 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else                type = ITEM_HANKACHI;
             }
             else {
-                type = (ItemType)(rand() % ITEM_TYPE_MAX);
+                do {
+                    type = (ItemType)(rand() % ITEM_TYPE_MAX);
+                } while (type == ITEM_BANANA || type == ITEM_KINOKO);
             }
 #endif
 

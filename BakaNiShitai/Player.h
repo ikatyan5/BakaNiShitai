@@ -46,6 +46,7 @@ public:
 	int reverseTimer; // 操作反転タイマー
 	int tensaiAnimTimer;
 	void EnterStun();   // スタン開始
+	void EnterStunShort(); // 短スタン（投げピコハン用）
 
 	void Init(float startX, float startY, int id, bool facingR, ImageManager& imgMgr, int keepWinCount = 0);
 	bool GetOnGround() { return onGround; }

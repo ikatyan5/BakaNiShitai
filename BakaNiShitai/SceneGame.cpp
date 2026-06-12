@@ -308,7 +308,7 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
                 target.x, target.y - PLAYER_HIT_CY,
                 PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
                 weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-                target.EnterStun();
+                target.EnterStunShort();
                 attacker.pikohanRespawnTimer = 180;
             }
         }
@@ -323,7 +323,7 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
                 target.x, target.y - PLAYER_HIT_CY,
                 PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
                 weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-                target.EnterStun();
+                target.EnterStunShort();
             }
         }
         return;
