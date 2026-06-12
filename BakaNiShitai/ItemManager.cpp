@@ -4,6 +4,8 @@
 #include "ItemPotionPurple.h"
 #include "ItemPotionYellow.h"
 #include "ItemHankachi.h"
+#include "ItemBanana.h"
+#include "ItemKinoko.h"
 #include "Player.h"
 #include "Config.h"
 #include "DebugConfig.h"
@@ -98,7 +100,10 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
 #ifdef _DEBUG
             ItemType type = DBG_FORCE_ITEM ? DBG_ITEM_TYPE : (ItemType)(rand() % ITEM_TYPE_MAX);
             // デバッグ時も制限チェックを通す
-            if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
+            if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_MASH_MOVE)) {
+                type = (rand() % 2 == 0) ? ITEM_BANANA : ITEM_KINOKO;
+            }
+            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
                 int roll = rand() % 10;
                 if (roll < 4)      type = ITEM_POTION_PURPLE;
                 else if (roll < 6) type = ITEM_POTION_BLUE;
@@ -129,7 +134,10 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
             }
 #else
             ItemType type;
-            if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
+            if (restrictions.IsActive(REST_MASH_MOVE)) {
+                type = (rand() % 2 == 0) ? ITEM_BANANA : ITEM_KINOKO;
+            }
+            else if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
                 int roll = rand() % 10;
                 if (roll < 4)      type = ITEM_POTION_PURPLE;
                 else if (roll < 6) type = ITEM_POTION_BLUE;
@@ -192,6 +200,16 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 item->itemImage = imgMgr->hankachi;
                 items[i] = item;
             }
+            else if (type == ITEM_BANANA) {
+                ItemBanana* item = new ItemBanana();
+                item->itemImage = imgMgr->banana;
+                items[i] = item;
+            }
+            else if (type == ITEM_KINOKO) {
+                ItemKinoko* item = new ItemKinoko();
+                item->itemImage = imgMgr->kinoko;
+                items[i] = item;
+            }
             if (items[i] == nullptr) break;
 
             items[i]->x = (float)(rand() % 1100 + 90);
@@ -227,9 +245,11 @@ void ItemManager::TryPickup(Player& player, int index) {
     if (items[index]->itemState != Item::ITEM_GROUND &&
         items[index]->itemState != Item::ITEM_FALLING) return;
     if (hyperPlayerID != 0 && player.PlayerID == hyperPlayerID) return;
+
     float dx = fabsf(player.x - items[index]->x);
-    float dy = fabsf(player.y - items[index]->y);
-    if (dx < 80.0f && dy < 150.0f) {
+    float dy = fabsf((player.y - PLAYER_HIT_CY) - items[index]->y);
+    if (dx < (PLAYER_HIT_W + ITEM_HIT_W) / 2 &&
+        dy < (PLAYER_HIT_H + ITEM_HIT_H) / 2) {
         items[index]->OnPickup(player);
     }
 }

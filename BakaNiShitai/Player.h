@@ -43,6 +43,7 @@ public:
 	bool useGamepad; // trueならコントローラー入力を使う
 	int padID;       // DX_INPUT_PAD1 or DX_INPUT_PAD2
 	int gravityInsaneLevel; // REST_GRAVITY_INSANEの重力段階
+	int reverseTimer; // 操作反転タイマー
 
 	void EnterStun();   // スタン開始
 

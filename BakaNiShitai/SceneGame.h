@@ -85,6 +85,10 @@ private:
     int flipPattern;   // 0=上下+左右  1=上下+スワップ  2=左右+スワップ
     int flipTimer;     // 切り替えまでのカウントダウン
 
+    bool wallEndLeft;
+    bool wallEndRight;
+    int wallEndTimer;
+
     // 刹那の見切り
     enum SetsunaPhase {
         SETSUNA_SLIDE,   // スライドイン中

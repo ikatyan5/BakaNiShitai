@@ -53,6 +53,8 @@ public:
     int potionYellow;
     int hankachi;
     int bomb;
+    int banana;
+    int kinoko;
 
     int weaponImages[WEAPON_TYPE_MAX];
     void Load();

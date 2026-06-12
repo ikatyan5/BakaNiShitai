@@ -132,7 +132,9 @@
     <ClCompile Include="AdManager.cpp" />
     <ClCompile Include="ImageManager.cpp" />
     <ClCompile Include="Item.cpp" />
+    <ClCompile Include="ItemBanana.cpp" />
     <ClCompile Include="ItemHankachi.cpp" />
+    <ClCompile Include="ItemKinoko.cpp" />
     <ClCompile Include="ItemManager.cpp" />
     <ClCompile Include="ItemPotionBlue.cpp" />
     <ClCompile Include="ItemPotionPurple.cpp" />
@@ -160,7 +162,9 @@
     <ClInclude Include="GameSettings.h" />
     <ClInclude Include="ImageManager.h" />
     <ClInclude Include="Item.h" />
+    <ClInclude Include="ItemBanana.h" />
     <ClInclude Include="ItemHankachi.h" />
+    <ClInclude Include="ItemKinoko.h" />
     <ClInclude Include="ItemManager.h" />
     <ClInclude Include="ItemPotionBlue.h" />
     <ClInclude Include="ItemPotionPurple.h" />

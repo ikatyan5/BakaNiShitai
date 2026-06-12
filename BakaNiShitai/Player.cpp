@@ -43,6 +43,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	freezeAnim = false;
 	dashAttack = false;
 	useGamepad = false;
+	reverseTimer = 0;
 	padID = DX_INPUT_PAD1;
 
 	for (int i = 0; i < 7; i++) {
@@ -96,8 +97,6 @@ void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons
 	bool mashMove = restrictions.IsActive(REST_MASH_MOVE);
 
 	if (mashMove) {
-		if (mashDecay > 0) mashDecay--;
-		else if (mashCount > 0) mashCount--;
 		vx *= 0.95f;
 
 		bool leftKey, rightKey;
@@ -117,16 +116,16 @@ void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons
 			rightKey = CheckHitKey(KEY_INPUT_RIGHT);
 		}
 
+		if (reverseTimer > 0) std::swap(leftKey, rightKey);
+
 		if (leftKey && !prevLeftKey) {
-			mashCount = min(mashCount + 1, 5);
-			mashDecay = 8;
-			vx -= (moveSpeed + mashCount * 1.5f);
+			float randomSpeed = (float)(rand() % 20 + 1);
+			vx -= randomSpeed;
 			facingRight = false;
 		}
 		if (rightKey && !prevRightKey) {
-			mashCount = min(mashCount + 1, 5);
-			mashDecay = 8;
-			vx += (moveSpeed + mashCount * 1.5f);
+			float randomSpeed = (float)(rand() % 20 + 1);
+			vx += randomSpeed;
 			facingRight = true;
 		}
 		prevLeftKey = leftKey;
@@ -313,6 +312,8 @@ void Player::UpdateAnim(Weapon* weapons) {
 			moveSpeed = 5.0f; // 元に戻す
 		}
 	}
+	// 操作反転タイマー
+	if (reverseTimer > 0) reverseTimer--;
 	// スタンタイマー
 	if (stanTimer > 0) {
 		stanTimer--;

@@ -24,6 +24,7 @@ const int BARE_HAND_ATTACK_FRAMES = 8;  // 素手の攻撃判定フレーム
 
 
 // アイテム関係
-const int ITEM_SPAWN_INTERVAL = 300; // アイテムがスポーンする間隔
-
+const int ITEM_SPAWN_INTERVAL = 300;
 const int DEFAULT_TIME = 30;
+const float ITEM_HIT_W = 58.0f;  // アイテムの当たり判定幅
+const float ITEM_HIT_H = 74.0f;  // アイテムの当たり判定高さ

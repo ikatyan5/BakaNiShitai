@@ -45,6 +45,10 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings) {
     mementoMoriWinnerID = 0;
     mementoMoriPending = false;
 
+    wallEndLeft = false;
+    wallEndRight = false;
+    wallEndTimer = 180 + rand() % 300;
+
     currentTex = MakeScreen(1280, 920, TRUE);
     prevTex = MakeScreen(1280, 920, TRUE);
     blurMode = 0;
@@ -188,6 +192,9 @@ void SceneGame::ResetGame(bool keepWinCount) {
     meteorManager.Init();
     adManager.Init(*imgMgr);
     restrictionManager.SelectRandom();
+    wallEndLeft = false;
+    wallEndRight = false;
+    wallEndTimer = 180 + rand() % 300;
     hyperPlayerID = 0;
     itemManager.hyperPlayerID = 0;
     setsunaPhase = SETSUNA_SLIDE;
@@ -381,7 +388,7 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
         if (weapons[idx].weaponType == WEAPON_PIKOHAN) {
             player.pikohanRespawnTimer = 180;
         }
-        weapons[idx].Throw(player.x, player.y - 50.0f, player.facingRight, ownerID,
+        weapons[idx].Throw(player.x, player.y - 90.0f, player.facingRight, ownerID,
         (WeaponType)weapons[idx].weaponType, *imgMgr);
         player.holdingWeaponIndex = -1;
 
@@ -612,6 +619,27 @@ void SceneGame::Update() {
             player1.Update(stage, weapons, restrictionManager);
             player2.Update(stage, weapons, restrictionManager);
         }
+
+        if (restrictionManager.IsActive(REST_MASH_MOVE)) {
+            // タイマー更新
+            if (wallEndTimer > 0) wallEndTimer--;
+            else {
+                // ランダムに左右どちらかを切り替え
+                int roll = rand() % 3;
+                wallEndLeft = (roll == 0 || roll == 2);
+                wallEndRight = (roll == 1 || roll == 2);
+                wallEndTimer = 180 + rand() % 240; // 3～7秒
+            }
+
+            // ビーム当たり判定
+            auto checkWallEnd = [&](Player& player, int winnerID) {
+                if (wallEndLeft && player.x < 80.0f)   EnterHitState(winnerID == 2, true);
+                if (wallEndRight && player.x > 1260.0f) EnterHitState(winnerID == 2, true);
+                };
+            checkWallEnd(player1, 2);
+            checkWallEnd(player2, 1);
+        }
+
         if (!restrictionManager.IsActive(REST_SETSUNA)) {
             itemManager.Update(player1, player2, restrictionManager);
         }
@@ -858,6 +886,13 @@ void SceneGame::Draw() {
         itemManager.Draw();
         DrawUI();
         adManager.Draw();
+        if (restrictionManager.IsActive(REST_MASH_MOVE)) {
+            unsigned int wallColor = GetColor(255, 0, 0);
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
+            if (wallEndLeft)  DrawBoxAA(0.0f, 0.0f, 50.0f, 920.0f, wallColor, TRUE);
+            if (wallEndRight) DrawBoxAA(1230.0f, 0.0f, 1280.0f, 920.0f, wallColor, TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
         SetDrawScreen(DX_SCREEN_BACK);
 
         if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
