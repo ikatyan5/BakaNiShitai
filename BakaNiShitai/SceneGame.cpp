@@ -652,50 +652,13 @@ void SceneGame::Update() {
         }
 
         if (restrictionManager.IsActive(REST_SETSUNA)) {
-            const float SLIDE_SPEED = 1280.0f / 60.0f; // 1秒でスライドイン
-
-            if (setsunaPhase == SETSUNA_SLIDE) {
-                player1.canAttack = false;
-                player2.canAttack = false;
-                setsunaP1UIX -= SLIDE_SPEED;
-                setsunaP2UIX += SLIDE_SPEED;
-                if (setsunaP1UIX <= 0.0f) {
-                    setsunaP1UIX = 0.0f;
-                    setsunaP2UIX = 0.0f;
-                    setsunaPhase = SETSUNA_READY;
-                    setsunaPhaseTimer = 60; // Ready表示1秒
-                }
-            }
-            else if (setsunaPhase == SETSUNA_READY) {
-                player1.canAttack = false;
-                player2.canAttack = false;
-                setsunaPhaseTimer--;
-                if (setsunaPhaseTimer <= 0) {
-                    setsunaPhase = SETSUNA_WAIT;
-                    setsunaPhaseTimer = 180 + rand() % 420; // 3～10秒
-                }
-            }
-            else if (setsunaPhase == SETSUNA_WAIT) {
-                player1.canAttack = false;
-                player2.canAttack = false;
-                // フライングチェック
-                bool p1Attack = CheckHitKey(KEY_INPUT_F);
-                bool p2Attack = GetMouseInput() & MOUSE_INPUT_LEFT;
-                if (p1Attack) { EnterHitState(true, true); }
-                else if (p2Attack) { EnterHitState(false, true); }
-
-                setsunaPhaseTimer--;
-                if (setsunaPhaseTimer <= 0) {
-                    setsunaPhase = SETSUNA_ACTIVE;
-                    player1.canAttack = true;
-                    player2.canAttack = true;
-                    setsunaSignVisible = true;
-                }
-            }
+            UpdateSetsuna();
         }
 
         if (restrictionManager.IsActive(REST_GRAVITY_INSANE)) {
-            uiShakeTimer++; // 揺れ演出用は毎フレーム回す
+            uiShakeTimer++;
+
+            bool enteredHeavy = false; // 今フレーム重いレベルに入ったか
 
             if (gravityInsaneTimer > 0) gravityInsaneTimer--;
             else {
@@ -708,65 +671,12 @@ void SceneGame::Update() {
                 player1.gravityInsaneLevel = gravityInsaneLevel;
                 player2.gravityInsaneLevel = gravityInsaneLevel;
 
-                // 重いレベルに入った瞬間だけカウント+1して落下抽選
                 if (gravityInsaneLevel == 3 || gravityInsaneLevel == 4) {
-                    FallingUI* targets[5] = { &hpUI[0], &hpUI[1], &scoreUI[0], &scoreUI[1], &timeUI };
-                    for (int i = 0; i < 5; i++) {
-                        FallingUI& ui = *targets[i];
-                        if (ui.falling || ui.landed) continue;
-                        ui.count += (gravityInsaneLevel == 4) ? 2 : 1;
-                        int chance = 10 * ui.count;
-                        if (rand() % 100 < chance) {
-                            ui.falling = true;
-                            ui.vy = 0.0f;
-                        }
-                    }
+                    enteredHeavy = true; // フラグ立てるだけ
                 }
             }
-        }
 
-        // 落下中UIの移動（毎フレーム）
-        {
-            FallingUI* targets[5] = { &hpUI[0], &hpUI[1], &scoreUI[0], &scoreUI[1], &timeUI };
-            for (int i = 0; i < 5; i++) {
-                FallingUI& ui = *targets[i];
-                if (!ui.falling) continue;
-                ui.vy += GRAVITY;
-                ui.y += ui.vy;
-                if (ui.y >= GROUND_Y) {
-                    ui.y = GROUND_Y;
-                    ui.falling = false;
-                    ui.landed = true;
-                    ui.angle = ((rand() % 61) - 30) / 100.0f;   // -0.3～0.3
-                    ui.angle2 = ((rand() % 61) - 30) / 100.0f;  // 一の位用（別ランダム）
-                }
-            }
-        }
-
-        // 落下中UIのプレイヤー当たり判定（落下中のみ、両プレイヤーに当たる）
-        {
-            struct UIHitBox { FallingUI* ui; float w; float h; };
-            UIHitBox boxes[5] = {
-                { &hpUI[0],    UI_HP_W, UI_HP_H },
-                { &hpUI[1],    UI_HP_W, UI_HP_H },
-                { &scoreUI[0], WINNING_SCORE * UI_SCORE_W, UI_SCORE_H },
-                { &scoreUI[1], WINNING_SCORE * UI_SCORE_W, UI_SCORE_H },
-                { &timeUI,     236.0f, UI_NUMBER_SIZE },
-            };
-
-            auto hitPlayer = [&](Player& p) {
-                for (int i = 0; i < 5; i++) {
-                    FallingUI& ui = *boxes[i].ui;
-                    if (!ui.falling) continue;
-                    float pw = PLAYER_HIT_W, ph = PLAYER_HIT_H;
-                    if (fabsf(ui.x - p.x) < (boxes[i].w + pw) / 2 &&
-                        fabsf(ui.y - (p.y - PLAYER_HIT_CY)) < (boxes[i].h + ph) / 2) {
-                        p.EnterStun();
-                    }
-                }
-                };
-            hitPlayer(player1);
-            hitPlayer(player2);
+            UpdateFallingUI(enteredHeavy); // UI落下処理を一括で呼ぶ
         }
 
         // 爆発中はプレイヤーの更新を止める
@@ -840,15 +750,6 @@ void SceneGame::Update() {
         if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
             // 接触判定
             CheckHyperTouch();
-
-            // 急降下
-            Player& hyperPlayer = (hyperPlayerID == 1) ? player1 : player2;
-            if (!hyperPlayer.onGround) {
-                bool downKey = (hyperPlayerID == 1)
-                    ? CheckHitKey(KEY_INPUT_S)
-                    : CheckHitKey(KEY_INPUT_DOWN);
-                if (downKey) hyperPlayer.vy += GRAVITY * 4.0f;
-            }
         }
 
         // メメントモリ判定
@@ -1024,6 +925,105 @@ void SceneGame::Update() {
             state = STATE_PLAYING;
         }
 }
+}
+
+void SceneGame::UpdateFallingUI(bool enteredHeavy) {
+    FallingUI* targets[5] = { &hpUI[0], &hpUI[1], &scoreUI[0], &scoreUI[1], &timeUI };
+
+    // 重いレベルに入った瞬間だけカウント+1して落下抽選
+    if (enteredHeavy) {
+        for (int i = 0; i < 5; i++) {
+            FallingUI& ui = *targets[i];
+            if (ui.falling || ui.landed) continue;
+            ui.count += (gravityInsaneLevel == 4) ? 2 : 1;
+            int chance = 10 * ui.count;
+            if (rand() % 100 < chance) {
+                ui.falling = true;
+                ui.vy = 0.0f;
+            }
+        }
+    }
+
+    // 落下中UIの移動（毎フレーム）
+    for (int i = 0; i < 5; i++) {
+        FallingUI& ui = *targets[i];
+        if (!ui.falling) continue;
+        ui.vy += GRAVITY;
+        ui.y += ui.vy;
+        if (ui.y >= GROUND_Y) {
+            ui.y = GROUND_Y;
+            ui.falling = false;
+            ui.landed = true;
+            ui.angle = ((rand() % 61) - 30) / 100.0f;
+            ui.angle2 = ((rand() % 61) - 30) / 100.0f;
+        }
+    }
+
+    // 落下中UIのプレイヤー当たり判定（落下中のみ、両プレイヤーに当たる）
+    struct UIHitBox { FallingUI* ui; float w; float h; };
+    UIHitBox boxes[5] = {
+        { &hpUI[0],    UI_HP_W, UI_HP_H },
+        { &hpUI[1],    UI_HP_W, UI_HP_H },
+        { &scoreUI[0], WINNING_SCORE * UI_SCORE_W, UI_SCORE_H },
+        { &scoreUI[1], WINNING_SCORE * UI_SCORE_W, UI_SCORE_H },
+        { &timeUI,     236.0f, UI_NUMBER_SIZE },
+    };
+    auto hitPlayer = [&](Player& p) {
+        for (int i = 0; i < 5; i++) {
+            FallingUI& ui = *boxes[i].ui;
+            if (!ui.falling) continue;
+            float pw = PLAYER_HIT_W, ph = PLAYER_HIT_H;
+            if (fabsf(ui.x - p.x) < (boxes[i].w + pw) / 2 &&
+                fabsf(ui.y - (p.y - PLAYER_HIT_CY)) < (boxes[i].h + ph) / 2) {
+                p.EnterStun();
+            }
+        }
+        };
+    hitPlayer(player1);
+    hitPlayer(player2);
+}
+
+void SceneGame::UpdateSetsuna() {
+    const float SLIDE_SPEED = 1280.0f / 60.0f; // 1秒でスライドイン
+
+    if (setsunaPhase == SETSUNA_SLIDE) {
+        player1.canAttack = false;
+        player2.canAttack = false;
+        setsunaP1UIX -= SLIDE_SPEED;
+        setsunaP2UIX += SLIDE_SPEED;
+        if (setsunaP1UIX <= 0.0f) {
+            setsunaP1UIX = 0.0f;
+            setsunaP2UIX = 0.0f;
+            setsunaPhase = SETSUNA_READY;
+            setsunaPhaseTimer = 60; // Ready表示1秒
+        }
+    }
+    else if (setsunaPhase == SETSUNA_READY) {
+        player1.canAttack = false;
+        player2.canAttack = false;
+        setsunaPhaseTimer--;
+        if (setsunaPhaseTimer <= 0) {
+            setsunaPhase = SETSUNA_WAIT;
+            setsunaPhaseTimer = 180 + rand() % 420; // 3～10秒
+        }
+    }
+    else if (setsunaPhase == SETSUNA_WAIT) {
+        player1.canAttack = false;
+        player2.canAttack = false;
+        // フライングチェック
+        bool p1Attack = CheckHitKey(KEY_INPUT_F);
+        bool p2Attack = GetMouseInput() & MOUSE_INPUT_LEFT;
+        if (p1Attack) { EnterHitState(true, true); }
+        else if (p2Attack) { EnterHitState(false, true); }
+
+        setsunaPhaseTimer--;
+        if (setsunaPhaseTimer <= 0) {
+            setsunaPhase = SETSUNA_ACTIVE;
+            player1.canAttack = true;
+            player2.canAttack = true;
+            setsunaSignVisible = true;
+        }
+    }
 }
 
 void SceneGame::Draw() {

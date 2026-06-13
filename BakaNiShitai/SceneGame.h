@@ -123,6 +123,8 @@ private:
     FallingUI timeUI;
     int uiShakeTimer;      // 揺れ演出用のフレームカウンタ
     void InitFallingUI();
+    void UpdateFallingUI(bool enteredHeavy);
+    void UpdateSetsuna();
 
     SceneID nextScene = SCENE_NONE;
 };

@@ -404,22 +404,21 @@ void Player::ApplyGravity(const RestrictionManager& restrictions) {
 
 	vy += currentGravity;
 
+	// ‹}~‰º
 	bool downKey = false;
-	if (!restrictions.IsActive(REST_GRAVITY_INSANE)) {
-		if (useGamepad) {
-			int pad = GetJoypadInputState(padID);
-			int stickX = 0, stickY = 0;
-			GetJoypadAnalogInput(&stickX, &stickY, padID);
-			downKey = (pad & PAD_INPUT_DOWN) || stickY > 500;
-		}
-		else if (PlayerID == 1) {
-			downKey = CheckHitKey(KEY_INPUT_S);
-		}
-		else {
-			downKey = CheckHitKey(KEY_INPUT_DOWN);
-		}
-		if (downKey && !onGround) vy += GRAVITY * 4.0f;
+	if (useGamepad) {
+		int pad = GetJoypadInputState(padID);
+		int stickX = 0, stickY = 0;
+		GetJoypadAnalogInput(&stickX, &stickY, padID);
+		downKey = (pad & PAD_INPUT_DOWN) || stickY > 500;
 	}
+	else if (PlayerID == 1) {
+		downKey = CheckHitKey(KEY_INPUT_S);
+	}
+	else {
+		downKey = CheckHitKey(KEY_INPUT_DOWN);
+	}
+	if (downKey && !onGround) vy += GRAVITY * 4.0f;
 }
 
 void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
