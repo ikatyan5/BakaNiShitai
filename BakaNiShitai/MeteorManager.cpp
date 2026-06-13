@@ -104,7 +104,6 @@ void MeteorManager::Update(Player& player1, Player& player2, bool tensaiMode) {
             float dy = meteors[i].y - (target.y - PLAYER_HIT_CY);
             if (fabsf(dx) < (96.0f + PLAYER_HIT_W) / 2 &&
                 fabsf(dy) < (96.0f + PLAYER_HIT_H) / 2) {
-                meteors[i].active = false;
                 hitOccurred = true;
                 hitWinnerID = winnerID;
             }

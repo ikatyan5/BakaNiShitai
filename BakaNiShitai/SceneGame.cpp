@@ -392,16 +392,7 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
                 target.x, target.y - PLAYER_HIT_CY,
                 PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
                 weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-                if (target.holdingWeaponIndex != -1) {
-                    // 武器を持ってたら消す
-                    weapons[target.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
-                    target.holdingWeaponIndex = -1;
-                }
-                else {
-                    // 武器を持ってなかったら移動速度ダウン 0.5秒間
-                    target.moveSpeed = 5.0f * 0.6f;
-                    target.speedDownTimer = 30;
-                }
+                target.AddKnockbackCount(); // 蓄積+1
             }
         }
         return;
@@ -464,6 +455,69 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
 
     }
     player.wantThrow = false;
+}
+
+void SceneGame::CheckMeleeHit(Player& attacker, Player& target, bool judgeValue) {
+    if (!attacker.CheckAttackHit(target, weapons)) return;
+
+    if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
+        if (attacker.holdingWeaponIndex != -1) {
+            target.moveSpeed = 5.0f * 0.6f;
+            target.speedDownTimer = 180;
+        }
+        return;
+    }
+
+    if (restrictionManager.IsActive(REST_METEOR)) {
+        if (attacker.holdingWeaponIndex != -1 &&
+            weapons[attacker.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
+            target.EnterStun();
+            weapons[attacker.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
+            attacker.holdingWeaponIndex = -1;
+            attacker.pikohanRespawnTimer = 180;
+        }
+        return;
+    }
+
+    if (restrictionManager.IsActive(REST_SETSUNA)) return;
+
+    if (attacker.holdingWeaponIndex != -1 &&
+        weapons[attacker.holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI) return;
+
+    if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID == target.PlayerID) {
+        if (attacker.holdingWeaponIndex != -1 &&
+            weapons[attacker.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
+            target.EnterStun();
+            weapons[attacker.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
+            attacker.holdingWeaponIndex = -1;
+            attacker.pikohanRespawnTimer = 180;
+        }
+        return;
+    }
+
+    if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
+        bool hasWeapon = attacker.holdingWeaponIndex != -1;
+        float kbVx, kbVy;
+
+        if (!hasWeapon && target.knockbackCount == 0) {
+            kbVx = 15.0f; kbVy = -6.0f; // 素手・未蓄積：小
+        }
+        else if (hasWeapon && target.knockbackCount == 0) {
+            kbVx = 60.0f; kbVy = -10.0f; // 武器・未蓄積：中
+        }
+        else if (!hasWeapon && target.knockbackCount == 1) {
+            kbVx = 170.0f; kbVy = -8.0f; // 素手・蓄積済：中
+        }
+        else {
+            kbVx = 200.0f; kbVy = -10.0f; // 武器・蓄積済：大
+        }
+
+        float dirVx = (attacker.x < target.x) ? kbVx : -kbVx;
+        target.ApplyKnockback(dirVx, kbVy);
+        return;
+    }
+
+    EnterHitState(judgeValue, true);
 }
 
 void SceneGame::CheckStickOrb(Player& player, int ownerID) {
@@ -541,7 +595,9 @@ void SceneGame::SpawnWeapon()
                         type = WEAPON_BOOMERANG;
                     }
                     else if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
-                        while (type == WEAPON_STICK) {
+                        while (type == WEAPON_STICK ||
+                            type == WEAPON_MEMENTO_MORI ||
+                            type == WEAPON_TENSAI_TSUE) {
                             type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
                         }
                     }
@@ -636,20 +692,7 @@ void SceneGame::Update() {
             blurTimer = 0;
         }
 
-        if (restrictionManager.IsActive(REST_METEOR)) {
-            meteorManager.Update(player1, player2);
-            if (meteorManager.hitOccurred) {
-                meteorManager.hitOccurred = false;
-                EnterHitState(meteorManager.hitWinnerID == 2, true);
-            }
-        }
-        else if (meteorManager.HasActiveMeteor() || meteorManager.tensaiSpawnCount > 0) {
-            meteorManager.Update(player1, player2, true);
-            if (meteorManager.hitOccurred) {
-                meteorManager.hitOccurred = false;
-                EnterHitState(meteorManager.hitWinnerID == 2, true);
-            }
-        }
+        UpdateMeteor();
 
         if (restrictionManager.IsActive(REST_SETSUNA)) {
             UpdateSetsuna();
@@ -685,25 +728,15 @@ void SceneGame::Update() {
             player2.Update(stage, weapons, restrictionManager);
         }
 
-        if (restrictionManager.IsActive(REST_MASH_MOVE)) {
-            // タイマー更新
-            if (wallEndTimer > 0) wallEndTimer--;
-            else {
-                // ランダムに左右どちらかを切り替え
-                int roll = rand() % 3;
-                wallEndLeft = (roll == 0 || roll == 2);
-                wallEndRight = (roll == 1 || roll == 2);
-                wallEndTimer = 180 + rand() % 240; // 3～7秒
-            }
-
-            // ビーム当たり判定
-            auto checkWallEnd = [&](Player& player, int winnerID) {
-                if (wallEndLeft && player.x < 80.0f)   EnterHitState(winnerID == 2, true);
-                if (wallEndRight && player.x > 1250.0f) EnterHitState(winnerID == 2, true);
-                };
-            checkWallEnd(player1, 2);
-            checkWallEnd(player2, 1);
+        // ノックバック画面外チェック
+        if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
+            if (player1.isKnockedBack && (player1.x < 0.0f || player1.x > 1280.0f))
+                EnterHitState(true, true);
+            if (player2.isKnockedBack && (player2.x < 0.0f || player2.x > 1280.0f))
+                EnterHitState(false, true);
         }
+
+        UpdateMashMove();
 
         if (!restrictionManager.IsActive(REST_SETSUNA)) {
             itemManager.Update(player1, player2, restrictionManager);
@@ -714,22 +747,7 @@ void SceneGame::Update() {
         }
 
         if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
-            if (flipTimer > 0) flipTimer--;
-            else {
-                if (flipPattern == 1 || flipPattern == 2) {
-                    player1.SwapImageWith(player2);
-                }
-                int newPattern;
-                do {
-                    newPattern = rand() % 3;
-                } while (newPattern == flipPattern);
-                flipPattern = newPattern;
-
-                flipTimer = 420 + rand() % 180;
-                if (flipPattern == 1 || flipPattern == 2) {
-                    player1.SwapImageWith(player2);
-                }
-            }
+            UpdateScreenFlip();
         }
 
         // 爆発ヒット判定
@@ -800,87 +818,8 @@ void SceneGame::Update() {
         CheckWeaponHit(player2, player1, false, 2);
 
         // 近接攻撃ヒット判定
-        if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
-            // 武器持ちで当たったら速度ダウンのみ
-            if (player1.CheckAttackHit(player2, weapons)) {
-                if (player1.holdingWeaponIndex != -1) {
-                    player2.moveSpeed = 5.0f * 0.6f;
-                    player2.speedDownTimer = 180;
-                }
-            }
-            if (player2.CheckAttackHit(player1, weapons)) {
-                if (player2.holdingWeaponIndex != -1) {
-                    player1.moveSpeed = 5.0f * 0.6f;
-                    player1.speedDownTimer = 180;
-                }
-            }
-        }
-        else if (restrictionManager.IsActive(REST_METEOR)) {
-            if (player1.CheckAttackHit(player2, weapons)) {
-                if (player1.holdingWeaponIndex != -1 &&
-                    weapons[player1.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
-                    player2.EnterStun();
-                    // ピコハン消してリスポーンタイマーセット
-                    weapons[player1.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
-                    player1.holdingWeaponIndex = -1;
-                    player1.pikohanRespawnTimer = 180;
-                }
-            }
-            if (player2.CheckAttackHit(player1, weapons)) {
-                if (player2.holdingWeaponIndex != -1 &&
-                    weapons[player2.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
-                    player1.EnterStun();
-                    // ピコハン消してリスポーンタイマーセット
-                    weapons[player2.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
-                    player2.holdingWeaponIndex = -1;
-                    player2.pikohanRespawnTimer = 180;
-                }
-            }
-        }
-        else {
-            if (player1.CheckAttackHit(player2, weapons)) {
-                if (restrictionManager.IsActive(REST_SETSUNA)) {
-                    // 刹那中は無視
-                }
-                else if (player1.holdingWeaponIndex != -1 &&
-                    weapons[player1.holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI) {
-                    // メメントモリはCheckMementoMoriで処理
-                }
-                else if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID == 2) {
-                    if (player1.holdingWeaponIndex != -1 &&
-                        weapons[player1.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
-                        player2.EnterStun();
-                        weapons[player1.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
-                        player1.holdingWeaponIndex = -1;
-                        player1.pikohanRespawnTimer = 180;
-                    }
-                }
-                else {
-                    EnterHitState(false, true);
-                }
-            }
-            if (player2.CheckAttackHit(player1, weapons)) {
-                if (restrictionManager.IsActive(REST_SETSUNA)) {
-                    // 刹那中は無視
-                }
-                else if (player2.holdingWeaponIndex != -1 &&
-                    weapons[player2.holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI) {
-                    // メメントモリはCheckMementoMoriで処理
-                }
-                else if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID == 1) {
-                    if (player2.holdingWeaponIndex != -1 &&
-                        weapons[player2.holdingWeaponIndex].weaponType == WEAPON_PIKOHAN) {
-                        player1.EnterStun();
-                        weapons[player2.holdingWeaponIndex].weaponState = Weapon::WEAPON_INACTIVE;
-                        player2.holdingWeaponIndex = -1;
-                        player2.pikohanRespawnTimer = 180;
-                    }
-                }
-                else {
-                    EnterHitState(true, true);
-                }
-            }
-        }
+        CheckMeleeHit(player1, player2, false);
+        CheckMeleeHit(player2, player1, true);
 
         ThrowWeapon(player1, 1);
         ThrowWeapon(player2, 2);
@@ -1026,6 +965,56 @@ void SceneGame::UpdateSetsuna() {
     }
 }
 
+void SceneGame::UpdateScreenFlip() {
+    if (flipTimer > 0) flipTimer--;
+    else {
+        if (flipPattern == 1 || flipPattern == 2) {
+            player1.SwapImageWith(player2);
+        }
+        int newPattern;
+        do {
+            newPattern = rand() % 3;
+        } while (newPattern == flipPattern);
+        flipPattern = newPattern;
+
+        flipTimer = 420 + rand() % 180;
+        if (flipPattern == 1 || flipPattern == 2) {
+            player1.SwapImageWith(player2);
+        }
+    }
+}
+
+void SceneGame::UpdateMeteor() {
+    bool isRestMeteor = restrictionManager.IsActive(REST_METEOR);
+    bool hasTensai = meteorManager.HasActiveMeteor() || meteorManager.tensaiSpawnCount > 0;
+    if (!isRestMeteor && !hasTensai) return;
+
+    meteorManager.Update(player1, player2, !isRestMeteor);
+    if (meteorManager.hitOccurred) {
+        meteorManager.hitOccurred = false;
+        EnterHitState(meteorManager.hitWinnerID == 2, true);
+    }
+}
+
+void SceneGame::UpdateMashMove() {
+    if (!restrictionManager.IsActive(REST_MASH_MOVE)) return;
+
+    if (wallEndTimer > 0) wallEndTimer--;
+    else {
+        int roll = rand() % 3;
+        wallEndLeft = (roll == 0 || roll == 2);
+        wallEndRight = (roll == 1 || roll == 2);
+        wallEndTimer = 180 + rand() % 240;
+    }
+
+    auto checkWallEnd = [&](Player& player, int winnerID) {
+        if (wallEndLeft && player.x < 80.0f) EnterHitState(winnerID == 2, true);
+        if (wallEndRight && player.x > 1250.0f) EnterHitState(winnerID == 2, true);
+        };
+    checkWallEnd(player1, 2);
+    checkWallEnd(player2, 1);
+}
+
 void SceneGame::Draw() {
     ClearDrawScreen();
     if (state == STATE_PLAYING) {
@@ -1094,6 +1083,9 @@ void SceneGame::Draw() {
         DrawMementoMori(player2);
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
+        if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
+            meteorManager.Draw(*imgMgr);
+        }
         orbManager.Draw();
         itemManager.Draw();
         DrawUI();
@@ -1105,6 +1097,9 @@ void SceneGame::Draw() {
         }
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
+        if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
+            meteorManager.Draw(*imgMgr);
+        }
         orbManager.Draw();
         itemManager.Draw();
         DrawUI();

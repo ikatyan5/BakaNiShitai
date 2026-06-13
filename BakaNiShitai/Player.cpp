@@ -45,6 +45,11 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	useGamepad = false;
 	reverseTimer = 0;
 	tensaiAnimTimer = 0;
+	knockbackCount = 0;
+	knockbackDecayTimer = 0;
+	knockbackVx = 0.0f;
+	knockbackTimer = 0;
+	isKnockedBack = false;
 	padID = DX_INPUT_PAD1;
 
 	for (int i = 0; i < 7; i++) {
@@ -55,6 +60,36 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 
 // 左右移動とキー入力処理
 void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons){
+	// ノックバック中は通常入力を無効化
+	if (isKnockedBack) {
+		knockbackTimer--;
+		knockbackVx *= 0.85f;
+
+		bool leftKey = false, rightKey = false;
+		if (useGamepad) {
+			int pad = GetJoypadInputState(padID);
+			int stickX = 0, stickY = 0;
+			GetJoypadAnalogInput(&stickX, &stickY, padID);
+			leftKey = (pad & PAD_INPUT_LEFT) || stickX < -500;
+			rightKey = (pad & PAD_INPUT_RIGHT) || stickX > 500;
+		}
+		else if (PlayerID == 1) {
+			leftKey = CheckHitKey(KEY_INPUT_A);
+			rightKey = CheckHitKey(KEY_INPUT_D);
+		}
+		else {
+			leftKey = CheckHitKey(KEY_INPUT_LEFT);
+			rightKey = CheckHitKey(KEY_INPUT_RIGHT);
+		}
+
+		if (knockbackVx < 0 && rightKey) knockbackVx *= 0.88f;
+		if (knockbackVx > 0 && leftKey)  knockbackVx *= 0.88f;
+
+		vx = knockbackVx;
+		if (knockbackTimer <= 0) isKnockedBack = false;
+		return;
+	}
+
 	if (isStunned) { vx = 0; return; }
 	if (attacking) {
 		if (dashAttack) {
@@ -219,6 +254,18 @@ int Player::GetAttackFrames(Weapon* weapons) {
 	return WEAPON_DATA[type].chargeFrames + WEAPON_DATA[type].attackFrames;
 }
 
+void Player::AddKnockbackCount() {
+	knockbackCount = 1; // 0か1の2段階のみ
+}
+
+void Player::ApplyKnockback(float kbVx, float kbVy) {
+	knockbackVx = kbVx;
+	vy = kbVy;  // 上方向の初速をvyに直接セット
+	knockbackTimer = 60;
+	isKnockedBack = true;
+	knockbackCount = 0;
+}
+
 // 攻撃の処理
 void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restrictions) {
 	if (isStunned) return;
@@ -322,7 +369,14 @@ void Player::UpdateAnim(Weapon* weapons) {
 			isStunned = false;
 		}
 	}
-
+	// ノックバック減衰タイマー
+	if (knockbackDecayTimer > 0) {
+		knockbackDecayTimer--;
+		if (knockbackDecayTimer <= 0 && knockbackCount > 0) {
+			knockbackCount--;
+			if (knockbackCount > 0) knockbackDecayTimer = 300;
+		}
+	}
 	animTimer++;
 	tensaiAnimTimer++;
 
@@ -373,9 +427,11 @@ void Player::UpdatePosition(Stage& stage) {
 		vy = 0.0f;
 	}
 
-	// 左右ラップ
-	if (x < 0.0f) x = 1280.0f;
-	if (x > 1280.0f) x = 0.0f;
+	// 左右ラップ（ノックバック中は無効）
+	if (!isKnockedBack) {
+		if (x < 0.0f) x = 1280.0f;
+		if (x > 1280.0f) x = 0.0f;
+	}
 
 	float outY = 0.0f;
 	if (stage.CheckLanding(x, y, prevY, PLAYER_HIT_W, 20.0f, outY)) {
@@ -513,6 +569,11 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 	}
 
 #ifdef _DEBUG
+
+	TCHAR kbBuf[8];
+	wsprintf(kbBuf, _T("x%d"), knockbackCount);
+	DrawString((int)(x - 10), (int)(y - PLAYER_HIT_CY - 160), kbBuf, GetColor(255, 50, 50));
+
 	// プレイヤーの当たり判定（緑）
 	DrawBoxAA(
 		x - PLAYER_HIT_W / 2, y - PLAYER_HIT_CY - PLAYER_HIT_H / 2,

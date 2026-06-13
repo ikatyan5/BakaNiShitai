@@ -48,6 +48,15 @@ public:
 	void EnterStun();   // スタン開始
 	void EnterStunShort(); // 短スタン（投げピコハン用）
 
+	int knockbackCount;       // 蓄積カウント 0-3
+	int knockbackDecayTimer;  // 300フレームでcount-1
+	float knockbackVx;        // ノックバック中の速度
+	int knockbackTimer;       // ノックバック継続フレーム
+	bool isKnockedBack;       // ノックバック中か
+
+	void AddKnockbackCount(); // 投げ命中時に呼ぶ
+	void ApplyKnockback(float kbVx, float kbVy); // 近接命中時に呼ぶ
+
 	void Init(float startX, float startY, int id, bool facingR, ImageManager& imgMgr, int keepWinCount = 0);
 	bool GetOnGround() { return onGround; }
 	bool GetAttacking() { return attacking; }

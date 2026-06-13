@@ -125,6 +125,10 @@ private:
     void InitFallingUI();
     void UpdateFallingUI(bool enteredHeavy);
     void UpdateSetsuna();
+    void UpdateScreenFlip();
+    void UpdateMeteor();
+    void UpdateMashMove();
+    void CheckMeleeHit(Player& attacker, Player& target, bool judgeValue);
 
     SceneID nextScene = SCENE_NONE;
 };
