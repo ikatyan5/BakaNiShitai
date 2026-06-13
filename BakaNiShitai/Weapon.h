@@ -7,6 +7,8 @@ class Weapon {
 public:
     float x, y;
     float vx;
+    float vy;
+    float throwGravity;
     float angle;
     int weaponType;
     int ownerID; 

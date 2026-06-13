@@ -7,6 +7,8 @@ void Weapon::Init(WeaponType type, ImageManager& imgMgr) {
     weaponState = WEAPON_INACTIVE;  // active = false ‚Ì‘ã‚í‚è
     angle = 0.0f;
     x = y = vx = 0.0f;
+    vy = 0.0f;
+    throwGravity = 0.0f;
     ownerID = 0;
     weaponType = type;
     groundTimer = 0;
@@ -23,6 +25,8 @@ void Weapon::Throw(float startX, float startY, bool facingRight, int id, WeaponT
     x = startX;
     y = startY;
     vx = facingRight ? WEAPON_SPEED : -WEAPON_SPEED;
+    vy = 0.0f;
+    throwGravity = 0.0f;
     if (type == WEAPON_BOOMERANG) {
         vx = facingRight ? 16.0f : -16.0f;
         boomerangDecel = facingRight ? 0.3f : -0.3f;
@@ -64,8 +68,15 @@ void Weapon::Update() {
         }
 
         x += vx;
+        y += vy;
+        vy += throwGravity;
         angle += (vx > 0) ? WEAPON_ROTATE : -WEAPON_ROTATE; // Œü‚«‚Å‰ñ“]•ûŒü•Ï‚¦‚é
+        
+        // Á–Å”»’è
         if (x < 0 || x > 1280) weaponState = WEAPON_INACTIVE;
+        else if (y < 0)weaponState = WEAPON_INACTIVE;
+        else if (y >= GROUND_Y)weaponState = WEAPON_INACTIVE;
+
     }
 }
 

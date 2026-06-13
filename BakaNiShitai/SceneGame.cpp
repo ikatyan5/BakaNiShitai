@@ -5,7 +5,7 @@
 #include <cmath>
 
 static const TCHAR* RESTRICTION_NAMES[] = {
-    _T("NONE"),
+    _T("なにもなし！"),
     _T("重力がなくなった！"),
     _T("ジャンプ回数が無制限に！"),
     _T("武器を投げてもダメージがないぞ！"),
@@ -21,6 +21,24 @@ static const TCHAR* RESTRICTION_NAMES[] = {
     _T("地上で移動できないぞ！"),
     _T("なんか画面おかしくね？"),
 };
+
+static void DrawRotatedUI(float cx, float cy, float w, float h, float angle, int img) {
+    float hw = w / 2.0f;
+    float hh = h / 2.0f;
+    float c = cosf(angle);
+    float s = sinf(angle);
+    // 四隅（中心基準）を回転
+    // 左上, 右上, 右下, 左下
+    float xs[4] = { -hw,  hw,  hw, -hw };
+    float ys[4] = { -hh, -hh,  hh,  hh };
+    float px[4], py[4];
+    for (int i = 0; i < 4; i++) {
+        px[i] = cx + xs[i] * c - ys[i] * s;
+        py[i] = cy + xs[i] * s + ys[i] * c;
+    }
+    // DrawModiGraphFは左上→右上→右下→左下の順
+    DrawModiGraphF(px[0], py[0], px[1], py[1], px[2], py[2], px[3], py[3], img, TRUE);
+}
 
 void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings) {
     imgMgr = &imgMgr_;
@@ -77,6 +95,7 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings) {
     for (int i = 0; i < WEAPON_MAX; i++) {
         weapons[i].Init(WEAPON_KAMA, *imgMgr);
     }
+    InitFallingUI();
     InitPlayers(false);
     gravityInsaneLevel = 2;
     gravityInsaneTimer = 120 + rand() % 60;
@@ -178,6 +197,42 @@ void SceneGame::InitPlayers(bool keepWinCount) {
     }
 }
 
+void SceneGame::InitFallingUI() {
+    // HP P1：左上(50,20)+サイズ(400,180) → 中心
+    hpUI[0].baseX = 50.0f + UI_HP_W / 2.0f;
+    hpUI[0].baseY = 20.0f + UI_HP_H / 2.0f;
+    // HP P2：右端基準
+    hpUI[1].baseX = 1280.0f - 50.0f - UI_HP_W / 2.0f;
+    hpUI[1].baseY = 20.0f + UI_HP_H / 2.0f;
+
+    // スコア P1：3個の塊の中心
+    float p1ScoreW = WINNING_SCORE * UI_SCORE_W;
+    scoreUI[0].baseX = UI_P1_SCORE_X + p1ScoreW / 2.0f;
+    scoreUI[0].baseY = UI_SCORE_Y + UI_SCORE_H / 2.0f;
+    // スコア P2
+    float p2StartX = UI_P2_SCORE_X - WINNING_SCORE * UI_SCORE_W;
+    scoreUI[1].baseX = p2StartX + p1ScoreW / 2.0f;
+    scoreUI[1].baseY = UI_SCORE_Y + UI_SCORE_H / 2.0f;
+
+    // 時間UI：十の位(530)と一の位(638)の塊の中心
+    timeUI.baseX = (UI_TIME_X + (638.0f + UI_NUMBER_SIZE)) / 2.0f;
+    timeUI.baseY = UI_TIME_Y + UI_NUMBER_SIZE / 2.0f;
+
+    // 4つとも状態リセット
+    FallingUI* all[5] = { &hpUI[0], &hpUI[1], &scoreUI[0], &scoreUI[1], &timeUI };
+    for (int i = 0; i < 5; i++) {
+        all[i]->x = all[i]->baseX;
+        all[i]->y = all[i]->baseY;
+        all[i]->vy = 0.0f;
+        all[i]->angle = 0.0f;
+        all[i]->angle2 = 0.0f;
+        all[i]->count = 0;
+        all[i]->falling = false;
+        all[i]->landed = false;
+    }
+    uiShakeTimer = 0;
+}
+
 void SceneGame::ResetGame(bool keepWinCount) {
     isDraw = false;
     p1HpIndex = 0;
@@ -230,6 +285,7 @@ void SceneGame::ResetGame(bool keepWinCount) {
         player1.moveSpeed = 5.0f * 1.2f;
         player2.moveSpeed = 5.0f * 1.2f;
     }
+    InitFallingUI();
     InitPlayers(keepWinCount);
 }
 
@@ -392,6 +448,20 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
         (WeaponType)weapons[idx].weaponType, *imgMgr);
         player.holdingWeaponIndex = -1;
 
+        // REST_GRAVITY_INSANEだけ縦方向に力を加える
+        if (restrictionManager.IsActive(REST_GRAVITY_INSANE)) {
+            // レベル別の重力値
+            const float gravTable[5] = { 0.1f, 0.4f, 1.0f, 2.0f, 4.0f };
+            float g = gravTable[gravityInsaneLevel];
+            weapons[idx].throwGravity = g;
+
+            if (gravityInsaneLevel == 0)      weapons[idx].vy = -12.0f; // 上にビュン（横短め）
+            else if (gravityInsaneLevel == 1) weapons[idx].vy = -10.0f; // 上にビュン
+            else if (gravityInsaneLevel == 2) weapons[idx].vy = 0.0f;   // 横まっすぐ
+            else if (gravityInsaneLevel == 3) weapons[idx].vy = 3.0f;   // すぐ落ちる
+            else if (gravityInsaneLevel == 4) weapons[idx].vy = 10.0f;  // ほぼ飛ばない
+        }
+
     }
     player.wantThrow = false;
 }
@@ -462,7 +532,7 @@ void SceneGame::SpawnWeapon()
 #endif
 
                     if (restrictionManager.IsActive(REST_STICK_ONLY)) {
-                        type = WEAPON_STICK;
+                        type = (rand() % 10 == 0) ? WEAPON_TENSAI_TSUE : WEAPON_STICK;
                     }
                     else if (restrictionManager.IsActive(REST_MASH_MOVE)) {
                         type = WEAPON_BOOMERANG;
@@ -625,6 +695,8 @@ void SceneGame::Update() {
         }
 
         if (restrictionManager.IsActive(REST_GRAVITY_INSANE)) {
+            uiShakeTimer++; // 揺れ演出用は毎フレーム回す
+
             if (gravityInsaneTimer > 0) gravityInsaneTimer--;
             else {
                 int newLevel;
@@ -635,7 +707,66 @@ void SceneGame::Update() {
                 gravityInsaneTimer = 120 + rand() % 60;
                 player1.gravityInsaneLevel = gravityInsaneLevel;
                 player2.gravityInsaneLevel = gravityInsaneLevel;
+
+                // 重いレベルに入った瞬間だけカウント+1して落下抽選
+                if (gravityInsaneLevel == 3 || gravityInsaneLevel == 4) {
+                    FallingUI* targets[5] = { &hpUI[0], &hpUI[1], &scoreUI[0], &scoreUI[1], &timeUI };
+                    for (int i = 0; i < 5; i++) {
+                        FallingUI& ui = *targets[i];
+                        if (ui.falling || ui.landed) continue;
+                        ui.count += (gravityInsaneLevel == 4) ? 2 : 1;
+                        int chance = 10 * ui.count;
+                        if (rand() % 100 < chance) {
+                            ui.falling = true;
+                            ui.vy = 0.0f;
+                        }
+                    }
+                }
             }
+        }
+
+        // 落下中UIの移動（毎フレーム）
+        {
+            FallingUI* targets[5] = { &hpUI[0], &hpUI[1], &scoreUI[0], &scoreUI[1], &timeUI };
+            for (int i = 0; i < 5; i++) {
+                FallingUI& ui = *targets[i];
+                if (!ui.falling) continue;
+                ui.vy += GRAVITY;
+                ui.y += ui.vy;
+                if (ui.y >= GROUND_Y) {
+                    ui.y = GROUND_Y;
+                    ui.falling = false;
+                    ui.landed = true;
+                    ui.angle = ((rand() % 61) - 30) / 100.0f;   // -0.3～0.3
+                    ui.angle2 = ((rand() % 61) - 30) / 100.0f;  // 一の位用（別ランダム）
+                }
+            }
+        }
+
+        // 落下中UIのプレイヤー当たり判定（落下中のみ、両プレイヤーに当たる）
+        {
+            struct UIHitBox { FallingUI* ui; float w; float h; };
+            UIHitBox boxes[5] = {
+                { &hpUI[0],    UI_HP_W, UI_HP_H },
+                { &hpUI[1],    UI_HP_W, UI_HP_H },
+                { &scoreUI[0], WINNING_SCORE * UI_SCORE_W, UI_SCORE_H },
+                { &scoreUI[1], WINNING_SCORE * UI_SCORE_W, UI_SCORE_H },
+                { &timeUI,     236.0f, UI_NUMBER_SIZE },
+            };
+
+            auto hitPlayer = [&](Player& p) {
+                for (int i = 0; i < 5; i++) {
+                    FallingUI& ui = *boxes[i].ui;
+                    if (!ui.falling) continue;
+                    float pw = PLAYER_HIT_W, ph = PLAYER_HIT_H;
+                    if (fabsf(ui.x - p.x) < (boxes[i].w + pw) / 2 &&
+                        fabsf(ui.y - (p.y - PLAYER_HIT_CY)) < (boxes[i].h + ph) / 2) {
+                        p.EnterStun();
+                    }
+                }
+                };
+            hitPlayer(player1);
+            hitPlayer(player2);
         }
 
         // 爆発中はプレイヤーの更新を止める
@@ -1043,37 +1174,103 @@ void SceneGame::Draw() {
 
 void SceneGame::DrawUI()
 {
+    // 揺れ量を計算（重力レベル3,4のとき）
+    bool uiShake = restrictionManager.IsActive(REST_GRAVITY_INSANE) &&
+        (gravityInsaneLevel == 3 || gravityInsaneLevel == 4);
+    float shakeX = uiShake ? sinf(uiShakeTimer * 0.8f) * 6.0f : 0.0f;
+
     // Player1 HPバー
-    int p1HpImg = p1Glowing ? imgMgr->p3Hp[p1HpIndex] : imgMgr->p1Hp[p1HpIndex];
-    DrawExtendGraphF(50.0f, 20.0f, 50.0f + UI_HP_W, 20.0f + UI_HP_H, p1HpImg, TRUE);
+    {
+        int p1HpImg = p1Glowing ? imgMgr->p3Hp[p1HpIndex] : imgMgr->p1Hp[p1HpIndex];
+        FallingUI& ui = hpUI[0];
+        if (ui.falling || ui.landed) {
+            DrawRotatedUI(ui.x, ui.y, UI_HP_W, UI_HP_H, ui.angle, p1HpImg);
+        }
+        else {
+            // 通常：揺れだけ足して今まで通り
+            DrawExtendGraphF(50.0f + shakeX, 20.0f, 50.0f + shakeX + UI_HP_W, 20.0f + UI_HP_H, p1HpImg, TRUE);
+        }
+    }
 
     // Player2 HPバー
-    int p2HpImg = p2Glowing ? imgMgr->p3Hp[p2HpIndex] : imgMgr->p2Hp[p2HpIndex];
-    DrawExtendGraphF(1280.0f - 50.0f - UI_HP_W, 20.0f, 1280.0f - 50.0f, 20.0f + UI_HP_H, p2HpImg, TRUE);
+    {
+        int p2HpImg = p2Glowing ? imgMgr->p3Hp[p2HpIndex] : imgMgr->p2Hp[p2HpIndex];
+        FallingUI& ui = hpUI[1];
+        if (ui.falling || ui.landed) {
+            DrawRotatedUI(ui.x, ui.y, UI_HP_W, UI_HP_H, ui.angle, p2HpImg);
+        }
+        else {
+            DrawExtendGraphF(1280.0f - 50.0f - UI_HP_W + shakeX, 20.0f, 1280.0f - 50.0f + shakeX, 20.0f + UI_HP_H, p2HpImg, TRUE);
+        }
+    }
+
 
     // Player1スコア
-    for (int i = 0; i < WINNING_SCORE; i++) {
-        int idx = (WINNING_SCORE - 1 - i < player1.winCount) ? 0 : 1;
-        int scoreImg = p1Glowing ? imgMgr->p3Score[idx] : imgMgr->p1Score[idx];
-        DrawExtendGraphF(UI_P1_SCORE_X + i * UI_SCORE_W, UI_SCORE_Y,
-            UI_P1_SCORE_X + i * UI_SCORE_W + UI_SCORE_W, UI_SCORE_Y + UI_SCORE_H,
-            scoreImg, TRUE);
+    {
+        FallingUI& ui = scoreUI[0];
+        float groupW = WINNING_SCORE * UI_SCORE_W;
+        if (ui.falling || ui.landed) {
+            // 塊の中心(ui.x,ui.y)基準で3個並べる。角度は今回は無視して横並びのまま落とす簡易版
+            for (int i = 0; i < WINNING_SCORE; i++) {
+                int idx = (WINNING_SCORE - 1 - i < player1.winCount) ? 0 : 1;
+                int scoreImg = p1Glowing ? imgMgr->p3Score[idx] : imgMgr->p1Score[idx];
+                float cx = ui.x - groupW / 2 + i * UI_SCORE_W + UI_SCORE_W / 2;
+                DrawRotatedUI(cx, ui.y, UI_SCORE_W, UI_SCORE_H, ui.angle, scoreImg);
+            }
+        }
+        else {
+            for (int i = 0; i < WINNING_SCORE; i++) {
+                int idx = (WINNING_SCORE - 1 - i < player1.winCount) ? 0 : 1;
+                int scoreImg = p1Glowing ? imgMgr->p3Score[idx] : imgMgr->p1Score[idx];
+                DrawExtendGraphF(UI_P1_SCORE_X + i * UI_SCORE_W + shakeX, UI_SCORE_Y,
+                    UI_P1_SCORE_X + i * UI_SCORE_W + UI_SCORE_W + shakeX, UI_SCORE_Y + UI_SCORE_H,
+                    scoreImg, TRUE);
+            }
+        }
     }
 
     // Player2スコア
-    for (int i = 0; i < WINNING_SCORE; i++) {
-        int idx = (i < player2.winCount) ? 0 : 1;
-        int scoreImg = p2Glowing ? imgMgr->p3Score[idx] : imgMgr->p2Score[idx];
-        float startX = UI_P2_SCORE_X - WINNING_SCORE * UI_SCORE_W + i * UI_SCORE_W;
-        DrawExtendGraphF(startX, UI_SCORE_Y, startX + UI_SCORE_W, UI_SCORE_Y + UI_SCORE_H,
-            scoreImg, TRUE);
+    {
+        FallingUI& ui = scoreUI[1];
+        float groupW = WINNING_SCORE * UI_SCORE_W;
+        float p2StartX = UI_P2_SCORE_X - WINNING_SCORE * UI_SCORE_W;
+        if (ui.falling || ui.landed) {
+            for (int i = 0; i < WINNING_SCORE; i++) {
+                int idx = (i < player2.winCount) ? 0 : 1;
+                int scoreImg = p2Glowing ? imgMgr->p3Score[idx] : imgMgr->p2Score[idx];
+                float cx = ui.x - groupW / 2 + i * UI_SCORE_W + UI_SCORE_W / 2;
+                DrawRotatedUI(cx, ui.y, UI_SCORE_W, UI_SCORE_H, ui.angle, scoreImg);
+            }
+        }
+        else {
+            for (int i = 0; i < WINNING_SCORE; i++) {
+                int idx = (i < player2.winCount) ? 0 : 1;
+                int scoreImg = p2Glowing ? imgMgr->p3Score[idx] : imgMgr->p2Score[idx];
+                float startX = p2StartX + i * UI_SCORE_W + shakeX;
+                DrawExtendGraphF(startX, UI_SCORE_Y, startX + UI_SCORE_W, UI_SCORE_Y + UI_SCORE_H,
+                    scoreImg, TRUE);
+            }
+        }
     }
 
     int sec = timeTimer / 60;
     int tens = sec / 10;
     int ones = sec % 10;
-    DrawExtendGraphF(UI_TIME_X, UI_TIME_Y, UI_TIME_X + UI_NUMBER_SIZE, UI_TIME_Y + UI_NUMBER_SIZE, imgMgr->numbers[tens], TRUE);
-    DrawExtendGraphF(638.0f, UI_TIME_Y, 638.0f + UI_NUMBER_SIZE, UI_TIME_Y + UI_NUMBER_SIZE, imgMgr->numbers[ones], TRUE);
+    {
+        FallingUI& ui = timeUI;
+        if (ui.falling || ui.landed) {
+            // 塊の中心から左右に半桁ずつ振り分け
+            float half = UI_NUMBER_SIZE / 2.0f;
+            float tensX = ui.x - half;  // 十の位の中心
+            float onesX = ui.x + half;  // 一の位の中心
+            DrawRotatedUI(tensX, ui.y, UI_NUMBER_SIZE, UI_NUMBER_SIZE, ui.angle, imgMgr->numbers[tens]);
+            DrawRotatedUI(onesX, ui.y, UI_NUMBER_SIZE, UI_NUMBER_SIZE, ui.angle2, imgMgr->numbers[ones]);
+        }
+        else {
+            DrawExtendGraphF(UI_TIME_X + shakeX, UI_TIME_Y, UI_TIME_X + UI_NUMBER_SIZE + shakeX, UI_TIME_Y + UI_NUMBER_SIZE, imgMgr->numbers[tens], TRUE);
+            DrawExtendGraphF(638.0f + shakeX, UI_TIME_Y, 638.0f + UI_NUMBER_SIZE + shakeX, UI_TIME_Y + UI_NUMBER_SIZE, imgMgr->numbers[ones], TRUE);
+        }
+    }
 
     if (setsunaSignVisible) {
         DrawExtendGraphF(563.0f, 347.0f, 717.0f, 501.0f, imgMgr->surpMark, TRUE);
@@ -1118,4 +1315,3 @@ void SceneGame::EnterHitState(bool judgeValue, bool addScore) {
 SceneID SceneGame::GetNextScene() {
     return nextScene;
 }
-

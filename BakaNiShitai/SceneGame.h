@@ -108,5 +108,21 @@ private:
     int p1HpIndex = 0;
     int p2HpIndex = 0;
 
+    struct FallingUI {
+        float x, y;        // 現在の中心座標
+        float baseX, baseY;// 揺れの基準になる元の中心座標
+        float vy;          // 落下速度
+        float angle;       // 回転角度
+        float angle2;      // 回転角度（時間の１の位用）
+        int count;         // 落下カウント（確率の素）
+        bool falling;      // 落下中か
+        bool landed;       // 着地して転がってるか
+    };
+    FallingUI hpUI[2];     // 0=P1, 1=P2
+    FallingUI scoreUI[2];  // 0=P1, 1=P2
+    FallingUI timeUI;
+    int uiShakeTimer;      // 揺れ演出用のフレームカウンタ
+    void InitFallingUI();
+
     SceneID nextScene = SCENE_NONE;
 };
