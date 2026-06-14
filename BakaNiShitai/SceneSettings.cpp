@@ -1,15 +1,23 @@
 #include "SceneSettings.h"
 #include "DxLib.h"
 
-void SceneSettings::Init(ImageManager& imgMgr, GameSettings& settings_) {
+void SceneSettings::Init(ImageManager& imgMgr_, GameSettings& settings_) {
     settings = &settings_;
     nextScene = SCENE_NONE;
     selectRow = 0;
+    imgMgr = &imgMgr_;
+    animTimer = 0;
+    animFrame = 0;
     prevUp = prevDown = prevEnter = prevLeft = prevRight = false;
     waitEnterRelease = true;
 }
 
 void SceneSettings::Update() {
+    animTimer++;
+    if (animTimer >= 10) {
+        animTimer = 0;
+        animFrame = (animFrame + 1) % 2;
+    }
     bool up = CheckHitKey(KEY_INPUT_UP);
     bool down = CheckHitKey(KEY_INPUT_DOWN);
     bool left = CheckHitKey(KEY_INPUT_LEFT);
@@ -41,17 +49,18 @@ void SceneSettings::Update() {
 
 void SceneSettings::Draw() {
     ClearDrawScreen();
-    DrawStringF(480.0f, 100.0f, _T("設定"), GetColor(0, 0, 0));
-    DrawStringF(340.0f, 180.0f, _T("← → で切り替え、ENTERで戻る"), GetColor(120, 120, 120));
+    DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardSetting[animFrame], TRUE);
+    DrawStringF(480.0f, 100.0f, _T("設定"), GetColor(255, 255, 255));
+    DrawStringF(340.0f, 180.0f, _T("← → で切り替え、ENTERで戻る"), GetColor(200, 200, 200));
 
-    const TCHAR* p1Device = settings->p1UseGamepad ? _T("コントローラー1") : _T("キーボード");
-    const TCHAR* p2Device = settings->p2UseGamepad ? _T("コントローラー2") : _T("キーボード");
+    int p1Idx = (selectRow == 0) ? (2 + animFrame) : animFrame;
+    int p2Idx = (selectRow == 1) ? (2 + animFrame) : animFrame;
 
-    int p1Color = (selectRow == 0) ? GetColor(255, 0, 0) : GetColor(0, 0, 0);
-    int p2Color = (selectRow == 1) ? GetColor(255, 0, 0) : GetColor(0, 0, 0);
+    int p1Img = settings->p1UseGamepad ? imgMgr->controller[p1Idx] : imgMgr->keyboard[p1Idx];
+    DrawExtendGraphF(500.0f, 165.0f, 1000.0f, 365.0f, p1Img, TRUE);
 
-    DrawFormatStringF(340.0f, 380.0f, p1Color, _T("P1:  %s"), p1Device);
-    DrawFormatStringF(340.0f, 500.0f, p2Color, _T("P2:  %s"), p2Device);
+    int p2Img = settings->p2UseGamepad ? imgMgr->controller[p2Idx] : imgMgr->keyboard[p2Idx];
+    DrawExtendGraphF(500.0f, 520.0f, 1000.0f, 720.0f, p2Img, TRUE);
 }
 
 SceneID SceneSettings::GetNextScene() {

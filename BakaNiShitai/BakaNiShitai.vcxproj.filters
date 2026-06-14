@@ -185,9 +185,6 @@
     <ClInclude Include="GameSettings.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="SceneSettings.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="ItemBanana.h">
       <Filter>ヘッダー ファイル\Item</Filter>
     </ClInclude>
@@ -196,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="RestrictionConfig.h">
       <Filter>ヘッダー ファイル\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneSettings.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

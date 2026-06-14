@@ -26,7 +26,10 @@ public:
     int adImages[3];
     int surpMark;
     int titleLogo;
+    int keyboard[4];
+    int controller[4];
     int blackboard[2];
+    int blackboardSetting[2];
     int blackboardGame[2];
     int menuAnimTatakau[2];
     int menuAnimTutorial[2];

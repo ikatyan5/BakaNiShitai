@@ -34,9 +34,25 @@ void ImageManager::Load() {
 
     surpMark = LoadGraph(_T("Image/UI/surprise_mark.png"));
     titleLogo = LoadGraph(_T("Image/UI/Title.png"));
+
+    int srcKeyboard = LoadGraph(_T("Image/UI/keyboard.png"));
+    keyboard[0] = DerivationGraph(0, 0, 600, 200, srcKeyboard); // 非選択1
+    keyboard[1] = DerivationGraph(600, 0, 600, 200, srcKeyboard); // 非選択2
+    keyboard[2] = DerivationGraph(1200, 0, 600, 200, srcKeyboard); // 選択中1
+    keyboard[3] = DerivationGraph(1800, 0, 600, 200, srcKeyboard); // 選択中2
+
+    int srcController = LoadGraph(_T("Image/UI/controller.png"));
+    controller[0] = DerivationGraph(0, 0, 600, 200, srcController);
+    controller[1] = DerivationGraph(600, 0, 600, 200, srcController);
+    controller[2] = DerivationGraph(1200, 0, 600, 200, srcController);
+    controller[3] = DerivationGraph(1800, 0, 600, 200, srcController);
+
     int srcblackboard = LoadGraph(_T("Image/UI/blackboard.png"));
     blackboard[0] = DerivationGraph(0, 0, 640, 460, srcblackboard);
     blackboard[1] = DerivationGraph(640, 0, 640, 460, srcblackboard);
+    int srcBbSetting = LoadGraph(_T("Image/UI/blackboard_setting.png"));
+    blackboardSetting[0] = DerivationGraph(0, 0, 640, 460, srcBbSetting);
+    blackboardSetting[1] = DerivationGraph(640, 0, 640, 460, srcBbSetting);
     int srcBbGame = LoadGraph(_T("Image/UI/blackboard_game.png"));
     blackboardGame[0] = DerivationGraph(0, 0, 640, 460, srcBbGame);
     blackboardGame[1] = DerivationGraph(640, 0, 640, 460, srcBbGame);
