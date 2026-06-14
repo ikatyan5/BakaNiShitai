@@ -9,9 +9,6 @@ static const TCHAR* TOP_ITEMS[] = {
 };
 static const int TOP_COUNT = 3;
 
-static const int RESTRICTION_ENTRY_COUNT = 15;
-RestrictionEntry restrictionEntries[15];
-
 static const TCHAR* ZUKAN_ITEMS[] = {
     _T("ïêäÌ"),
     _T("ÉAÉCÉeÉÄ"),
