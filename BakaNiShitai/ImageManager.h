@@ -26,6 +26,8 @@ public:
     int adImages[3];
     int surpMark;
     int titleLogo;
+    int zukan;
+    int zukan_restriction;
     int keyboard[4];
     int controller[4];
     int blackboard[2];

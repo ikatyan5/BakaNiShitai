@@ -50,8 +50,8 @@ void SceneSettings::Update() {
 void SceneSettings::Draw() {
     ClearDrawScreen();
     DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardSetting[animFrame], TRUE);
-    DrawStringF(480.0f, 100.0f, _T("ê›íË"), GetColor(255, 255, 255));
-    DrawStringF(340.0f, 180.0f, _T("Å© Å® Ç≈êÿÇËë÷Ç¶ÅAENTERÇ≈ñﬂÇÈ"), GetColor(200, 200, 200));
+    DrawStringF(550.0f, 100.0f, _T("ê›íË"), GetColor(255, 255, 255));
+    DrawStringF(480.0f, 480.0f, _T("Å© Å® Ç≈êÿÇËë÷Ç¶ÅAENTERÇ≈ñﬂÇÈ"), GetColor(255, 255, 255));
 
     int p1Idx = (selectRow == 0) ? (2 + animFrame) : animFrame;
     int p2Idx = (selectRow == 1) ? (2 + animFrame) : animFrame;

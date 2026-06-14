@@ -6,6 +6,7 @@
 #include "SceneMenu.h"
 #include "SceneGame.h"
 #include "SceneSettings.h"
+#include "SceneTutorial.h"
 #include "GameSettings.h"
 #include <ctime>
 
@@ -29,6 +30,11 @@ BaseScene* CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings)
     case SCENE_SETTINGS: {
         auto* s = new SceneSettings();
         s->Init(imgMgr,settings);
+        return s;
+    }
+    case SCENE_TUTORIAL: {
+        auto* s = new SceneTutorial();
+        s->Init(imgMgr);
         return s;
     }
     default:

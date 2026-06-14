@@ -34,6 +34,8 @@ void ImageManager::Load() {
 
     surpMark = LoadGraph(_T("Image/UI/surprise_mark.png"));
     titleLogo = LoadGraph(_T("Image/UI/Title.png"));
+    zukan = LoadGraph(_T("Image/UI/zukan.png"));
+    zukan_restriction = LoadGraph(_T("Image/UI/zukan_restriction.png"));
 
     int srcKeyboard = LoadGraph(_T("Image/UI/keyboard.png"));
     keyboard[0] = DerivationGraph(0, 0, 600, 200, srcKeyboard); // ”ñ‘I‘ð1

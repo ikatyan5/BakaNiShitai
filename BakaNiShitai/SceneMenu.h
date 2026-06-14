@@ -18,6 +18,9 @@ private:
     bool prevDown = false;    // 前フレームの下キー状態
     bool prevEnter = false;   // 前フレームのEnterキー状態
 
+    int tipsTimer = 0;
+    int tipsIndex = 0;
+
     int animTimer = 0;
     int animFrame = 0;
     int animTimer2 = 0;

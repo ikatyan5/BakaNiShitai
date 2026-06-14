@@ -151,6 +151,7 @@
     <ClCompile Include="SceneMenu.cpp" />
     <ClCompile Include="SceneSettings.cpp" />
     <ClCompile Include="SceneTitle.cpp" />
+    <ClCompile Include="SceneTutorial.cpp" />
     <ClCompile Include="Stage.cpp" />
     <ClCompile Include="Weapon.cpp" />
   </ItemGroup>
@@ -182,6 +183,7 @@
     <ClInclude Include="SceneMenu.h" />
     <ClInclude Include="SceneSettings.h" />
     <ClInclude Include="SceneTitle.h" />
+    <ClInclude Include="SceneTutorial.h" />
     <ClInclude Include="Stage.h" />
     <ClInclude Include="UIConfig.h" />
     <ClInclude Include="Weapon.h" />
