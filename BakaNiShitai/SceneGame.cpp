@@ -249,6 +249,9 @@ void SceneGame::ResetGame(bool keepWinCount) {
     hyperDashCooldown = 0;
     hyperDashDistance = 0.0f;
 
+    animTimer = 0;
+    animFrame = 0;
+
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
     meteorManager.Init();
@@ -666,6 +669,11 @@ void SceneGame::DrawMementoMori(Player& attacker) {
 
 void SceneGame::Update() {
     if (state == STATE_PLAYING) {
+        animTimer++;
+        if (animTimer >= 10) {
+            animTimer = 0;
+            animFrame = (animFrame + 1) % 2;
+        }
         if (timeTimer > 0) timeTimer--;
         else {
             if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
@@ -1059,6 +1067,7 @@ void SceneGame::Draw() {
     if (state == STATE_PLAYING) {
         SetDrawScreen(currentTex);
         ClearDrawScreen();
+        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
@@ -1114,6 +1123,7 @@ void SceneGame::Draw() {
 #endif
     }
     else if (state == STATE_HIT) {
+        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
@@ -1130,6 +1140,7 @@ void SceneGame::Draw() {
         DrawUI();
     }
     else if (state == STATE_RESULT) {
+        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
@@ -1156,7 +1167,7 @@ void SceneGame::Draw() {
 
     }
     else if (state == STATE_GAMEEND) {
-
+        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
         SetFontSize(48);
         const TCHAR* winText = !JUDGE ? _T("Ô‚ÌŸ‚¿I") : _T("Â‚ÌŸ‚¿I");
         unsigned int winColor = !JUDGE ? GetColor(255, 50, 50) : GetColor(50, 50, 255);
@@ -1176,6 +1187,7 @@ void SceneGame::Draw() {
         SetFontSize(16);
     }
     else if (state == STATE_COUNTDOWN) {
+        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);

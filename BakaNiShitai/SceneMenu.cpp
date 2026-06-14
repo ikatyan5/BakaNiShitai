@@ -54,9 +54,6 @@ void SceneMenu::Draw() {
     ClearDrawScreen();
     DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboard[animFrame], TRUE);
 
-    // TipsògÅiâºÅj
-    DrawStringF(630.0f, 100.0f, _T("ENTER Ç≈åàíËÇæ"), GetColor(0, 0, 0));
-
     int idx0 = (selectIndex == 0) ? (2 + animFrame) : animFrame;
     int idx1 = (selectIndex == 1) ? (2 + animFrame) : animFrame;
     int idx2 = (selectIndex == 2) ? (2 + animFrame) : animFrame;

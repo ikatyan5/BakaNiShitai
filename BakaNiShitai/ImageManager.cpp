@@ -37,6 +37,9 @@ void ImageManager::Load() {
     int srcblackboard = LoadGraph(_T("Image/UI/blackboard.png"));
     blackboard[0] = DerivationGraph(0, 0, 640, 460, srcblackboard);
     blackboard[1] = DerivationGraph(640, 0, 640, 460, srcblackboard);
+    int srcBbGame = LoadGraph(_T("Image/UI/blackboard_game.png"));
+    blackboardGame[0] = DerivationGraph(0, 0, 640, 460, srcBbGame);
+    blackboardGame[1] = DerivationGraph(640, 0, 640, 460, srcBbGame);
 
     int srcPressAnyKey = LoadGraph(_T("Image/UI/nankaose.png"));
     pressAnyKey[0] = DerivationGraph(0, 0, 600, 200, srcPressAnyKey);

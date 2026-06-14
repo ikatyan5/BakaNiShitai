@@ -27,11 +27,12 @@ void Stage::Init(int id) {
 
 void Stage::Draw(){
     for (int i = 0; i < platformCount; i++) {
+        // 塗りつぶしなし・白チョーク色で枠だけ
         DrawBoxAA(
             platforms[i].x, platforms[i].y,
             platforms[i].x + platforms[i].w,
             platforms[i].y + platforms[i].h,
-            GetColor(100, 200, 100), TRUE
+            GetColor(220, 220, 200), FALSE
         );
     }
 }

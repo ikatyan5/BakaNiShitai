@@ -60,6 +60,9 @@ private:
     int RESULT_TIMER;
     int weaponSpawnTimer;
 
+    int animTimer = 0;
+    int animFrame = 0;
+
     bool isDraw;
     int matchTime; // 実際に使う試合時間
     int timeTimer; // フレームカウンター

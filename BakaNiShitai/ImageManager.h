@@ -27,6 +27,7 @@ public:
     int surpMark;
     int titleLogo;
     int blackboard[2];
+    int blackboardGame[2];
     int menuAnimTatakau[2];
     int menuAnimTutorial[2];
     int menuAnimSetting[2];

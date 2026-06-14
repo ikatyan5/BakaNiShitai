@@ -93,14 +93,14 @@
     <ClCompile Include="AdManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="SceneSettings.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="ItemBanana.cpp">
       <Filter>ソース ファイル\Item</Filter>
     </ClCompile>
     <ClCompile Include="ItemKinoko.cpp">
       <Filter>ソース ファイル\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneSettings.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
