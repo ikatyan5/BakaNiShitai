@@ -58,6 +58,10 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings) {
     matchTime = DEFAULT_TIME;
     timeTimer = matchTime * 60;
 
+    hyperDashing = false;
+    hyperDashCooldown = 0;
+    hyperDashDistance = 0.0f;
+
     mementoMoriTimer = 0;
     mementoMoriShooterID = 0;
     mementoMoriWinnerID = 0;
@@ -160,7 +164,6 @@ void SceneGame::InitPlayers(bool keepWinCount) {
         itemManager.hyperPlayerID = hyperPlayerID;
 
         Player& hyperPlayer = (hyperPlayerID == 1) ? player1 : player2;
-        hyperPlayer.canAttack = false;
         hyperPlayer.moveSpeed = 5.0f * 1.3f;
 
         // 弱い側にピコハンを持たせる
@@ -242,6 +245,10 @@ void SceneGame::ResetGame(bool keepWinCount) {
     p1Glowing = false;
     p2Glowing = false;
     timeTimer = matchTime * 60;
+    hyperDashing = false;
+    hyperDashCooldown = 0;
+    hyperDashDistance = 0.0f;
+
     itemManager.Init(*imgMgr);
     orbManager.Init(*imgMgr);
     meteorManager.Init();
@@ -720,6 +727,38 @@ void SceneGame::Update() {
             }
 
             UpdateFallingUI(enteredHeavy); // UI落下処理を一括で呼ぶ
+        }
+
+        // ハイパー突進処理
+        if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
+            Player& hp = (hyperPlayerID == 1) ? player1 : player2;
+
+            if (hyperDashCooldown > 0) hyperDashCooldown--;
+
+            // 構え→攻撃の遷移瞬間に突進発動
+            if (!hyperDashing && hyperDashCooldown == 0 && hp.attacking) {
+                if (hp.attackTimer == BARE_HAND_CHARGE_FRAMES - 1) {
+                    hyperDashing = true;
+                    hyperDashDistance = 0.0f;
+                }
+            }
+
+            // ダッシュ中の処理
+            const float DASH_SPEED = 35.0f;
+            if (hyperDashing) {
+                hp.vx = hp.facingRight ? DASH_SPEED : -DASH_SPEED;
+                hp.vy = 0.0f;          // 重力無視で高さキープ
+                hp.isDashing = true;
+                hyperDashDistance += DASH_SPEED;
+                if (hyperDashDistance >= 1280.0f) {
+                    hyperDashing = false;
+                    hp.isDashing = false;
+                    hyperDashCooldown = 420;
+                }
+            }
+            else {
+                hp.isDashing = false;
+            }
         }
 
         // 爆発中はプレイヤーの更新を止める

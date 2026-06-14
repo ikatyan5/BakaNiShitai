@@ -14,6 +14,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	attackTimer = 0;
 	PlayerID = id;
 	wantThrow = false;
+	isDashing = false;
 	facingRight = facingR;
 	winCount = keepWinCount;
 	holdingWeaponIndex = -1;
@@ -89,6 +90,8 @@ void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons
 		if (knockbackTimer <= 0) isKnockedBack = false;
 		return;
 	}
+
+	if (isDashing) return;
 
 	if (isStunned) { vx = 0; return; }
 	if (attacking) {

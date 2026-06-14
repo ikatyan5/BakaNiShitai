@@ -19,6 +19,17 @@ void SceneMenu::Init(ImageManager& imgMgr_) {
 }
 
 void SceneMenu::Update() {
+    animTimer++;
+    if (animTimer >= 10) {
+        animTimer = 0;
+        animFrame = (animFrame + 1) % 2;
+    }
+    animTimer2++;
+    if (animTimer2 >= 40) { // 10→20で半分の速度
+        animTimer2 = 0;
+        animFrame2 = (animFrame2 + 1) % 2;
+    }
+
     bool up = CheckHitKey(KEY_INPUT_UP);
     bool down = CheckHitKey(KEY_INPUT_DOWN);
     bool enter = CheckHitKey(KEY_INPUT_RETURN);
@@ -41,30 +52,32 @@ void SceneMenu::Update() {
 
 void SceneMenu::Draw() {
     ClearDrawScreen();
-    //DrawBoxF(0.0f, 0.0f, 1280.0f, 920.0f, GetColor(255, 255, 255), TRUE);
+    DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboard[animFrame], TRUE);
+
+    // Tips枠（仮）
     DrawStringF(630.0f, 100.0f, _T("ENTER で決定だ"), GetColor(0, 0, 0));
-    float startY = 250.0f;
-    float gap = 220.0f;
-    float itemW = 300.0f;
-    float itemH = 200.0f;
-    float centerX = (1280.0f - itemW) / 2.0f;
 
-    for (int i = 0; i < MENU_COUNT; i++) {
-        int idx = (selectIndex == i) ? 1 : 0;
-        int img = -1;
-        if (i == 0) img = imgMgr->menuTatakau[idx];
-        if (i == 1) img = imgMgr->menuTutorial[idx];
-        if (i == 2) img = imgMgr->menuSetting[idx];
+    int idx0 = (selectIndex == 0) ? (2 + animFrame) : animFrame;
+    int idx1 = (selectIndex == 1) ? (2 + animFrame) : animFrame;
+    int idx2 = (selectIndex == 2) ? (2 + animFrame) : animFrame;
 
-        float y = startY + i * gap;
-        if (i == 1) {
-            float textX = centerX + itemW + 20.0f;
-            float textY = y + itemH / 2.0f - 8.0f;
-            DrawStringF(textX, textY, _T("（まだできてないよ～）"), GetColor(180, 180, 180));
-        }
-        DrawExtendGraphF(centerX, y, centerX + itemW, y + itemH, img, TRUE);
-    }
+    // たたかう（大きめ）500x200基準
+    DrawExtendGraphF(170.0f, 140.0f, 170.0f + 450.0f, 140.0f + 200.0f, imgMgr->menuTatakau[idx0], TRUE);
+
+
+    // チュートリ（ふつう）
+    DrawExtendGraphF(180.0f, 370.0f, 170.0f + 350.0f, 370.0f + 120.0f, imgMgr->menuTutorial[idx1], TRUE);
+
+    // 非選択：0と1を切り替え、選択中：2と3を切り替え
+    DrawExtendGraphF(170.0f, 490.0f, 170.0f + 220.0f, 480.0f + 210.0f, imgMgr->menuSetting[idx2], TRUE);
+
+    // 右側アニメ
+    int* currentAnim = (selectIndex == 0) ? imgMgr->menuAnimTatakau :
+        (selectIndex == 1) ? imgMgr->menuAnimTutorial :
+        imgMgr->menuAnimSetting;
+    DrawExtendGraphF(700.0f, 250.0f, 1150.0f, 700.0f, currentAnim[animFrame2], TRUE);
 }
+
 SceneID SceneMenu::GetNextScene() {
     return nextScene;
 }

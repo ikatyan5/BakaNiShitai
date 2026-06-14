@@ -108,6 +108,10 @@ private:
     int p1HpIndex = 0;
     int p2HpIndex = 0;
 
+    bool hyperDashing;
+    int  hyperDashCooldown;
+    float hyperDashDistance;
+
     struct FallingUI {
         float x, y;        // 現在の中心座標
         float baseX, baseY;// 揺れの基準になる元の中心座標

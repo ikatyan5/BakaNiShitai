@@ -26,15 +26,18 @@ void SceneTitle::Update() {
 
 void SceneTitle::Draw() {
     ClearDrawScreen();
+
     DrawBox(0.0f, 0.0f, 1280.0f, 920.0f, GetColor(255, 255, 255), TRUE);
+    DrawBox(0.0f, 580.0f, 1280.0f, 920.0f, GetColor(0, 0, 0), TRUE);
+    DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboard[animFrame], TRUE);
     // タイトル画像を中央に表示
     DrawExtendGraphF(
         240.0f, 20.0f, 1020.0f, 540.0f,
         titleImg, TRUE
     );
-    DrawBox(0.0f, 580.0f, 1280.0f, 920.0f, GetColor(0, 0, 0), TRUE);
     // PRESS ANY KEY
     DrawExtendGraphF(340.0f, 650.0f, 940.0f, 850.0f, pressAnyKeyImg[animFrame], TRUE);
+
 }
 
 SceneID SceneTitle::GetNextScene() {

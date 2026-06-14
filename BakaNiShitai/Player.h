@@ -21,6 +21,8 @@ public:
 	int winCount;       // 勝利数
 	int jumpCount; // 残りジャンプ回数
 	int holdingWeaponIndex; // 持ってる武器のインデックス（-1なら持ってない）
+	
+	bool isDashing;
 
 	float prevY;
 	bool wantExplode;

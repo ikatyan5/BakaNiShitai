@@ -20,12 +20,16 @@ public:
     int setsunaP1[2];
     int setsunaP2[2];
     int pressAnyKey[2];
-    int menuTatakau[2];
-    int menuTutorial[2];
-    int menuSetting[2];
+    int menuTatakau[4];
+    int menuTutorial[4];
+    int menuSetting[4];
     int adImages[3];
     int surpMark;
     int titleLogo;
+    int blackboard[2];
+    int menuAnimTatakau[2];
+    int menuAnimTutorial[2];
+    int menuAnimSetting[2];
 
     // •Ší‰æ‘œ
     int kama;

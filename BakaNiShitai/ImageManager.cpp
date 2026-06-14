@@ -34,23 +34,43 @@ void ImageManager::Load() {
 
     surpMark = LoadGraph(_T("Image/UI/surprise_mark.png"));
     titleLogo = LoadGraph(_T("Image/UI/Title.png"));
+    int srcblackboard = LoadGraph(_T("Image/UI/blackboard.png"));
+    blackboard[0] = DerivationGraph(0, 0, 640, 460, srcblackboard);
+    blackboard[1] = DerivationGraph(640, 0, 640, 460, srcblackboard);
 
     int srcPressAnyKey = LoadGraph(_T("Image/UI/nankaose.png"));
     pressAnyKey[0] = DerivationGraph(0, 0, 600, 200, srcPressAnyKey);
     pressAnyKey[1] = DerivationGraph(600, 0, 600, 200, srcPressAnyKey);
     int srcTatakau = LoadGraph(_T("Image/UI/tatakau.png"));
-    menuTatakau[0] = DerivationGraph(0, 0, 300, 200, srcTatakau);   // 非選択
-    menuTatakau[1] = DerivationGraph(300, 0, 300, 200, srcTatakau); // 選択中
+    menuTatakau[0] = DerivationGraph(0, 0, 500, 200, srcTatakau); // 非選択1
+    menuTatakau[1] = DerivationGraph(500, 0, 500, 200, srcTatakau); // 非選択2
+    menuTatakau[2] = DerivationGraph(1000, 0, 500, 200, srcTatakau); // 選択中1
+    menuTatakau[3] = DerivationGraph(1500, 0, 500, 200, srcTatakau); // 選択中2
     int srcTutorial = LoadGraph(_T("Image/UI/tutorial.png"));
-    menuTutorial[0] = DerivationGraph(0, 0, 300, 200, srcTutorial);
-    menuTutorial[1] = DerivationGraph(300, 0, 300, 200, srcTutorial);
+    menuTutorial[0] = DerivationGraph(0, 0, 500, 200, srcTutorial); // 非選択1
+    menuTutorial[1] = DerivationGraph(500, 0, 500, 200, srcTutorial); // 非選択2
+    menuTutorial[2] = DerivationGraph(1000, 0, 500, 200, srcTutorial); // 選択中1
+    menuTutorial[3] = DerivationGraph(1500, 0, 500, 200, srcTutorial); // 選択中2
     int srcSetting = LoadGraph(_T("Image/UI/setting.png"));
-    menuSetting[0] = DerivationGraph(0, 0, 300, 200, srcSetting);
-    menuSetting[1] = DerivationGraph(300, 0, 300, 200, srcSetting);
+    menuSetting[0] = DerivationGraph(0, 0, 300, 200, srcSetting); // 非選択1
+    menuSetting[1] = DerivationGraph(300, 0, 300, 200, srcSetting); // 非選択2
+    menuSetting[2] = DerivationGraph(600, 0, 300, 200, srcSetting); // 選択中1
+    menuSetting[3] = DerivationGraph(900, 0, 300, 200, srcSetting); // 選択中2
     int srcNum = LoadGraph(_T("Image/UI/number.png"));
     for (int i = 0; i < 10; i++) {
         numbers[i] = DerivationGraph(i * 32, 0, 32, 32, srcNum);
     }
+    int srcAnimTatakau = LoadGraph(_T("Image/UI/menuAnim_tatakau.png"));
+    menuAnimTatakau[0] = DerivationGraph(0, 0, 400, 400, srcAnimTatakau);
+    menuAnimTatakau[1] = DerivationGraph(400, 0, 400, 400, srcAnimTatakau);
+
+    int srcAnimTutorial = LoadGraph(_T("Image/UI/menuAnim_tutorial.png"));
+    menuAnimTutorial[0] = DerivationGraph(0, 0, 400, 400, srcAnimTutorial);
+    menuAnimTutorial[1] = DerivationGraph(400, 0, 400, 400, srcAnimTutorial);
+
+    int srcAnimSetting = LoadGraph(_T("Image/UI/menuAnim_setting.png"));
+    menuAnimSetting[0] = DerivationGraph(0, 0, 400, 400, srcAnimSetting);
+    menuAnimSetting[1] = DerivationGraph(400, 0, 400, 400, srcAnimSetting);
 
     int srcSetsunaP1 = LoadGraph(_T("Image/UI/setsunaPlayer1.png"));
     int srcSetsunaP2 = LoadGraph(_T("Image/UI/setsunaPlayer2.png"));
