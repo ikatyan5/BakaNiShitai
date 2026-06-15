@@ -18,6 +18,11 @@ public:
     int setsunaSign;  // 刹那の見切り：！が出た合図
     int deflect;      // はたき落とし（タイミングずれの防御）
     int meteor;       // 隕石が落ち始めた時
+    int attack;       // 素手で攻撃した時
+    int countdown;    // カウントダウンの数字が変わる時（3・2・1）
+    int decide;       // メニューで決定した時
+    int tensai;       // 天才の杖を振った時
+    int win;          // 試合に勝って「〇の勝ち！」が出る時
 
     void Load();
 };

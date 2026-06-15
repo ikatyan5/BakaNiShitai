@@ -15,6 +15,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	PlayerID = id;
 	wantThrow = false;
 	justJumped = false;
+	justBareAttacked = false;
 	isDashing = false;
 	facingRight = facingR;
 	winCount = keepWinCount;
@@ -297,6 +298,7 @@ void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restriction
 		else if (attackKey && !prevAttackKey && attackTimer == 0) {
 			attacking = true;
 			attackTimer = GetAttackFrames(weapons);
+			if (holdingWeaponIndex == -1) justBareAttacked = true; // 素手攻撃の音用
 			if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
 				bool movingKey = (vx != 0);
 				dashAttack = movingKey;
@@ -317,6 +319,7 @@ void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restriction
 		else if (attackKey && !prevAttackKey && attackTimer == 0) {
 			attacking = true;
 			attackTimer = GetAttackFrames(weapons);
+			if (holdingWeaponIndex == -1) justBareAttacked = true; // 素手攻撃の音用
 			if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
 				bool movingKey = (vx != 0);
 				dashAttack = movingKey;
@@ -337,6 +340,7 @@ void Player::UpdateAttack(Weapon* weapons, const RestrictionManager& restriction
 		else if (attackKey && !prevAttackKey && attackTimer == 0) {
 			attacking = true;
 			attackTimer = GetAttackFrames(weapons);
+			if (holdingWeaponIndex == -1) justBareAttacked = true; // 素手攻撃の音用
 			if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
 				bool movingKey = (vx != 0);
 				dashAttack = movingKey;

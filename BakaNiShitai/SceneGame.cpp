@@ -558,6 +558,7 @@ void SceneGame::CheckTensaiTsue(Player& player) {
     int charge = WEAPON_DATA[WEAPON_TENSAI_TSUE].chargeFrames;
     if (player.attackTimer != charge) return;
 
+    PlaySoundMem(sound->tensai, DX_PLAYTYPE_BACK); // 天才の杖を振った
     meteorManager.SpawnTensai();
     held.tensaiFired = true;
 }
@@ -784,6 +785,10 @@ void SceneGame::Update() {
             // ジャンプした瞬間に音を鳴らしてフラグを戻す
             if (player1.justJumped) { PlaySoundMem(sound->jump, DX_PLAYTYPE_BACK); player1.justJumped = false; }
             if (player2.justJumped) { PlaySoundMem(sound->jump, DX_PLAYTYPE_BACK); player2.justJumped = false; }
+
+            // 素手攻撃を出した瞬間に音を鳴らしてフラグを戻す
+            if (player1.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player1.justBareAttacked = false; }
+            if (player2.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player2.justBareAttacked = false; }
         }
 
         // ノックバック画面外チェック
@@ -895,7 +900,11 @@ void SceneGame::Update() {
     else if (state == STATE_HIT) {
         // ヒット演出タイマー
         if (HIT_TIMER > 0) HIT_TIMER--;
-        else state = STATE_RESULT;
+        else {
+            state = STATE_RESULT;
+            // リザルトの「〇の勝ち！」表示と同時に鳴らす（引き分けは鳴らさない）
+            if (!isDraw) PlaySoundMem(sound->win, DX_PLAYTYPE_BACK);
+        }
     }
     else if (state == STATE_RESULT) {
         // リザルト表示タイマー
@@ -917,7 +926,13 @@ void SceneGame::Update() {
         }
     }
     else if (state == STATE_COUNTDOWN) {
+        int beforeSec = (countdownTimer / 60) + 1;
         countdownTimer--;
+        int afterSec = (countdownTimer / 60) + 1;
+        // 3・2・1と数字が変わる瞬間に鳴らす（0は鳴らさない）
+        if (afterSec != beforeSec && afterSec >= 1 && afterSec <= 3) {
+            PlaySoundMem(sound->countdown, DX_PLAYTYPE_BACK);
+        }
         if (countdownTimer <= 0) {
             state = STATE_PLAYING;
             if (restrictionManager.IsActive(REST_SETSUNA)) {

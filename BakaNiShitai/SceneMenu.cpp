@@ -74,6 +74,7 @@ void SceneMenu::Update() {
         PlaySoundMem(sound->menu, DX_PLAYTYPE_BACK);
     }
     if (enter && !prevEnter) {
+        PlaySoundMem(sound->decide, DX_PLAYTYPE_BACK);
         if (selectIndex == 0) nextScene = SCENE_GAME;
         if (selectIndex == 1) nextScene = SCENE_TUTORIAL;
         if (selectIndex == 2) nextScene = SCENE_SETTINGS;

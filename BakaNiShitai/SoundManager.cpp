@@ -17,4 +17,9 @@ void SoundManager::Load() {
     setsunaSign  = LoadSoundMem(_T("Sound/setsuna_sign.wav"));
     deflect      = LoadSoundMem(_T("Sound/deflect.wav"));
     meteor       = LoadSoundMem(_T("Sound/meteor.wav"));
+    attack       = LoadSoundMem(_T("Sound/attack.wav"));
+    countdown    = LoadSoundMem(_T("Sound/countdown.wav"));
+    decide       = LoadSoundMem(_T("Sound/decide.wav"));
+    tensai       = LoadSoundMem(_T("Sound/tensai.wav"));
+    win          = LoadSoundMem(_T("Sound/win.wav"));
 }
