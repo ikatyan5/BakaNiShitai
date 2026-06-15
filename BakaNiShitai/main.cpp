@@ -1,5 +1,6 @@
 ﻿#include "DxLib.h"
 #include "ImageManager.h"
+#include "SoundManager.h"
 #include "SceneID.h"
 #include "BaseScene.h"
 #include "SceneTitle.h"
@@ -10,7 +11,7 @@
 #include "GameSettings.h"
 #include <ctime>
 
-BaseScene* CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings) {
+BaseScene* CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings, SoundManager& sndMgr) {
     switch (id) {
     case SCENE_TITLE: {
         auto* s = new SceneTitle();
@@ -24,7 +25,7 @@ BaseScene* CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings)
     }
     case SCENE_GAME: {
         auto* s = new SceneGame();
-        s->Init(imgMgr, settings);
+        s->Init(imgMgr, settings, sndMgr);
         return s;
     }
     case SCENE_SETTINGS: {
@@ -57,9 +58,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     ImageManager imageManager;
     imageManager.Load();
 
+    SoundManager soundManager;
+    soundManager.Load();
+
     SceneID currentID = SCENE_TITLE;
     GameSettings settings;
-    BaseScene* currentScene = CreateScene(currentID, imageManager, settings);
+    BaseScene* currentScene = CreateScene(currentID, imageManager, settings, soundManager);
 
     while (ProcessMessage() == 0) {
         LONGLONG start = GetNowHiPerformanceCount();
@@ -72,7 +76,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         if (next != SCENE_NONE) {
             delete currentScene;
             currentID = next;
-            currentScene = CreateScene(currentID, imageManager, settings);
+            currentScene = CreateScene(currentID, imageManager, settings, soundManager);
         }
         while (GetNowHiPerformanceCount() - start < 16667) {}
     }

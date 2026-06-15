@@ -11,8 +11,9 @@
 #include "DebugConfig.h"
 #include <cmath>
 
-void ItemManager::Init(ImageManager& imgMgr_) {
+void ItemManager::Init(ImageManager& imgMgr_, SoundManager& sndMgr_) {
     imgMgr = &imgMgr_;
+    sound = &sndMgr_;
     itemSpawnTimer = 0;
     hitOccurred = false;
     hitWinnerID = 0;
@@ -245,6 +246,7 @@ void ItemManager::CheckExplode(Player& player) {
             explosion->itemState = Item::ITEM_EXPLODING;
             explosion->explodePhase = ItemPotionRed::EXPLODE_WINDUP;
             items[i] = explosion;
+            PlaySoundMem(sound->explosion, DX_PLAYTYPE_BACK); // 爆発エフェクト出現と同時
             break;
         }
     }
@@ -261,5 +263,6 @@ void ItemManager::TryPickup(Player& player, int index) {
     if (dx < (PLAYER_HIT_W + ITEM_HIT_W) / 2 &&
         dy < (PLAYER_HIT_H + ITEM_HIT_H) / 2) {
         items[index]->OnPickup(player);
+        PlaySoundMem(sound->pickup, DX_PLAYTYPE_BACK); // アイテム取得
     }
 }

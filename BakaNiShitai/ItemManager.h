@@ -2,6 +2,7 @@
 #include "Item.h"
 #include "ImageManager.h"
 #include "RestrictionManager.h"
+#include "SoundManager.h"
 
 class Player;
 
@@ -20,7 +21,7 @@ enum ItemType {
 
 class ItemManager {
 public:
-    void Init(ImageManager& imgMgr);
+    void Init(ImageManager& imgMgr, SoundManager& sndMgr);
     void Update(Player& player1, Player& player2, const RestrictionManager& restrictions);
     void Draw();
     void SpawnItem(const RestrictionManager& restrictions);
@@ -37,4 +38,5 @@ private:
     Item* items[ITEM_MAX];
     int itemSpawnTimer;
     ImageManager* imgMgr;
+    SoundManager* sound;
 };

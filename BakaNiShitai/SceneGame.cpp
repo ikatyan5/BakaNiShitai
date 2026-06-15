@@ -40,8 +40,9 @@ static void DrawRotatedUI(float cx, float cy, float w, float h, float angle, int
     DrawModiGraphF(px[0], py[0], px[1], py[1], px[2], py[2], px[3], py[3], img, TRUE);
 }
 
-void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings) {
+void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager& sndMgr_) {
     imgMgr = &imgMgr_;
+    sound = &sndMgr_;
     state = STATE_COUNTDOWN;
     countdownTimer = 180; // 3秒
     JUDGE = false;
@@ -86,7 +87,7 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings) {
 
     setsunaSignVisible = false;
     this->settings = &settings;
-    itemManager.Init(*imgMgr);
+    itemManager.Init(*imgMgr, *sound);
     orbManager.Init(*imgMgr);
     meteorManager.Init();
     adManager.Init(*imgMgr);
@@ -252,7 +253,7 @@ void SceneGame::ResetGame(bool keepWinCount) {
     animTimer = 0;
     animFrame = 0;
 
-    itemManager.Init(*imgMgr);
+    itemManager.Init(*imgMgr, *sound);
     orbManager.Init(*imgMgr);
     meteorManager.Init();
     adManager.Init(*imgMgr);
@@ -644,6 +645,7 @@ void SceneGame::CheckMementoMori(Player& attacker, Player& target, bool judgeVal
     float hitH = WEAPON_DATA[WEAPON_MEMENTO_MORI].hitH;
     bool hit = fabsf((target.y - PLAYER_HIT_CY) - (attacker.y - PLAYER_HIT_CY)) < (hitH + PLAYER_HIT_H) / 2;
 
+    PlaySoundMem(sound->mementoMori, DX_PLAYTYPE_BACK); // メメントモリ発射
     mementoMoriPending = true;
     mementoMoriShooterID = attacker.PlayerID;
     mementoMoriTimer = 30;
@@ -1347,6 +1349,7 @@ void SceneGame::DrawUI()
 }
 
 void SceneGame::EnterHitState(bool judgeValue, bool addScore) {
+    PlaySoundMem(sound->hit, DX_PLAYTYPE_BACK); // 決着の一撃
     JUDGE = judgeValue;
     if (JUDGE) {
         p1HpIndex = 1;

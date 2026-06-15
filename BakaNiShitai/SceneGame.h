@@ -11,10 +11,11 @@
 #include "AdManager.h"
 #include "RestrictionManager.h"
 #include "GameSettings.h"
+#include "SoundManager.h"
 
 class SceneGame : public BaseScene {
 public:
-    void Init(ImageManager& imgMgr, GameSettings& settings);
+    void Init(ImageManager& imgMgr, GameSettings& settings, SoundManager& sndMgr);
     void InitPlayers(bool keepWinCount = false);
     void ResetGame(bool keepWinCount);
     void Update() override;
@@ -50,6 +51,7 @@ private:
     Weapon weapons[WEAPON_MAX];
     ImageManager* imgMgr;
     GameSettings* settings;
+    SoundManager* sound;
     ItemManager itemManager;
     OrbManager orbManager;
     MeteorManager meteorManager;
