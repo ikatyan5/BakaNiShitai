@@ -33,9 +33,9 @@ void SceneTutorial::Init(ImageManager& imgMgr_) {
     weaponEntries[4] = { _T("箒"),             imgMgr->weaponImages[WEAPON_HOUKI],         _T("横に広い攻撃範囲がある") , _T("はたき落としがしやすい") };
     weaponEntries[5] = { _T("ハンマー"),       imgMgr->weaponImages[WEAPON_HAMMER],        _T("重い一撃を放つことができるぞ") , _T("ジャンプしながら攻撃がおすすめ") };
     weaponEntries[6] = { _T("杖"),             imgMgr->weaponImages[WEAPON_STICK],         _T("振ると魔法を一回撃てる") , _T("魔法は三種類 ランダムで放つぞ") };
-    weaponEntries[7] = { _T("ブーメラン"),     imgMgr->weaponImages[WEAPON_BOOMERANG],     _T("投げると戻ってくる！自分に当たらないように") , _T("気を付けて投げるべし 当たったらダサいぞ") };
+    weaponEntries[7] = { _T("ブーメラン"),     imgMgr->weaponImages[WEAPON_BOOMERANG],     _T("投げると戻ってくる 当たらないように") , _T("気を付けて投げるべし 当たったらダサいぞ") };
     weaponEntries[8] = { _T("メメントモリ"),   imgMgr->weaponImages[WEAPON_MEMENTO_MORI],  _T("攻撃すると撃てる 外したら自分がやられる") , _T("覚悟を決めて撃つんだ") };
-    weaponEntries[9] = { _T("ピコハン"),       imgMgr->weaponImages[WEAPON_PIKOHAN],       _T("特定の制限でしか出ないぞ 普通に出てきたらおかしい"), _T("当てるとスタン 近接の方がスタン時間が長い") };
+    weaponEntries[9] = { _T("ピコハン"),       imgMgr->weaponImages[WEAPON_PIKOHAN],       _T("特定の制限でしか出ないぞ"), _T("当てるとスタン 近接の方がスタン時間が長い") };
     weaponEntries[10] = { _T("テンサイノツエ"), imgMgr->weaponImages[WEAPON_TENSAI_TSUE],  _T("普通の杖に見えるが…?") , _T("拾うと何かしらで変化が起きているぞ") };
 
     // アイテム図鑑エントリ
@@ -62,8 +62,8 @@ void SceneTutorial::Init(ImageManager& imgMgr_) {
     restrictionEntries[10] = { _T("横移動は連打しろ！"),                   _T("移動は連打しないといけない"),            _T("壁に触れたらダメな時があるから気を付けるべし") };
     restrictionEntries[11] = { _T("隕石が降ってくるぞ！"),                 _T("隕石が降ってきて当たると負けだ"),          _T("持っているピコハンを使って妨害だ") };
     restrictionEntries[12] = { _T("強いやつから逃げ切れ！"),               _T("片方がめっちゃ強くなる 逃げきれ！"),         _T("強い方は攻撃キーで突進ができるぞ") };
-    restrictionEntries[13] = { _T("地上で移動できないぞ！"),               _T("地面にいる間は横移動ができない"),             _T("ジャンプで移動するしかない～") };
-    restrictionEntries[14] = { _T("なんか画面おかしくね？"),               _T("画面が終わるぞ 目を酷使するべし"),            _T("邪魔なものが飛び回るぞ～") };
+    restrictionEntries[13] = { _T("地上で移動できないぞ！"),               _T("地面にいる間は横移動ができない"),             _T("ジャンプで移動するしかない") };
+    restrictionEntries[14] = { _T("なんか画面おかしくね？"),               _T("画面が終わるぞ 目を酷使するべし"),            _T("邪魔なものが飛び回るぞ") };
 }
 
 void SceneTutorial::Update() {
