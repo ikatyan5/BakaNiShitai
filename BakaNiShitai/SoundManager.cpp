@@ -13,4 +13,6 @@ void SoundManager::Load() {
     setsuna      = LoadSoundMem(_T("Sound/setsuna.wav"));
     weaponThrow  = LoadSoundMem(_T("Sound/throw.wav"));
     weaponPickup = LoadSoundMem(_T("Sound/weapon_pickup.wav"));
+    jump         = LoadSoundMem(_T("Sound/jump.wav"));
+    setsunaSign  = LoadSoundMem(_T("Sound/setsuna_sign.wav"));
 }

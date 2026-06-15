@@ -14,6 +14,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	attackTimer = 0;
 	PlayerID = id;
 	wantThrow = false;
+	justJumped = false;
 	isDashing = false;
 	facingRight = facingR;
 	winCount = keepWinCount;
@@ -229,6 +230,7 @@ void Player::UpdateJump(const RestrictionManager& restrictions) {
 		// ホバリング：ジャンプ回数無制限・ジャンプ力低め
 		if (jumpKey && !prevJumpKey) {
 			vy = jumpPower * 0.9f;
+			justJumped = true;
 		}
 		// 空中にいる時間で落下加速
 		if (!onGround) {
@@ -244,6 +246,7 @@ void Player::UpdateJump(const RestrictionManager& restrictions) {
 		if (jumpKey && !prevJumpKey && jumpCount > 0) {
 			vy = jumpPower;
 			jumpCount--;
+			justJumped = true;
 		}
 	}
 	prevJumpKey = jumpKey;

@@ -14,6 +14,8 @@ public:
     int setsuna;      // 刹那の見切り：！が出るまでの余興音
     int weaponThrow;  // 武器を投げた時（throwはC++予約語なのでこの名前）
     int weaponPickup; // 武器を拾った時
+    int jump;         // ジャンプした時
+    int setsunaSign;  // 刹那の見切り：！が出た合図
 
     void Load();
 };

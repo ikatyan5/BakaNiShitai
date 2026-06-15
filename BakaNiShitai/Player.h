@@ -20,6 +20,7 @@ public:
 	bool facingRight;   // 向いている方向
 	int winCount;       // 勝利数
 	int jumpCount; // 残りジャンプ回数
+	bool justJumped; // このフレームでジャンプしたか（音用。SceneGameが読んで戻す）
 	int holdingWeaponIndex; // 持ってる武器のインデックス（-1なら持ってない）
 	
 	bool isDashing;

@@ -779,6 +779,10 @@ void SceneGame::Update() {
         if (!itemManager.isExploding && !mementoMoriPending) {
             player1.Update(stage, weapons, restrictionManager);
             player2.Update(stage, weapons, restrictionManager);
+
+            // ジャンプした瞬間に音を鳴らしてフラグを戻す
+            if (player1.justJumped) { PlaySoundMem(sound->jump, DX_PLAYTYPE_BACK); player1.justJumped = false; }
+            if (player2.justJumped) { PlaySoundMem(sound->jump, DX_PLAYTYPE_BACK); player2.justJumped = false; }
         }
 
         // ノックバック画面外チェック
@@ -1018,6 +1022,7 @@ void SceneGame::UpdateSetsuna() {
             player1.canAttack = true;
             player2.canAttack = true;
             setsunaSignVisible = true;
+            PlaySoundMem(sound->setsunaSign, DX_PLAYTYPE_BACK); // ！が出た合図
         }
     }
 }
