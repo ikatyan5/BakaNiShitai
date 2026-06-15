@@ -16,6 +16,8 @@ public:
     int weaponPickup; // 武器を拾った時
     int jump;         // ジャンプした時
     int setsunaSign;  // 刹那の見切り：！が出た合図
+    int deflect;      // はたき落とし（タイミングずれの防御）
+    int meteor;       // 隕石が落ち始めた時
 
     void Load();
 };

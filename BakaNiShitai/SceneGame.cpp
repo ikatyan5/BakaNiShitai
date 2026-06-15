@@ -89,7 +89,7 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
     this->settings = &settings;
     itemManager.Init(*imgMgr, *sound);
     orbManager.Init(*imgMgr);
-    meteorManager.Init();
+    meteorManager.Init(*sound);
     adManager.Init(*imgMgr);
     restrictionManager.Init();
 
@@ -255,7 +255,7 @@ void SceneGame::ResetGame(bool keepWinCount) {
 
     itemManager.Init(*imgMgr, *sound);
     orbManager.Init(*imgMgr);
-    meteorManager.Init();
+    meteorManager.Init(*sound);
     adManager.Init(*imgMgr);
     restrictionManager.SelectRandom();
     wallEndLeft = false;
@@ -342,6 +342,7 @@ void SceneGame::CheckParry(Player& attacker, int ownerID) {
                 return;
             }
             else {
+                PlaySoundMem(sound->deflect, DX_PLAYTYPE_BACK); // はたき落とし
                 if (!isBareHand) {
                     // はたき落とし
                     Weapon& held = weapons[attacker.holdingWeaponIndex];

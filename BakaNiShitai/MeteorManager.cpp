@@ -5,7 +5,8 @@
 #include <cmath>
 #include <cstdlib>
 
-void MeteorManager::Init() {
+void MeteorManager::Init(SoundManager& sndMgr) {
+    sound = &sndMgr;
     hitOccurred = false;
     hitWinnerID = 0;
     spawnTimer = 0;
@@ -54,6 +55,7 @@ void MeteorManager::Spawn(float targetX, float speed) {
             meteors[i].targetX = targetX;
             meteors[i].targetY = 800.0f;
             meteors[i].active = true;
+            PlaySoundMem(sound->meteor, DX_PLAYTYPE_BACK); // 落ち始めの音（ループなし）
             return;
         }
     }

@@ -2,12 +2,13 @@
 #pragma once
 #include "Meteor.h"
 #include "ImageManager.h"
+#include "SoundManager.h"
 
 class Player;
 
 class MeteorManager {
 public:
-    void Init();
+    void Init(SoundManager& sndMgr);
     void Update(Player& player1, Player& player2, bool tensaiMode = false);
     void Draw(ImageManager& imgMgr);
     bool HasActiveMeteor() const;
@@ -23,6 +24,7 @@ private:
     static const int METEOR_MAX = 8;
     Meteor meteors[METEOR_MAX];
 
+    SoundManager* sound;
     int spawnTimer;
     int elapsedFrames;
     int edgeSpawnTimer;
