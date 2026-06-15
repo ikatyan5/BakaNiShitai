@@ -20,7 +20,7 @@ BaseScene* CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings,
     }
     case SCENE_MENU: {
         auto* s = new SceneMenu();
-        s->Init(imgMgr);
+        s->Init(imgMgr, sndMgr);
         return s;
     }
     case SCENE_GAME: {

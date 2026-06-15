@@ -9,6 +9,11 @@ public:
     int explosion;    // 赤ポーションが爆発した時
     int pickup;       // アイテムを拾った時
     int mementoMori;  // メメントモリを撃った時
+    int menu;         // メニューのカーソル移動
+    int parry;        // はじき返し（弾き返し）成功
+    int setsuna;      // 刹那の見切り：！が出るまでの余興音
+    int weaponThrow;  // 武器を投げた時（throwはC++予約語なのでこの名前）
+    int weaponPickup; // 武器を拾った時
 
     void Load();
 };

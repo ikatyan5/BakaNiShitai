@@ -337,6 +337,7 @@ void SceneGame::CheckParry(Player& attacker, int ownerID) {
         if (inRange) {
             if (isParryFrame) {
                 // 弾き返し
+                PlaySoundMem(sound->parry, DX_PLAYTYPE_BACK);
                 weapons[i].vx = -weapons[i].vx * (isMeleeNoRest ? 1.5f : 1.0f);
                 return;
             }
@@ -448,6 +449,7 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
         }
         weapons[idx].Throw(player.x, player.y - 90.0f, player.facingRight, ownerID,
         (WeaponType)weapons[idx].weaponType, *imgMgr);
+        PlaySoundMem(sound->weaponThrow, DX_PLAYTYPE_BACK);
         player.holdingWeaponIndex = -1;
 
         // REST_GRAVITY_INSANEだけ縦方向に力を加える
@@ -568,6 +570,7 @@ void SceneGame::PickupWeapon(Player& player) {
         if (dist < 80.0f && fabsf(player.y - weapons[i].y) < 150.0f) {
             weapons[i].weaponState = Weapon::WEAPON_HELD;
             player.holdingWeaponIndex = i;
+            PlaySoundMem(sound->weaponPickup, DX_PLAYTYPE_BACK);
             break;
         }
     }
@@ -912,6 +915,10 @@ void SceneGame::Update() {
         countdownTimer--;
         if (countdownTimer <= 0) {
             state = STATE_PLAYING;
+            if (restrictionManager.IsActive(REST_SETSUNA)) {
+                // ！が出るまでの余興音。一度だけ流して、鳴り終わったら無音
+                PlaySoundMem(sound->setsuna, DX_PLAYTYPE_BACK);
+            }
         }
 }
 }

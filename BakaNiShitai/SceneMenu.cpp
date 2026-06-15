@@ -32,8 +32,9 @@ static const TCHAR* MENU_ITEMS[] = {
 };
 static const int MENU_COUNT = 3;
 
-void SceneMenu::Init(ImageManager& imgMgr_) {
+void SceneMenu::Init(ImageManager& imgMgr_, SoundManager& sndMgr_) {
     imgMgr = &imgMgr_;
+    sound = &sndMgr_;
     nextScene = SCENE_NONE;
     selectIndex = 0;
     prevUp = false;
@@ -66,9 +67,11 @@ void SceneMenu::Update() {
 
     if (up && !prevUp) {
         selectIndex = (selectIndex - 1 + MENU_COUNT) % MENU_COUNT;
+        PlaySoundMem(sound->menu, DX_PLAYTYPE_BACK);
     }
     if (down && !prevDown) {
         selectIndex = (selectIndex + 1) % MENU_COUNT;
+        PlaySoundMem(sound->menu, DX_PLAYTYPE_BACK);
     }
     if (enter && !prevEnter) {
         if (selectIndex == 0) nextScene = SCENE_GAME;
