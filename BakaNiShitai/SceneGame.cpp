@@ -607,7 +607,8 @@ void SceneGame::SpawnWeapon()
                     else if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
                         while (type == WEAPON_STICK ||
                             type == WEAPON_MEMENTO_MORI ||
-                            type == WEAPON_TENSAI_TSUE) {
+                            type == WEAPON_TENSAI_TSUE ||
+                            type == WEAPON_PIKOHAN) {
                             type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
                         }
                     }
@@ -1323,17 +1324,24 @@ void SceneGame::DrawUI()
     }
 
     if (restrictionManager.IsActive(REST_SETSUNA)) {
+        // 決着後は負けた側だけ「やられ絵」に差し替える
+        int p1Idx = 0;
+        int p2Idx = 0;
+        if ((state == STATE_HIT || state == STATE_RESULT) && !isDraw) {
+            if (JUDGE) p1Idx = 1; // JUDGE==true は P1 が負け
+            else       p2Idx = 1; // JUDGE==false は P2 が負け
+        }
         // 上部UI（P1）
         DrawExtendGraphF(
             setsunaP1UIX, 0.0f,
             setsunaP1UIX + 1280.0f, 300.0f,
-            imgMgr->setsunaP1[0], TRUE
+            imgMgr->setsunaP1[p1Idx], TRUE
         );
         // 下部UI（P2）
         DrawExtendGraphF(
             setsunaP2UIX, 620.0f,
             setsunaP2UIX + 1280.0f, 920.0f,
-            imgMgr->setsunaP2[0], TRUE
+            imgMgr->setsunaP2[p2Idx], TRUE
         );
     }
 }
