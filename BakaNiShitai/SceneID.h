@@ -1,4 +1,4 @@
-// SceneID.h
+﻿// SceneID.h
 #pragma once
 enum SceneID {
     SCENE_NONE = -1,

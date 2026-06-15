@@ -1,4 +1,4 @@
-// SceneTitle.cpp
+ï»¿// SceneTitle.cpp
 #include "SceneTitle.h"
 #include "DxLib.h"
 
@@ -14,11 +14,11 @@ void SceneTitle::Init(ImageManager& imgMgr_) {
 
 void SceneTitle::Update() {
     animTimer++;
-    if (animTimer >= 10) {  // 10ƒtƒŒ[ƒ€‚ÅØ‚è‘Ö‚¦
+    if (animTimer >= 10) {  // 10ãƒ•ãƒ¬ãƒ¼ãƒ ã§åˆ‡ã‚Šæ›¿ãˆ
         animTimer = 0;
         animFrame = (animFrame + 1) % 2;
     }
-    // ‰½‚©ƒL[‚ğ‰Ÿ‚µ‚½‚çƒƒjƒ…[‚Ö
+    // ä½•ã‹ã‚­ãƒ¼ã‚’æŠ¼ã—ãŸã‚‰ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã¸
     if (CheckHitKeyAll()) {
         nextScene = SCENE_MENU;
     }
@@ -30,7 +30,7 @@ void SceneTitle::Draw() {
     DrawBox(0.0f, 0.0f, 1280.0f, 920.0f, GetColor(255, 255, 255), TRUE);
     DrawBox(0.0f, 580.0f, 1280.0f, 920.0f, GetColor(0, 0, 0), TRUE);
     DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
-    // ƒ^ƒCƒgƒ‹‰æ‘œ‚ğ’†‰›‚É•\¦
+    // ã‚¿ã‚¤ãƒˆãƒ«ç”»åƒã‚’ä¸­å¤®ã«è¡¨ç¤º
     DrawExtendGraphF(
         240.0f, 20.0f, 1020.0f, 540.0f,
         titleImg, TRUE

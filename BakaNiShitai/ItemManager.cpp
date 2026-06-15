@@ -1,4 +1,4 @@
-#include "ItemManager.h"
+ï»¿#include "ItemManager.h"
 #include "ItemPotionBlue.h"
 #include "ItemPotionRed.h"
 #include "ItemPotionPurple.h"
@@ -25,7 +25,7 @@ void ItemManager::Init(ImageManager& imgMgr_) {
 }
 
 void ItemManager::Update(Player& player1, Player& player2, const RestrictionManager& restrictions) {
-    // ”š”­ƒ`ƒFƒbƒN
+    // çˆ†ç™ºãƒã‚§ãƒƒã‚¯
     CheckExplode(player1);
     CheckExplode(player2);
 
@@ -40,7 +40,7 @@ void ItemManager::Update(Player& player1, Player& player2, const RestrictionMana
         if (items[i] == nullptr) continue;
         items[i]->Update();
 
-        // ”š”­ƒqƒbƒg”»’è
+        // çˆ†ç™ºãƒ’ãƒƒãƒˆåˆ¤å®š
         ItemPotionRed* red = dynamic_cast<ItemPotionRed*>(items[i]);
         if (red && red->exploding) {
             isExploding = true;
@@ -59,7 +59,7 @@ void ItemManager::Update(Player& player1, Player& player2, const RestrictionMana
                     }
                     else if (red->explodeTimer <= 0) {
                         hitOccurred = true;
-                        hitWinnerID = 2; // Ž©”š
+                        hitWinnerID = 2; // è‡ªçˆ†
                     }
                 }
                 else if (red->ownerID == 2) {
@@ -69,13 +69,13 @@ void ItemManager::Update(Player& player1, Player& player2, const RestrictionMana
                     }
                     else if (red->explodeTimer <= 0) {
                         hitOccurred = true;
-                        hitWinnerID = 1; // Ž©”š
+                        hitWinnerID = 1; // è‡ªçˆ†
                     }
                 }
             }
         }
 
-        // E‚¤ˆ—
+        // æ‹¾ã†å‡¦ç†
         TryPickup(player1, i);
         TryPickup(player2, i);
 
@@ -107,7 +107,7 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                     type = (ItemType)(rand() % ITEM_TYPE_MAX);
                 } while (type == ITEM_BANANA || type == ITEM_KINOKO);
             }
-            // ƒfƒoƒbƒOŽž‚à§ŒÀƒ`ƒFƒbƒN‚ð’Ê‚·
+            // ãƒ‡ãƒãƒƒã‚°æ™‚ã‚‚åˆ¶é™ãƒã‚§ãƒƒã‚¯ã‚’é€šã™
             if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_MASH_MOVE)) {
                 type = (rand() % 2 == 0) ? ITEM_BANANA : ITEM_KINOKO;
             }
@@ -126,7 +126,7 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else                type = ITEM_HANKACHI;
             }
             else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_HYPETSUYOI)) {
-                // Ôƒ|[ƒVƒ‡ƒ“‚È‚µEŽ‡‘½‚ß
+                // èµ¤ãƒãƒ¼ã‚·ãƒ§ãƒ³ãªã—ãƒ»ç´«å¤šã‚
                 int roll = rand() % 10;
                 if (roll < 5)      type = ITEM_POTION_PURPLE; // 50%
                 else if (roll < 7) type = ITEM_POTION_BLUE;   // 20%
@@ -153,7 +153,7 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else               type = ITEM_HANKACHI;
             }
             else if (restrictions.IsActive(REST_METEOR)) {
-                // Ôƒ|[ƒVƒ‡ƒ“œŠO
+                // èµ¤ãƒãƒ¼ã‚·ãƒ§ãƒ³é™¤å¤–
                 int roll = rand() % 4;
                 if (roll == 0)      type = ITEM_POTION_BLUE;
                 else if (roll == 1) type = ITEM_POTION_PURPLE;
@@ -161,7 +161,7 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else                type = ITEM_HANKACHI;
             }
             else if (restrictions.IsActive(REST_HYPETSUYOI)) {
-                // Ôƒ|[ƒVƒ‡ƒ“‚È‚µEŽ‡‘½‚ß
+                // èµ¤ãƒãƒ¼ã‚·ãƒ§ãƒ³ãªã—ãƒ»ç´«å¤šã‚
                 int roll = rand() % 10;
                 if (roll < 5)      type = ITEM_POTION_PURPLE; // 50%
                 else if (roll < 7) type = ITEM_POTION_BLUE;   // 20%

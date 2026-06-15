@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Item.h"
 class ItemKinoko : public Item {
 public:

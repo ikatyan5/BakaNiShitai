@@ -1,4 +1,4 @@
-#include "ItemPotionPurple.h"
+ï»¿#include "ItemPotionPurple.h"
 #include "Player.h"
 #include "Config.h"
 
@@ -8,7 +8,7 @@ void ItemPotionPurple::OnPickup(Player& player) {
     player.x = (float)(rand() % 1100 + 90);
     player.y = GROUND_Y - 100.0f;
 
-    effectX = player.x; // ƒ[ƒvŒã‚ÌÀ•W‚ğ•Û‘¶I
+    effectX = player.x; // ãƒ¯ãƒ¼ãƒ—å¾Œã®åº§æ¨™ã‚’ä¿å­˜ï¼
     effectY = player.y - PLAYER_HIT_CY;
 
     effectTimer = 40;
@@ -31,7 +31,7 @@ void ItemPotionPurple::Draw() {
     if (itemState == ITEM_INACTIVE) return;
     if (itemState == ITEM_HELD) return;
     if (itemState == ITEM_EXPLODING) {
-        float radius = (40 - effectTimer) * 5.0f; // ¬‚³‚¢‰~‚©‚ç‘å‚«‚­‚È‚é
+        float radius = (40 - effectTimer) * 5.0f; // å°ã•ã„å††ã‹ã‚‰å¤§ãããªã‚‹
         DrawCircleAA(effectX, effectY, radius, 64, GetColor(180, 0, 255), FALSE);
     }
     else {

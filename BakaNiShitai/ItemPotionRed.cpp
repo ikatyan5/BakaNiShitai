@@ -1,11 +1,11 @@
-#include "ItemPotionRed.h"
+ï»¿#include "ItemPotionRed.h"
 #include "Player.h"
 #include "Config.h"
 #include <cmath>
 
 void ItemPotionRed::OnPickup(Player& player) {
     player.isBlinking = true;
-    player.blinkTimer = 180; // 3•b‚­‚ç‚¢
+    player.blinkTimer = 180; // 3ç§’ãã‚‰ã„
     player.canAttack = false;
     player.hasShield = true;
     ownerID = player.PlayerID;
@@ -36,7 +36,7 @@ void ItemPotionRed::Draw() {
         DrawCircleAA(x, y, 150.0f, 64, GetColor(0, 255, 255), FALSE);
     }
     else {
-        // ’Êí‚Íƒ|[ƒVƒ‡ƒ“Ô‚ÌŠG
+        // é€šå¸¸æ™‚ã¯ãƒãƒ¼ã‚·ãƒ§ãƒ³èµ¤ã®çµµ
         DrawRotaGraphF(x, y, 1.0, 0.0, itemImage, TRUE);
     }
 }

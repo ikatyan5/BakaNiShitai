@@ -1,4 +1,4 @@
-// Meteor.cpp
+﻿// Meteor.cpp
 #include "Meteor.h"
 
 void Meteor::Init() {

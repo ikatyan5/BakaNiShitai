@@ -1,4 +1,4 @@
-// RestrictionManager.cpp
+﻿// RestrictionManager.cpp
 #pragma once
 #include "RestrictionManager.h"
 #include "DebugConfig.h"

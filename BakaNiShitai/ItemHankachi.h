@@ -1,4 +1,4 @@
-// ItemHankachi.h
+﻿// ItemHankachi.h
 #pragma once
 #include "Item.h"
 

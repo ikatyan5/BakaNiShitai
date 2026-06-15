@@ -1,4 +1,4 @@
-#include "ItemBanana.h"
+﻿#include "ItemBanana.h"
 #include "Player.h"
 void ItemBanana::OnPickup(Player& player) {
     player.EnterStun();

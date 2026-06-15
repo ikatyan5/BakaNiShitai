@@ -1,13 +1,13 @@
-// ItemPotionBlue.cpp
+ï»¿// ItemPotionBlue.cpp
 
-// ƒWƒƒƒ“ƒv—Í‚ªã‚ª‚é
-// 1.5”{‚É‚·‚é‚æI
+// ã‚¸ãƒ£ãƒ³ãƒ—åŠ›ãŒä¸ŠãŒã‚‹
+// 1.5å€ã«ã™ã‚‹ã‚ˆï¼
 
 #include "ItemPotionBlue.h"
 #include "Player.h"
 #include "Config.h"
 
 void ItemPotionBlue::OnPickup(Player& player) {
-    player.jumpPower = JUMP_POWER * 1.5f;  // ƒWƒƒƒ“ƒv—Í1.5”{I
+    player.jumpPower = JUMP_POWER * 1.5f;  // ã‚¸ãƒ£ãƒ³ãƒ—åŠ›1.5å€ï¼
     itemState = ITEM_INACTIVE;
 }

@@ -1,4 +1,4 @@
-// OrbManager.cpp
+ï»¿// OrbManager.cpp
 #include "OrbManager.h"
 #include "Player.h"
 #include "Config.h"
@@ -36,7 +36,7 @@ void OrbManager::Update(Player& player1, Player& player2) {
                 orbs[i].active = false;
                 if (target.hasShield) {
                     target.hasShield = false;
-                    return; // ƒV[ƒ‹ƒh‚Å–³Œø‰»
+                    return; // ã‚·ãƒ¼ãƒ«ãƒ‰ã§ç„¡åŠ¹åŒ–
                 }
                 hitOccurred = true;
                 hitWinnerID = winnerID;
@@ -51,7 +51,7 @@ void OrbManager::Update(Player& player1, Player& player2) {
 void OrbManager::CheckParry(float atkX, float atkY, float atkW, float atkH, int ownerID) {
     for (int i = 0; i < ORB_MAX; i++) {
         if (!orbs[i].active) continue;
-        if (orbs[i].ownerID == ownerID) continue; // ©•ª‚ÌƒI[ƒu‚Í‚Í‚½‚©‚È‚¢
+        if (orbs[i].ownerID == ownerID) continue; // è‡ªåˆ†ã®ã‚ªãƒ¼ãƒ–ã¯ã¯ãŸã‹ãªã„
         if (orbs[i].CheckParry(atkX, atkY, atkW, atkH)) {
             orbs[i].active = false;
         }

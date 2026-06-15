@@ -1,4 +1,4 @@
-#include "AdManager.h"
+ï»¿#include "AdManager.h"
 #include <cmath>
 
 void AdManager::Init(ImageManager& imgMgr_) {
@@ -13,11 +13,11 @@ void AdManager::Update() {
     for (int i = 0; i < AD_MAX; i++) {
         if (!slots[i].active) continue;
 
-        // ˆÚ“®
+        // ç§»å‹•
         slots[i].x += slots[i].vx;
         slots[i].y += slots[i].vy;
 
-        // ’[‚Å’µ‚Ë•Ô‚è
+        // ç«¯ã§è·³ã­è¿”ã‚Š
         if (slots[i].x < 0.0f) {
             slots[i].x = 0.0f;
             slots[i].vx = fabsf(slots[i].vx);
@@ -35,7 +35,7 @@ void AdManager::Update() {
             slots[i].vy = -fabsf(slots[i].vy);
         }
 
-        // ƒ^ƒCƒ}[
+        // ã‚¿ã‚¤ãƒžãƒ¼
         slots[i].timer--;
         if (slots[i].timer <= 0) {
             slots[i].active = false;
@@ -50,7 +50,7 @@ void AdManager::Update() {
                 slots[i].imageIndex = rand() % 3;
                 slots[i].x = (float)(rand() % (1280 - AD_W));
                 slots[i].y = (float)(rand() % (920 - AD_H));
-                // ƒ‰ƒ“ƒ_ƒ€‚È•ûŒü‚É‘¬“xÝ’è
+                // ãƒ©ãƒ³ãƒ€ãƒ ãªæ–¹å‘ã«é€Ÿåº¦è¨­å®š
                 slots[i].vx = (rand() % 2 == 0) ? 6.0f : -6.0f;
                 slots[i].vy = (rand() % 2 == 0) ? 6.0f : -6.0f;
                 slots[i].timer = AD_DURATION;

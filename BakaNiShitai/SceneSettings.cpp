@@ -1,4 +1,4 @@
-#include "SceneSettings.h"
+ï»¿#include "SceneSettings.h"
 #include "DxLib.h"
 
 void SceneSettings::Init(ImageManager& imgMgr_, GameSettings& settings_) {
@@ -50,8 +50,8 @@ void SceneSettings::Update() {
 void SceneSettings::Draw() {
     ClearDrawScreen();
     DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardSetting[animFrame], TRUE);
-    DrawStringF(550.0f, 100.0f, _T("İ’è"), GetColor(255, 255, 255));
-    DrawStringF(480.0f, 480.0f, _T("© ¨ ‚ÅØ‚è‘Ö‚¦AENTER‚Å–ß‚é"), GetColor(255, 255, 255));
+    DrawStringF(550.0f, 100.0f, _T("è¨­å®š"), GetColor(255, 255, 255));
+    DrawStringF(480.0f, 480.0f, _T("â† â†’ ã§åˆ‡ã‚Šæ›¿ãˆã€ENTERã§æˆ»ã‚‹"), GetColor(255, 255, 255));
 
     int p1Idx = (selectRow == 0) ? (2 + animFrame) : animFrame;
     int p2Idx = (selectRow == 1) ? (2 + animFrame) : animFrame;

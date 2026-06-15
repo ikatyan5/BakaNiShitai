@@ -1,4 +1,4 @@
-// Meteor.h
+﻿// Meteor.h
 #pragma once
 
 struct Meteor {

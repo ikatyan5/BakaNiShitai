@@ -1,15 +1,15 @@
-#pragma once
+ï»¿#pragma once
 #include "DxLib.h"
 
 struct Platform {
-    float x, y, w, h; // ¶ãÀ•W‚Æ•‚‚³
+    float x, y, w, h; // å·¦ä¸Šåº§æ¨™ã¨å¹…é«˜ã•
 };
 
 class Stage {
 public:
     int stageID;
-    Platform platforms[10]; // ‘«ê‚Ì”z—ñ
-    int platformCount;      // ‘«ê‚Ì”
+    Platform platforms[10]; // è¶³å ´ã®é…åˆ—
+    int platformCount;      // è¶³å ´ã®æ•°
 
     void Init(int id);
     void Draw();

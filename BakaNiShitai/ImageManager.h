@@ -1,15 +1,15 @@
-#pragma once
+ï»¿#pragma once
 #include "DxLib.h"
 #include "WeaponConfig.h"
 
 class ImageManager {
 public:
-    // ƒvƒŒƒCƒ„[‰æ‘œ
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç”»åƒ
     int player1[7];
     int player2[7];
     int player3[7];
 
-    // UI‰æ‘œ
+    // UIç”»åƒ
     int p1Hp[2];
     int p2Hp[2];
     int p3Hp[2];
@@ -37,7 +37,7 @@ public:
     int menuAnimTutorial[2];
     int menuAnimSetting[2];
 
-    // •Ší‰æ‘œ
+    // æ­¦å™¨ç”»åƒ
     int kama;
     int konbou;
     int ken;
@@ -51,14 +51,14 @@ public:
     int orbs[3];
     int meteo;
 
-    // ƒGƒtƒFƒNƒg
+    // ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ
     int mementoMoriEffect;
     int shield;
     int stan[2];
     int gyaku[2];
     int tensai[2];
 
-    // ƒAƒCƒeƒ€
+    // ã‚¢ã‚¤ãƒ†ãƒ 
     int potionBlue;
     int potionRed;
     int potionPurple;

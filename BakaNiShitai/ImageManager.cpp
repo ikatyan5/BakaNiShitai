@@ -1,7 +1,7 @@
-#include "ImageManager.h"
+ï»¿#include "ImageManager.h"
 
 void ImageManager::Load() {
-    // ƒvƒŒƒCƒ„[‰æ‘œ
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç”»åƒ
     int src1 = LoadGraph(_T("Image/Player/Player1.png"));
     int src2 = LoadGraph(_T("Image/Player/Player2.png"));
     int src3 = LoadGraph(_T("Image/Player/Player3.png"));
@@ -11,26 +11,26 @@ void ImageManager::Load() {
         player3[i] = DerivationGraph(i * 48, 0, 48, 64, src3);
     }
 
-    // UI‰æ‘œ
+    // UIç”»åƒ
     int srcP1Hp = LoadGraph(_T("Image/UI/Player1HP.png"));
     int srcP2Hp = LoadGraph(_T("Image/UI/Player2HP.png"));
     int srcP3Hp = LoadGraph(_T("Image/UI/Player3HP.png"));
-    p1Hp[0] = DerivationGraph(0, 0, 128, 64, srcP1Hp); // –ƒ^ƒ“
-    p1Hp[1] = DerivationGraph(128, 0, 128, 64, srcP1Hp); // ƒ[ƒ
-    p2Hp[0] = DerivationGraph(0, 0, 128, 64, srcP2Hp); // –ƒ^ƒ“
-    p2Hp[1] = DerivationGraph(128, 0, 128, 64, srcP2Hp); // ƒ[ƒ
-    p3Hp[0] = DerivationGraph(0, 0, 128, 64, srcP3Hp); // –ƒ^ƒ“
-    p3Hp[1] = DerivationGraph(128, 0, 128, 64, srcP3Hp); // ƒ[ƒ
+    p1Hp[0] = DerivationGraph(0, 0, 128, 64, srcP1Hp); // æº€ã‚¿ãƒ³
+    p1Hp[1] = DerivationGraph(128, 0, 128, 64, srcP1Hp); // ã‚¼ãƒ­
+    p2Hp[0] = DerivationGraph(0, 0, 128, 64, srcP2Hp); // æº€ã‚¿ãƒ³
+    p2Hp[1] = DerivationGraph(128, 0, 128, 64, srcP2Hp); // ã‚¼ãƒ­
+    p3Hp[0] = DerivationGraph(0, 0, 128, 64, srcP3Hp); // æº€ã‚¿ãƒ³
+    p3Hp[1] = DerivationGraph(128, 0, 128, 64, srcP3Hp); // ã‚¼ãƒ­
 
     int srcP1Score = LoadGraph(_T("Image/UI/Player1Score.png"));
     int srcP2Score = LoadGraph(_T("Image/UI/Player2Score.png"));
     int srcP3Score = LoadGraph(_T("Image/UI/Player3Score.png"));
-    p1Score[0] = DerivationGraph(0, 0, 32, 32, srcP1Score); // F•t‚«
-    p1Score[1] = DerivationGraph(32, 0, 32, 32, srcP1Score); // ˜g‚Ì‚İ
-    p2Score[0] = DerivationGraph(0, 0, 32, 32, srcP2Score); // F•t‚«
-    p2Score[1] = DerivationGraph(32, 0, 32, 32, srcP2Score); // ˜g‚Ì‚İ
-    p3Score[0] = DerivationGraph(0, 0, 32, 32, srcP3Score); // F•t‚«
-    p3Score[1] = DerivationGraph(32, 0, 32, 32, srcP3Score); // ˜g‚Ì‚İ
+    p1Score[0] = DerivationGraph(0, 0, 32, 32, srcP1Score); // è‰²ä»˜ã
+    p1Score[1] = DerivationGraph(32, 0, 32, 32, srcP1Score); // æ ã®ã¿
+    p2Score[0] = DerivationGraph(0, 0, 32, 32, srcP2Score); // è‰²ä»˜ã
+    p2Score[1] = DerivationGraph(32, 0, 32, 32, srcP2Score); // æ ã®ã¿
+    p3Score[0] = DerivationGraph(0, 0, 32, 32, srcP3Score); // è‰²ä»˜ã
+    p3Score[1] = DerivationGraph(32, 0, 32, 32, srcP3Score); // æ ã®ã¿
 
     surpMark = LoadGraph(_T("Image/UI/surprise_mark.png"));
     titleLogo = LoadGraph(_T("Image/UI/Title.png"));
@@ -38,10 +38,10 @@ void ImageManager::Load() {
     zukan_restriction = LoadGraph(_T("Image/UI/zukan_restriction.png"));
 
     int srcKeyboard = LoadGraph(_T("Image/UI/keyboard.png"));
-    keyboard[0] = DerivationGraph(0, 0, 600, 200, srcKeyboard); // ”ñ‘I‘ğ1
-    keyboard[1] = DerivationGraph(600, 0, 600, 200, srcKeyboard); // ”ñ‘I‘ğ2
-    keyboard[2] = DerivationGraph(1200, 0, 600, 200, srcKeyboard); // ‘I‘ğ’†1
-    keyboard[3] = DerivationGraph(1800, 0, 600, 200, srcKeyboard); // ‘I‘ğ’†2
+    keyboard[0] = DerivationGraph(0, 0, 600, 200, srcKeyboard); // éé¸æŠ1
+    keyboard[1] = DerivationGraph(600, 0, 600, 200, srcKeyboard); // éé¸æŠ2
+    keyboard[2] = DerivationGraph(1200, 0, 600, 200, srcKeyboard); // é¸æŠä¸­1
+    keyboard[3] = DerivationGraph(1800, 0, 600, 200, srcKeyboard); // é¸æŠä¸­2
 
     int srcController = LoadGraph(_T("Image/UI/controller.png"));
     controller[0] = DerivationGraph(0, 0, 600, 200, srcController);
@@ -63,20 +63,20 @@ void ImageManager::Load() {
     pressAnyKey[0] = DerivationGraph(0, 0, 600, 200, srcPressAnyKey);
     pressAnyKey[1] = DerivationGraph(600, 0, 600, 200, srcPressAnyKey);
     int srcTatakau = LoadGraph(_T("Image/UI/tatakau.png"));
-    menuTatakau[0] = DerivationGraph(0, 0, 500, 200, srcTatakau); // ”ñ‘I‘ğ1
-    menuTatakau[1] = DerivationGraph(500, 0, 500, 200, srcTatakau); // ”ñ‘I‘ğ2
-    menuTatakau[2] = DerivationGraph(1000, 0, 500, 200, srcTatakau); // ‘I‘ğ’†1
-    menuTatakau[3] = DerivationGraph(1500, 0, 500, 200, srcTatakau); // ‘I‘ğ’†2
+    menuTatakau[0] = DerivationGraph(0, 0, 500, 200, srcTatakau); // éé¸æŠ1
+    menuTatakau[1] = DerivationGraph(500, 0, 500, 200, srcTatakau); // éé¸æŠ2
+    menuTatakau[2] = DerivationGraph(1000, 0, 500, 200, srcTatakau); // é¸æŠä¸­1
+    menuTatakau[3] = DerivationGraph(1500, 0, 500, 200, srcTatakau); // é¸æŠä¸­2
     int srcTutorial = LoadGraph(_T("Image/UI/tutorial.png"));
-    menuTutorial[0] = DerivationGraph(0, 0, 500, 200, srcTutorial); // ”ñ‘I‘ğ1
-    menuTutorial[1] = DerivationGraph(500, 0, 500, 200, srcTutorial); // ”ñ‘I‘ğ2
-    menuTutorial[2] = DerivationGraph(1000, 0, 500, 200, srcTutorial); // ‘I‘ğ’†1
-    menuTutorial[3] = DerivationGraph(1500, 0, 500, 200, srcTutorial); // ‘I‘ğ’†2
+    menuTutorial[0] = DerivationGraph(0, 0, 500, 200, srcTutorial); // éé¸æŠ1
+    menuTutorial[1] = DerivationGraph(500, 0, 500, 200, srcTutorial); // éé¸æŠ2
+    menuTutorial[2] = DerivationGraph(1000, 0, 500, 200, srcTutorial); // é¸æŠä¸­1
+    menuTutorial[3] = DerivationGraph(1500, 0, 500, 200, srcTutorial); // é¸æŠä¸­2
     int srcSetting = LoadGraph(_T("Image/UI/setting.png"));
-    menuSetting[0] = DerivationGraph(0, 0, 300, 200, srcSetting); // ”ñ‘I‘ğ1
-    menuSetting[1] = DerivationGraph(300, 0, 300, 200, srcSetting); // ”ñ‘I‘ğ2
-    menuSetting[2] = DerivationGraph(600, 0, 300, 200, srcSetting); // ‘I‘ğ’†1
-    menuSetting[3] = DerivationGraph(900, 0, 300, 200, srcSetting); // ‘I‘ğ’†2
+    menuSetting[0] = DerivationGraph(0, 0, 300, 200, srcSetting); // éé¸æŠ1
+    menuSetting[1] = DerivationGraph(300, 0, 300, 200, srcSetting); // éé¸æŠ2
+    menuSetting[2] = DerivationGraph(600, 0, 300, 200, srcSetting); // é¸æŠä¸­1
+    menuSetting[3] = DerivationGraph(900, 0, 300, 200, srcSetting); // é¸æŠä¸­2
     int srcNum = LoadGraph(_T("Image/UI/number.png"));
     for (int i = 0; i < 10; i++) {
         numbers[i] = DerivationGraph(i * 32, 0, 32, 32, srcNum);
@@ -95,12 +95,12 @@ void ImageManager::Load() {
 
     int srcSetsunaP1 = LoadGraph(_T("Image/UI/setsunaPlayer1.png"));
     int srcSetsunaP2 = LoadGraph(_T("Image/UI/setsunaPlayer2.png"));
-    setsunaP1[0] = DerivationGraph(0, 0, 640, 200, srcSetsunaP1); // ’Êí
+    setsunaP1[0] = DerivationGraph(0, 0, 640, 200, srcSetsunaP1); // é€šå¸¸
     setsunaP1[1] = DerivationGraph(640, 0, 640, 200, srcSetsunaP1);
     setsunaP2[0] = DerivationGraph(0, 0, 640, 200, srcSetsunaP2);
     setsunaP2[1] = DerivationGraph(640, 0, 640, 200, srcSetsunaP2);
 
-    // •Ší‰æ‘œ
+    // æ­¦å™¨ç”»åƒ
     weaponImages[WEAPON_KAMA] = LoadGraph(_T("Image/Weapon/kama.png"));
     weaponImages[WEAPON_KONBOU] = LoadGraph(_T("Image/Weapon/konbou.png"));
 	weaponImages[WEAPON_KEN] = LoadGraph(_T("Image/Weapon/ken.png"));
@@ -111,7 +111,7 @@ void ImageManager::Load() {
     weaponImages[WEAPON_BOOMERANG] = LoadGraph(_T("Image/Weapon/boomerang.png"));
     weaponImages[WEAPON_MEMENTO_MORI] = LoadGraph(_T("Image/Weapon/memento_mori.png"));
     weaponImages[WEAPON_PIKOHAN] = LoadGraph(_T("Image/Weapon/pikohan.png"));
-    weaponImages[WEAPON_TENSAI_TSUE] = weaponImages[WEAPON_STICK]; // ñ‚Æ“¯‚¶‰æ‘œ‚ğg‚¢‰ñ‚µ
+    weaponImages[WEAPON_TENSAI_TSUE] = weaponImages[WEAPON_STICK]; // æ–ã¨åŒã˜ç”»åƒã‚’ä½¿ã„å›ã—
 
     int srcOrb = LoadGraph(_T("Image/Weapon/orb.png"));
     for (int i = 0; i < 3; i++) {
@@ -119,7 +119,7 @@ void ImageManager::Load() {
     }
     meteo = LoadGraph(_T("Image/Weapon/meteo.png"));
 
-    // ƒGƒtƒFƒNƒg‰æ‘œ
+    // ã‚¨ãƒ•ã‚§ã‚¯ãƒˆç”»åƒ
     mementoMoriEffect = LoadGraph(_T("Image/Effect/memento_mori_Effect.png"));
     shield = LoadGraph(_T("Image/Effect/shield.png"));
     int srcStan = LoadGraph(_T("Image/Effect/stan.png"));
@@ -135,7 +135,7 @@ void ImageManager::Load() {
         tensai[i] = DerivationGraph(32 * i, 0, 32, 32, srcTensai);
     }
 
-    // ƒAƒCƒeƒ€‰æ‘œ
+    // ã‚¢ã‚¤ãƒ†ãƒ ç”»åƒ
     potionBlue = LoadGraph(_T("Image/Item/potionBlue.png"));
 	potionRed = LoadGraph(_T("Image/Item/potionRed.png"));
     potionPurple = LoadGraph(_T("Image/Item/potionPurple.png"));
@@ -145,7 +145,7 @@ void ImageManager::Load() {
     banana = LoadGraph(_T("Image/Item/banana.png"));
     kinoko = LoadGraph(_T("Image/Item/poisonkinoko.png"));
 
-    // L
+    // åºƒå‘Š
     adImages[0] = LoadGraph(_T("Image/UI/AD1.png"));
     adImages[1] = LoadGraph(_T("Image/UI/AD2.png"));
     adImages[2] = LoadGraph(_T("Image/UI/AD3.png"));

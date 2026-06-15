@@ -1,4 +1,4 @@
-// GameSettings.h
+﻿// GameSettings.h
 #pragma once
 #include "DxLib.h"
 

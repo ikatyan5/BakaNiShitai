@@ -1,4 +1,4 @@
-// BaseScene.h
+﻿// BaseScene.h
 #pragma once
 #include "SceneID.h"
 class BaseScene {

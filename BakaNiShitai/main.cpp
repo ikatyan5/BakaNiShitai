@@ -1,4 +1,4 @@
-#include "DxLib.h"
+ï»¿#include "DxLib.h"
 #include "ImageManager.h"
 #include "SceneID.h"
 #include "BaseScene.h"
@@ -47,10 +47,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     SetGraphMode(1280, 920, 32);
     if (DxLib_Init() == -1) return -1;
     int padNum = GetJoypadNum();
-    //printfDx(_T("Ú‘±ƒpƒbƒh”=%d\n"), padNum);
+    //printfDx(_T("æ¥ç¶šãƒ‘ãƒƒãƒ‰æ•°=%d\n"), padNum);
     SetBackgroundColor(135, 206, 235);
     SetWaitVSyncFlag(TRUE);
-    SetMainWindowText(_T("ŒN‚½‚¿‚ğ\"ƒoƒJ\"‚É‚µ‚½‚¢"));
+    SetMainWindowText(_T("å›ãŸã¡ã‚’\"ãƒã‚«\"ã«ã—ãŸã„"));
     SetDrawScreen(DX_SCREEN_BACK);
     srand((unsigned int)time(NULL));
 

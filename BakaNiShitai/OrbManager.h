@@ -1,4 +1,4 @@
-// OrbManager.h
+﻿// OrbManager.h
 #pragma once
 #include "Orb.h"
 #include "ImageManager.h"

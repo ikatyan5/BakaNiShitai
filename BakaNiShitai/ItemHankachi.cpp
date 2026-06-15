@@ -1,4 +1,4 @@
-// ItemHankachi.cpp
+﻿// ItemHankachi.cpp
 #include "ItemHankachi.h"
 #include "Player.h"
 #include "Config.h"
