@@ -89,6 +89,9 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
     setsunaP2UIX = -1280.0f;
 
     setsunaSignVisible = false;
+    setsunaRedoPending = false;
+    flyExplodeActive = false;
+    flyExplodeTimer = 0;
     this->settings = &settings;
     itemManager.Init(*imgMgr, *sound);
     orbManager.Init(*imgMgr);
@@ -244,8 +247,10 @@ void SceneGame::InitFallingUI() {
     uiShakeTimer = 0;
 }
 
-void SceneGame::ResetGame(bool keepWinCount) {
+void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     isDraw = false;
+    flyExplodeActive = false;
+    flyExplodeTimer = 0;
     p1HpIndex = 0;
     p2HpIndex = 0;
     state = STATE_COUNTDOWN;
@@ -264,7 +269,8 @@ void SceneGame::ResetGame(bool keepWinCount) {
     orbManager.Init(*imgMgr);
     meteorManager.Init(*sound);
     adManager.Init(*imgMgr);
-    restrictionManager.SelectRandom();
+    // keepRestriction中は新しい制限を選ばない（刹那のやり直し用）
+    if (!keepRestriction) restrictionManager.SelectRandom();
     // 刹那の見切りのラウンドはBGMを止める。別の制限になったら再開する。
     if (restrictionManager.IsActive(REST_SETSUNA)) {
         sound->StopGameBgm();
@@ -688,7 +694,20 @@ void SceneGame::DrawMementoMori(Player& attacker) {
     }
 }
 
+// フライング（！前の早撃ち）をやらかした側に出す爆発演出
+void SceneGame::DrawFlyExplosion() {
+    if (!flyExplodeActive) return;
+    DrawRotaGraphF(flyExplodeX, flyExplodeY, 9.0, 0.0, imgMgr->bomb, TRUE);
+    DrawCircleAA(flyExplodeX, flyExplodeY, 150.0f, 64, GetColor(0, 255, 255), FALSE);
+}
+
 void SceneGame::Update() {
+    // フライング爆発演出のタイマー（状態に関係なく進める）
+    if (flyExplodeTimer > 0) {
+        flyExplodeTimer--;
+        if (flyExplodeTimer == 0) flyExplodeActive = false;
+    }
+
     if (state == STATE_PLAYING) {
         animTimer++;
         if (animTimer >= 10) {
@@ -923,7 +942,12 @@ void SceneGame::Update() {
         // リザルト表示タイマー
         if (RESULT_TIMER > 0) RESULT_TIMER--;
         else {
-            if (player1.winCount >= WINNING_SCORE || player2.winCount >= WINNING_SCORE) {
+            if (setsunaRedoPending) {
+                // 刹那の両者遅すぎ→同じ刹那をもう一回（スコアそのまま・別の制限に進まない）
+                setsunaRedoPending = false;
+                ResetGame(true, true);
+            }
+            else if (player1.winCount >= WINNING_SCORE || player2.winCount >= WINNING_SCORE) {
                 state = STATE_GAMEEND;
             }
             else {
@@ -1039,11 +1063,19 @@ void SceneGame::UpdateSetsuna() {
     else if (setsunaPhase == SETSUNA_WAIT) {
         player1.canAttack = false;
         player2.canAttack = false;
-        // フライングチェック
+        // フライングチェック（！が出る前に攻撃したら負け＋やらかし爆発）
         bool p1Attack = CheckHitKey(KEY_INPUT_F);
         bool p2Attack = GetMouseInput() & MOUSE_INPUT_LEFT;
-        if (p1Attack) { EnterHitState(true, true); }
-        else if (p2Attack) { EnterHitState(false, true); }
+        if (p1Attack) {
+            flyExplodeActive = true; flyExplodeX = player1.x; flyExplodeY = player1.y - 60.0f; flyExplodeTimer = 45;
+            PlaySoundMem(sound->explosion, DX_PLAYTYPE_BACK);
+            EnterHitState(true, true);
+        }
+        else if (p2Attack) {
+            flyExplodeActive = true; flyExplodeX = player2.x; flyExplodeY = player2.y - 60.0f; flyExplodeTimer = 45;
+            PlaySoundMem(sound->explosion, DX_PLAYTYPE_BACK);
+            EnterHitState(false, true);
+        }
 
         setsunaPhaseTimer--;
         if (setsunaPhaseTimer <= 0) {
@@ -1051,7 +1083,24 @@ void SceneGame::UpdateSetsuna() {
             player1.canAttack = true;
             player2.canAttack = true;
             setsunaSignVisible = true;
+            setsunaPhaseTimer = 180; // ！が出てからの反応猶予3秒
             PlaySoundMem(sound->setsunaSign, DX_PLAYTYPE_BACK); // ！が出た合図
+        }
+    }
+    else if (setsunaPhase == SETSUNA_ACTIVE) {
+        // ！が出てから3秒、どちらも決め手を出さなければ「両者遅すぎ」で引き分けやり直し
+        if (setsunaPhaseTimer > 0) setsunaPhaseTimer--;
+        if (setsunaPhaseTimer <= 0 && !player1.attacking && !player2.attacking) {
+            isDraw = true;
+            setsunaRedoPending = true;
+            player1.animFrame = 6;
+            player2.animFrame = 6;
+            p1HpIndex = 1;
+            p2HpIndex = 1;
+            HIT_TIMER = 60;
+            RESULT_TIMER = 120;
+            state = STATE_HIT;
+            JUDGE = false;
         }
     }
 }
@@ -1181,6 +1230,7 @@ void SceneGame::Draw() {
         }
         orbManager.Draw();
         itemManager.Draw();
+        DrawFlyExplosion();
         DrawUI();
     }
     else if (state == STATE_RESULT) {
@@ -1199,7 +1249,9 @@ void SceneGame::Draw() {
         DrawUI();
 
         SetFontSize(72);
-        const TCHAR* resultText = isDraw ? _T("ちんたらすんな！") :
+        const TCHAR* resultText =
+            (isDraw && setsunaRedoPending) ? _T("画面見てないのか？") :
+            isDraw ? _T("ちんたらすんな！") :
             !JUDGE ? _T("赤の勝ち！") :
             _T("青の勝ち！");
         unsigned int resultColor = isDraw ? GetColor(255, 255, 0) :

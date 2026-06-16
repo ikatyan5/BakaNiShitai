@@ -17,7 +17,7 @@ class SceneGame : public BaseScene {
 public:
     void Init(ImageManager& imgMgr, GameSettings& settings, SoundManager& sndMgr);
     void InitPlayers(bool keepWinCount = false);
-    void ResetGame(bool keepWinCount);
+    void ResetGame(bool keepWinCount, bool keepRestriction = false);
     void Update() override;
     void Draw() override;
     void DrawUI();
@@ -33,6 +33,7 @@ public:
     void PickupWeapon(Player& player);
     void CheckMementoMori(Player& attacker, Player& target, bool judgeValue);
     void DrawMementoMori(Player& attacker);
+    void DrawFlyExplosion();
 private:
     enum GameState {
         STATE_COUNTDOWN,
@@ -75,6 +76,12 @@ private:
     bool mementoMoriPending;    // END待ち状態か
 
     bool setsunaSignVisible; // ！表示フラグ
+
+    bool setsunaRedoPending;  // 刹那で両者遅すぎ→引き分けやり直し待ち
+    bool flyExplodeActive;    // フライング爆発演出が出ているか
+    float flyExplodeX;        // フライング爆発の中心X
+    float flyExplodeY;        // フライング爆発の中心Y
+    int  flyExplodeTimer;     // フライング爆発の残り表示フレーム
 
     int countdownTimer;
 
