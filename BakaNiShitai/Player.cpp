@@ -626,7 +626,7 @@ void Player::SwapImageWith(Player& other) {
 
 // ピコハン近接
 void Player::EnterStun() {
-	stanTimer = 150; // 2.5秒
+	stanTimer = 120; // 2秒
 	isStunned = true;
 }
 
