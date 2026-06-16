@@ -43,6 +43,9 @@ static void DrawRotatedUI(float cx, float cy, float w, float h, float angle, int
 void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager& sndMgr_) {
     imgMgr = &imgMgr_;
     sound = &sndMgr_;
+    // ゲームに入った瞬間にメニュー系BGMを止めて、3曲からランダムで1曲流す。
+    // 試合中はラウンドを跨いでも同じ曲。メニューに戻った時に止まる。
+    sound->PlayGameBgmRandom();
     state = STATE_COUNTDOWN;
     countdownTimer = 180; // 3秒
     JUDGE = false;
@@ -95,6 +98,10 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
 
 #ifdef _DEBUG
     restrictionManager.SelectRandom(); // デバッグ時は最初から制限をかける
+    // 最初のラウンドが刹那の見切りならBGMを止めておく
+    if (restrictionManager.IsActive(REST_SETSUNA)) {
+        sound->StopGameBgm();
+    }
 #endif
     stage.Init(1);
     for (int i = 0; i < WEAPON_MAX; i++) {
@@ -258,6 +265,12 @@ void SceneGame::ResetGame(bool keepWinCount) {
     meteorManager.Init(*sound);
     adManager.Init(*imgMgr);
     restrictionManager.SelectRandom();
+    // 刹那の見切りのラウンドはBGMを止める。別の制限になったら再開する。
+    if (restrictionManager.IsActive(REST_SETSUNA)) {
+        sound->StopGameBgm();
+    } else {
+        sound->ResumeGameBgm();
+    }
     wallEndLeft = false;
     wallEndRight = false;
     wallEndTimer = 180 + rand() % 300;

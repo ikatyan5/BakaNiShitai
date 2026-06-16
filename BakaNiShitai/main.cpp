@@ -15,7 +15,7 @@ BaseScene* CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings,
     switch (id) {
     case SCENE_TITLE: {
         auto* s = new SceneTitle();
-        s->Init(imgMgr);
+        s->Init(imgMgr, sndMgr);
         return s;
     }
     case SCENE_MENU: {

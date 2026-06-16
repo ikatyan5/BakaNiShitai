@@ -2,10 +2,11 @@
 #pragma once
 #include "BaseScene.h"
 #include "ImageManager.h"
+#include "SoundManager.h"
 
 class SceneTitle : public BaseScene {
 public:
-    void Init(ImageManager& imgMgr);
+    void Init(ImageManager& imgMgr, SoundManager& sndMgr);
     void Update() override;
     void Draw() override;
     SceneID GetNextScene() override;

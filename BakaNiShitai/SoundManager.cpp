@@ -22,4 +22,56 @@ void SoundManager::Load() {
     decide       = LoadSoundMem(_T("Sound/decide.wav"));
     tensai       = LoadSoundMem(_T("Sound/tensai.wav"));
     win          = LoadSoundMem(_T("Sound/win.wav"));
+
+    // BGM（メニュー系1曲＋ゲーム用3曲）
+    bgmMenu     = LoadSoundMem(_T("Sound/iwashiro_atsugiri_ham.mp3"));
+    bgmGame[0]  = LoadSoundMem(_T("Sound/iwashiro_marugoshi.mp3"));
+    bgmGame[1]  = LoadSoundMem(_T("Sound/iwashiro_miyako_ochisugara.mp3"));
+    bgmGame[2]  = LoadSoundMem(_T("Sound/iwashiro_yanagi_bocho.mp3"));
+    currentGameBgm = -1;
+}
+
+void SoundManager::PlayMenuBgm() {
+    // ゲームBGMが鳴っていたら止める（ゲームからメニューに戻ってきた時）
+    if (currentGameBgm != -1 && CheckSoundMem(currentGameBgm) == 1) {
+        StopSoundMem(currentGameBgm);
+    }
+    currentGameBgm = -1;
+    // メニュー系BGMがまだ鳴っていなければ流す。
+    // すでに鳴っているなら何もしない＝シーンを跨いでも頭出しせず流れ続ける。
+    if (bgmMenu != -1 && CheckSoundMem(bgmMenu) == 0) {
+        PlaySoundMem(bgmMenu, DX_PLAYTYPE_LOOP);
+    }
+}
+
+void SoundManager::PlayGameBgmRandom() {
+    // メニュー系BGMを止める
+    if (bgmMenu != -1 && CheckSoundMem(bgmMenu) == 1) {
+        StopSoundMem(bgmMenu);
+    }
+    // 念のため、前のゲームBGMが残っていたら止める
+    if (currentGameBgm != -1 && CheckSoundMem(currentGameBgm) == 1) {
+        StopSoundMem(currentGameBgm);
+    }
+    std::uniform_int_distribution<int> pick(0, 2);
+    int idx = pick(rng);
+    currentGameBgm = bgmGame[idx];
+    if (currentGameBgm != -1) {
+        ChangeVolumeSoundMem(GAME_BGM_VOLUME, currentGameBgm);
+        PlaySoundMem(currentGameBgm, DX_PLAYTYPE_LOOP);
+    }
+}
+
+void SoundManager::StopGameBgm() {
+    if (currentGameBgm != -1 && CheckSoundMem(currentGameBgm) == 1) {
+        StopSoundMem(currentGameBgm);
+    }
+    // currentGameBgm の値は消さない＝同じ曲を後で再開できるようにする
+}
+
+void SoundManager::ResumeGameBgm() {
+    if (currentGameBgm != -1 && CheckSoundMem(currentGameBgm) == 0) {
+        ChangeVolumeSoundMem(GAME_BGM_VOLUME, currentGameBgm);
+        PlaySoundMem(currentGameBgm, DX_PLAYTYPE_LOOP);
+    }
 }

@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "DxLib.h"
+#include <random>
 
 // 効果音をまとめて管理するクラス（ImageManagerの音版）
 // main.cppで1回だけLoad()して、ゲーム全体で使い回す
@@ -24,5 +25,28 @@ public:
     int tensai;       // 天才の杖を振った時
     int win;          // 試合に勝って「〇の勝ち！」が出る時
 
+    // ---- BGM ----
+    int bgmMenu;          // メニュー・チュートリアル・設定で流れるBGM
+    int bgmGame[3];       // ゲーム画面のBGM（この中から1曲ランダムで流す）
+    int currentGameBgm;   // 今選ばれているゲームBGMのハンドル（-1なら無し）
+
+    // ゲームBGMの音量（0～255）。メニューBGMはそのまま、ゲームだけ下げる。
+    static const int GAME_BGM_VOLUME = 200;
+
     void Load();
+
+    // メニュー系BGMを流す。すでに鳴っていれば頭出しせず流しっぱなしにする。
+    // ゲームBGMが鳴っていたら止める。
+    void PlayMenuBgm();
+    // ゲームBGMを3曲からランダムで1曲選んで流す。メニュー系BGMは止める。
+    void PlayGameBgmRandom();
+    // 今のゲームBGMを止める（曲の選択自体は保持）。刹那の見切り中に使う。
+    void StopGameBgm();
+    // 止めていたゲームBGMを再び流す（選ばれている曲をそのまま）。
+    void ResumeGameBgm();
+
+private:
+    // rand()%3 だと起動直後にクセが出て同じ曲ばかりになるので、
+    // ちゃんとした乱数エンジンで曲を選ぶ。
+    std::mt19937 rng{ std::random_device{}() };
 };

@@ -35,6 +35,9 @@ static const int MENU_COUNT = 3;
 void SceneMenu::Init(ImageManager& imgMgr_, SoundManager& sndMgr_) {
     imgMgr = &imgMgr_;
     sound = &sndMgr_;
+    // メニュー系BGMを流す。タイトルや設定から来た時はすでに鳴っているので継続、
+    // ゲームから戻ってきた時はゲームBGMを止めてメニューBGMを復活させる。
+    sound->PlayMenuBgm();
     nextScene = SCENE_NONE;
     selectIndex = 0;
     prevUp = false;

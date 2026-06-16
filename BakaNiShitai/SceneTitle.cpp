@@ -2,8 +2,11 @@
 #include "SceneTitle.h"
 #include "DxLib.h"
 
-void SceneTitle::Init(ImageManager& imgMgr_) {
+void SceneTitle::Init(ImageManager& imgMgr_, SoundManager& sndMgr_) {
     imgMgr = &imgMgr_;
+    // タイトルに入った瞬間にメニュー系BGMを流し始める。
+    // ここからメニュー・設定・チュートリアルまで途切れずに繋がる。
+    sndMgr_.PlayMenuBgm();
     nextScene = SCENE_NONE;
     titleImg = imgMgr->titleLogo;
     pressAnyKeyImg[0] = imgMgr->pressAnyKey[0];
