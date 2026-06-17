@@ -112,7 +112,34 @@ void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons
 		if (restrictions.IsActive(REST_GRAVITY_ZERO)) vy = 0;
 		return;
 	}
-	if (restrictions.IsActive(REST_JUMP_LIMIT) && onGround) { vx = 0; return; }
+	// 氷の床：地上は入力で加速・離すと滑る慣性移動（空中は通常操作のまま下の処理に任せる）
+	if (restrictions.IsActive(REST_ICE_FLOOR) && onGround) {
+		bool leftKey, rightKey;
+		if (useGamepad) {
+			int pad = GetJoypadInputState(padID);
+			int stickX = 0, stickY = 0;
+			GetJoypadAnalogInput(&stickX, &stickY, padID);
+			leftKey = (pad & PAD_INPUT_LEFT) || stickX < -500;
+			rightKey = (pad & PAD_INPUT_RIGHT) || stickX > 500;
+		}
+		else if (PlayerID == 1) {
+			leftKey = CheckHitKey(KEY_INPUT_A);
+			rightKey = CheckHitKey(KEY_INPUT_D);
+		}
+		else {
+			leftKey = CheckHitKey(KEY_INPUT_LEFT);
+			rightKey = CheckHitKey(KEY_INPUT_RIGHT);
+		}
+		const float ICE_ACCEL = 0.05f;     // 踏ん張りの効かなさ（小さいほどツルツル）
+		const float ICE_FRICTION = 0.99f; // 離した時の滑り（1に近いほど止まらない）
+		const float ICE_MAXV = isBlinking ? (moveSpeed + 8.0f) : moveSpeed + 20.0; // 移動速度をUP
+		if (leftKey)  { vx -= ICE_ACCEL; facingRight = false; }
+		if (rightKey) { vx += ICE_ACCEL; facingRight = true; }
+		if (!leftKey && !rightKey) vx *= ICE_FRICTION; // 入力なしは滑り続ける
+		if (vx >  ICE_MAXV) vx =  ICE_MAXV;
+		if (vx < -ICE_MAXV) vx = -ICE_MAXV;
+		return;
+	}
 
 	// 刹那の見切り：向き変えのみ可、移動禁止
 	if (restrictions.IsActive(REST_SETSUNA)) {

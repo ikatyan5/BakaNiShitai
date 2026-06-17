@@ -9,7 +9,7 @@ static const TCHAR* RESTRICTION_NAMES[] = {
     _T("重力がなくなった！"),
     _T("ジャンプ回数が無制限に！"),
     _T("武器を投げてもダメージがないぞ！"),
-    _T("近接ダメージがゼロだ！"),
+    _T("近接が必殺だ！武器で殴って場外へ！"),
     _T("杖ばっか降ってくるぞ！"),
     _T("ブーメランばっか降ってくるぞ！"),
     _T("！マークが出たら攻撃だ！"),
@@ -18,7 +18,7 @@ static const TCHAR* RESTRICTION_NAMES[] = {
     _T("横移動は連打しろ！"),
     _T("隕石が降ってくるぞ 相手をスタンさせよう！"),
     _T("強いやつから逃げ切れ 触れられたら負けだぞ！"),
-    _T("地上で移動できないぞ！"),
+    _T("床がツルツルで滑るぞ！"),
     _T("なんか画面おかしくね？"),
     _T("分身が出現！＋位置が入れ替わるぞ！"),
     _T("画面の真ん中へ引っ張られるぞ！"),
@@ -166,6 +166,12 @@ void SceneGame::InitPlayers(bool keepWinCount) {
                 break;
             }
         }
+    }
+
+    // 近接無双：両プレイヤーに最初からシールド（投げを1回だけ無効化）
+    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
+        player1.hasShield = true;
+        player2.hasShield = true;
     }
 
     // 弱い側にピコハンを持たせる
@@ -400,9 +406,8 @@ void SceneGame::DrawDecoys() {
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {
     if (!attacker.attacking) return;
-    bool isMeleeNoRest = restrictionManager.IsActive(REST_MELEE_NO_DAMAGE);
     bool isBareHand = attacker.holdingWeaponIndex == -1;
-    if (isBareHand && !isMeleeNoRest) return;
+    if (isBareHand) return; // 弾けるのは武器持ちだけ
 
     int chargeFrames = (attacker.holdingWeaponIndex == -1)
         ? BARE_HAND_CHARGE_FRAMES
@@ -426,42 +431,29 @@ void SceneGame::CheckParry(Player& attacker, int ownerID) {
         orbManager.CheckParry(atkX, atkY, 40.0f, 80.0f, ownerID);
     }
 
-    bool parried = false;
-    bool anyThrownInRange = false;
     for (int i = 0; i < WEAPON_MAX; i++) {
         if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
         bool inRange = weapons[i].CheckParry(atkX, atkY, 40.0f, 80.0f);
-        if (inRange) anyThrownInRange = true;
         if (inRange) {
             if (isParryFrame) {
                 // 弾き返し
                 PlaySoundMem(sound->parry, DX_PLAYTYPE_BACK);
-                weapons[i].vx = -weapons[i].vx * (isMeleeNoRest ? 1.5f : 1.0f);
+                weapons[i].vx = -weapons[i].vx;
                 return;
             }
             else {
-                PlaySoundMem(sound->deflect, DX_PLAYTYPE_BACK); // はたき落とし
-                if (!isBareHand) {
-                    // はたき落とし
-                    Weapon& held = weapons[attacker.holdingWeaponIndex];
-                    weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-                    held.parryRemain--;
-                    if (held.parryRemain <= 0) {
-                        held.weaponState = Weapon::WEAPON_INACTIVE;
-                        attacker.holdingWeaponIndex = -1;
-                    }
-                }
-                else {
-                    weapons[i].vx = -weapons[i].vx * 1.5f;
+                // はたき落とし（ここに来るのは武器持ちのみ）
+                PlaySoundMem(sound->deflect, DX_PLAYTYPE_BACK);
+                Weapon& held = weapons[attacker.holdingWeaponIndex];
+                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                held.parryRemain--;
+                if (held.parryRemain <= 0) {
+                    held.weaponState = Weapon::WEAPON_INACTIVE;
+                    attacker.holdingWeaponIndex = -1;
                 }
             }
-            parried = true;
             break;
         }
-    }
-
-    if (isMeleeNoRest && isBareHand && anyThrownInRange && !parried) {
-        EnterHitState(ownerID == 1, true);
     }
 }
 
@@ -504,6 +496,25 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
                 PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
                 weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
                 target.AddKnockbackCount(); // 蓄積+1
+            }
+        }
+        return;
+    }
+    // 近接無双：投げはシールドで1回だけ無効化。シールドが無ければ小さく押すだけ（場外には届かない）。
+    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
+            if (weapons[i].CheckHit(
+                target.x, target.y - PLAYER_HIT_CY,
+                PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
+                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                if (target.hasShield) {
+                    target.hasShield = false; // 投げを1回だけ無効化してシールド消滅
+                    return;
+                }
+                float dirVx = (weapons[i].vx >= 0.0f) ? 25.0f : -25.0f; // ▼投げの押し（弱め）
+                target.ApplyKnockback(dirVx, -6.0f);
+                return;
             }
         }
         return;
@@ -572,11 +583,14 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
 void SceneGame::CheckMeleeHit(Player& attacker, Player& target, bool judgeValue) {
     if (!attacker.CheckAttackHit(target, weapons)) return;
 
-    if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
-        if (attacker.holdingWeaponIndex != -1) {
-            target.moveSpeed = 5.0f * 0.6f;
-            target.speedDownTimer = 180;
-        }
+    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
+        // 近接無双：武器近接は場外まで吹っ飛ばす即死級、素手はいやがらせ程度。
+        // シールドは投げ専用なので近接は素通り（必ず吹っ飛ぶ）。
+        bool hasWeapon = attacker.holdingWeaponIndex != -1;
+        float kbVx = hasWeapon ? 200.0f : 12.0f; // ▼数値で吹っ飛び調整（×6.7が大体の総距離）
+        float kbVy = hasWeapon ? -10.0f : -4.0f;
+        float dirVx = (attacker.x < target.x) ? kbVx : -kbVx;
+        target.ApplyKnockback(dirVx, kbVy);
         return;
     }
 
@@ -684,7 +698,7 @@ void SceneGame::SpawnWeapon()
     if (restrictionManager.IsActive(REST_SETSUNA)) return;
     weaponSpawnTimer++;
     int spawnInterval = WEAPON_SPAWN_INTERVAL;
-    if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
+    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
         spawnInterval = WEAPON_SPAWN_INTERVAL * 1.1; // 1.1倍に延長
     }
     if (weaponSpawnTimer >= spawnInterval) {
@@ -911,8 +925,9 @@ void SceneGame::Update() {
             }
         }
 
-        // ノックバック画面外チェック
-        if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
+        // ノックバック画面外チェック（投げダメなし・近接無双はどちらも場外で負け）
+        if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE) ||
+            restrictionManager.IsActive(REST_MELEE_MUSOU)) {
             if (player1.isKnockedBack && (player1.x < 0.0f || player1.x > 1280.0f))
                 EnterHitState(true, true);
             if (player2.isKnockedBack && (player2.x < 0.0f || player2.x > 1280.0f))
