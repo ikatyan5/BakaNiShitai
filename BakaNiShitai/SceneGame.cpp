@@ -9,7 +9,7 @@ static const TCHAR* RESTRICTION_NAMES[] = {
     _T("重力がなくなった！"),
     _T("ジャンプ回数が無制限に！"),
     _T("武器を投げてもダメージがないぞ！"),
-    _T("近接ダメージがゼロだ！"),
+    _T("近接が必殺だ！武器で殴って場外へ！"),
     _T("杖ばっか降ってくるぞ！"),
     _T("ブーメランばっか降ってくるぞ！"),
     _T("！マークが出たら攻撃だ！"),
@@ -18,8 +18,10 @@ static const TCHAR* RESTRICTION_NAMES[] = {
     _T("横移動は連打しろ！"),
     _T("隕石が降ってくるぞ 相手をスタンさせよう！"),
     _T("強いやつから逃げ切れ 触れられたら負けだぞ！"),
-    _T("地上で移動できないぞ！"),
+    _T("床がツルツルで滑るぞ！"),
     _T("なんか画面おかしくね？"),
+    _T("分身が出現！＋位置が入れ替わるぞ！"),
+    _T("画面の真ん中へ引っ張られるぞ！"),
 };
 
 static void DrawRotatedUI(float cx, float cy, float w, float h, float angle, int img) {
@@ -89,6 +91,9 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
     setsunaP2UIX = -1280.0f;
 
     setsunaSignVisible = false;
+    setsunaRedoPending = false;
+    flyExplodeActive = false;
+    flyExplodeTimer = 0;
     this->settings = &settings;
     itemManager.Init(*imgMgr, *sound);
     orbManager.Init(*imgMgr);
@@ -109,6 +114,7 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
     }
     InitFallingUI();
     InitPlayers(false);
+    InitDecoys(); // 初回ラウンドでも分身と地面基準を初期化しておく
     gravityInsaneLevel = 2;
     gravityInsaneTimer = 120 + rand() % 60;
     player1.gravityInsaneLevel = gravityInsaneLevel;
@@ -160,6 +166,12 @@ void SceneGame::InitPlayers(bool keepWinCount) {
                 break;
             }
         }
+    }
+
+    // 近接無双：両プレイヤーに最初からシールド（投げを1回だけ無効化）
+    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
+        player1.hasShield = true;
+        player2.hasShield = true;
     }
 
     // 弱い側にピコハンを持たせる
@@ -244,8 +256,10 @@ void SceneGame::InitFallingUI() {
     uiShakeTimer = 0;
 }
 
-void SceneGame::ResetGame(bool keepWinCount) {
+void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     isDraw = false;
+    flyExplodeActive = false;
+    flyExplodeTimer = 0;
     p1HpIndex = 0;
     p2HpIndex = 0;
     state = STATE_COUNTDOWN;
@@ -264,7 +278,8 @@ void SceneGame::ResetGame(bool keepWinCount) {
     orbManager.Init(*imgMgr);
     meteorManager.Init(*sound);
     adManager.Init(*imgMgr);
-    restrictionManager.SelectRandom();
+    // keepRestriction中は新しい制限を選ばない（刹那のやり直し用）
+    if (!keepRestriction) restrictionManager.SelectRandom();
     // 刹那の見切りのラウンドはBGMを止める。別の制限になったら再開する。
     if (restrictionManager.IsActive(REST_SETSUNA)) {
         sound->StopGameBgm();
@@ -296,6 +311,8 @@ void SceneGame::ResetGame(bool keepWinCount) {
     if (flipPattern == 1 || flipPattern == 2) {
         player1.SwapImageWith(player2);
     }
+    // 入れ替え制限：最初の交換までの間
+    swapTimer = 180 + rand() % 120;
     weaponSpawnTimer = 0;
     mementoMoriTimer = 0;
     mementoMoriShooterID = 0;
@@ -311,13 +328,86 @@ void SceneGame::ResetGame(bool keepWinCount) {
     }
     InitFallingUI();
     InitPlayers(keepWinCount);
+    InitDecoys(); // 分身を本体のまわりに散らして初期化（REST_SWAP以外でも持っておくだけなら害なし）
+}
+
+void SceneGame::InitDecoys() {
+    const float MINX = 60.0f, MAXX = 1220.0f;
+    p1GroundY = player1.y; // 開始時は接地している前提
+    p2GroundY = player2.y;
+    for (int i = 0; i < DECOY_COUNT; i++) {
+        // 本体から±420pxの広い範囲に散らす（画面内にクランプ）
+        float x1 = player1.x + (float)(rand() % 841 - 420);
+        if (x1 < MINX) x1 = MINX; if (x1 > MAXX) x1 = MAXX;
+        p1Decoys[i].x = x1;
+        p1Decoys[i].y = player1.y; // 縦は本体に合わせる＝地面に立つ
+        p1Decoys[i].moveSign = (rand() % 2 == 0) ? 1 : -1;
+        p1Decoys[i].jumpScale = 0.65f + (float)(rand() % 66) / 100.0f; // 0.65〜1.30倍
+        p1Decoys[i].faceRight = (p1Decoys[i].moveSign > 0);
+
+        float x2 = player2.x + (float)(rand() % 841 - 420);
+        if (x2 < MINX) x2 = MINX; if (x2 > MAXX) x2 = MAXX;
+        p2Decoys[i].x = x2;
+        p2Decoys[i].y = player2.y;
+        p2Decoys[i].moveSign = (rand() % 2 == 0) ? 1 : -1;
+        p2Decoys[i].jumpScale = 0.65f + (float)(rand() % 66) / 100.0f;
+        p2Decoys[i].faceRight = (p2Decoys[i].moveSign > 0);
+    }
+}
+
+void SceneGame::UpdateDecoys() {
+    // ▼ここの数字をいじると分身の挙動を調整できる
+    const float FOLLOW = 1.0f;  // 本体の速さに対する分身の速さの倍率（1.0で本体と同速）
+    const int   FLIP_CHANCE = 180; // 1/FLIP_CHANCEの確率で進む向きを気まぐれに変える
+    const float MINX = 60.0f, MAXX = 1220.0f; // 画面内に留める横の境界
+
+    Decoy* arrs[2]   = { p1Decoys, p2Decoys };
+    Player* owners[2] = { &player1, &player2 };
+    float* grounds[2] = { &p1GroundY, &p2GroundY };
+
+    for (int s = 0; s < 2; s++) {
+        Decoy* arr = arrs[s];
+        Player& p = *owners[s];
+        float& groundY = *grounds[s];
+        // 地面＝本体が到達する一番下（y座標が最大の点）として記録する。
+        // ジャンプ中はyが小さくなるので地面を上書きしない＝onGroundの挙動に左右されず壊れない。
+        if (p.y > groundY) groundY = p.y;
+        // 本体が地面からどれだけ浮いてるか（正＝ジャンプ中）
+        float jumpHeight = groundY - p.y;
+        if (jumpHeight < 0.0f) jumpHeight = 0.0f;
+        for (int i = 0; i < DECOY_COUNT; i++) {
+            Decoy& d = arr[i];
+            // 縦は本体のジャンプ高さに個体差(jumpScale)を掛けて反映。
+            // 接地時は高さ0なので全員ちゃんと地面に立つ。跳ぶ高さだけバラける。
+            d.y = groundY - jumpHeight * d.jumpScale;
+            // 本体が左右に歩いてる時だけ、自分の向き(moveSign)へ前進する。
+            // 本体が止まれば分身も止まる＝プルプルしないので本物と見分けがつかない。
+            if (p.vx != 0.0f) {
+                d.x += fabsf(p.vx) * FOLLOW * (float)d.moveSign;
+            }
+            // たまに気まぐれで進む向きを反転（みんなが同じ方へ抜けていかないように）
+            if (rand() % FLIP_CHANCE == 0) d.moveSign = -d.moveSign;
+            // 画面端で折り返す
+            if (d.x < MINX) { d.x = MINX; d.moveSign = 1; }
+            if (d.x > MAXX) { d.x = MAXX; d.moveSign = -1; }
+            // 向きは進む方向に合わせる
+            d.faceRight = (d.moveSign > 0);
+        }
+    }
+}
+
+void SceneGame::DrawDecoys() {
+    if (!restrictionManager.IsActive(REST_SWAP)) return;
+    for (int i = 0; i < DECOY_COUNT; i++) {
+        player1.DrawDecoy(p1Decoys[i].x, p1Decoys[i].y, p1Decoys[i].faceRight, *imgMgr);
+        player2.DrawDecoy(p2Decoys[i].x, p2Decoys[i].y, p2Decoys[i].faceRight, *imgMgr);
+    }
 }
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {
     if (!attacker.attacking) return;
-    bool isMeleeNoRest = restrictionManager.IsActive(REST_MELEE_NO_DAMAGE);
     bool isBareHand = attacker.holdingWeaponIndex == -1;
-    if (isBareHand && !isMeleeNoRest) return;
+    if (isBareHand) return; // 弾けるのは武器持ちだけ
 
     int chargeFrames = (attacker.holdingWeaponIndex == -1)
         ? BARE_HAND_CHARGE_FRAMES
@@ -341,42 +431,29 @@ void SceneGame::CheckParry(Player& attacker, int ownerID) {
         orbManager.CheckParry(atkX, atkY, 40.0f, 80.0f, ownerID);
     }
 
-    bool parried = false;
-    bool anyThrownInRange = false;
     for (int i = 0; i < WEAPON_MAX; i++) {
         if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
         bool inRange = weapons[i].CheckParry(atkX, atkY, 40.0f, 80.0f);
-        if (inRange) anyThrownInRange = true;
         if (inRange) {
             if (isParryFrame) {
                 // 弾き返し
                 PlaySoundMem(sound->parry, DX_PLAYTYPE_BACK);
-                weapons[i].vx = -weapons[i].vx * (isMeleeNoRest ? 1.5f : 1.0f);
+                weapons[i].vx = -weapons[i].vx;
                 return;
             }
             else {
-                PlaySoundMem(sound->deflect, DX_PLAYTYPE_BACK); // はたき落とし
-                if (!isBareHand) {
-                    // はたき落とし
-                    Weapon& held = weapons[attacker.holdingWeaponIndex];
-                    weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-                    held.parryRemain--;
-                    if (held.parryRemain <= 0) {
-                        held.weaponState = Weapon::WEAPON_INACTIVE;
-                        attacker.holdingWeaponIndex = -1;
-                    }
-                }
-                else {
-                    weapons[i].vx = -weapons[i].vx * 1.5f;
+                // はたき落とし（ここに来るのは武器持ちのみ）
+                PlaySoundMem(sound->deflect, DX_PLAYTYPE_BACK);
+                Weapon& held = weapons[attacker.holdingWeaponIndex];
+                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                held.parryRemain--;
+                if (held.parryRemain <= 0) {
+                    held.weaponState = Weapon::WEAPON_INACTIVE;
+                    attacker.holdingWeaponIndex = -1;
                 }
             }
-            parried = true;
             break;
         }
-    }
-
-    if (isMeleeNoRest && isBareHand && anyThrownInRange && !parried) {
-        EnterHitState(ownerID == 1, true);
     }
 }
 
@@ -419,6 +496,25 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
                 PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
                 weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
                 target.AddKnockbackCount(); // 蓄積+1
+            }
+        }
+        return;
+    }
+    // 近接無双：投げはシールドで1回だけ無効化。シールドが無ければ小さく押すだけ（場外には届かない）。
+    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
+        for (int i = 0; i < WEAPON_MAX; i++) {
+            if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
+            if (weapons[i].CheckHit(
+                target.x, target.y - PLAYER_HIT_CY,
+                PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
+                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
+                if (target.hasShield) {
+                    target.hasShield = false; // 投げを1回だけ無効化してシールド消滅
+                    return;
+                }
+                float dirVx = (weapons[i].vx >= 0.0f) ? 25.0f : -25.0f; // ▼投げの押し（弱め）
+                target.ApplyKnockback(dirVx, -6.0f);
+                return;
             }
         }
         return;
@@ -487,11 +583,14 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
 void SceneGame::CheckMeleeHit(Player& attacker, Player& target, bool judgeValue) {
     if (!attacker.CheckAttackHit(target, weapons)) return;
 
-    if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
-        if (attacker.holdingWeaponIndex != -1) {
-            target.moveSpeed = 5.0f * 0.6f;
-            target.speedDownTimer = 180;
-        }
+    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
+        // 近接無双：武器近接は場外まで吹っ飛ばす即死級、素手はいやがらせ程度。
+        // シールドは投げ専用なので近接は素通り（必ず吹っ飛ぶ）。
+        bool hasWeapon = attacker.holdingWeaponIndex != -1;
+        float kbVx = hasWeapon ? 200.0f : 12.0f; // ▼数値で吹っ飛び調整（×6.7が大体の総距離）
+        float kbVy = hasWeapon ? -10.0f : -4.0f;
+        float dirVx = (attacker.x < target.x) ? kbVx : -kbVx;
+        target.ApplyKnockback(dirVx, kbVy);
         return;
     }
 
@@ -599,7 +698,7 @@ void SceneGame::SpawnWeapon()
     if (restrictionManager.IsActive(REST_SETSUNA)) return;
     weaponSpawnTimer++;
     int spawnInterval = WEAPON_SPAWN_INTERVAL;
-    if (restrictionManager.IsActive(REST_MELEE_NO_DAMAGE)) {
+    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
         spawnInterval = WEAPON_SPAWN_INTERVAL * 1.1; // 1.1倍に延長
     }
     if (weaponSpawnTimer >= spawnInterval) {
@@ -688,7 +787,20 @@ void SceneGame::DrawMementoMori(Player& attacker) {
     }
 }
 
+// フライング（！前の早撃ち）をやらかした側に出す爆発演出
+void SceneGame::DrawFlyExplosion() {
+    if (!flyExplodeActive) return;
+    DrawRotaGraphF(flyExplodeX, flyExplodeY, 9.0, 0.0, imgMgr->bomb, TRUE);
+    DrawCircleAA(flyExplodeX, flyExplodeY, 150.0f, 64, GetColor(0, 255, 255), FALSE);
+}
+
 void SceneGame::Update() {
+    // フライング爆発演出のタイマー（状態に関係なく進める）
+    if (flyExplodeTimer > 0) {
+        flyExplodeTimer--;
+        if (flyExplodeTimer == 0) flyExplodeActive = false;
+    }
+
     if (state == STATE_PLAYING) {
         animTimer++;
         if (animTimer >= 10) {
@@ -802,14 +914,41 @@ void SceneGame::Update() {
             // 素手攻撃を出した瞬間に音を鳴らしてフラグを戻す
             if (player1.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player1.justBareAttacked = false; }
             if (player2.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player2.justBareAttacked = false; }
+
+            // 綱引き制限：常に画面中央(X=640)へ引っ張る。中央から遠いほど強く引かれる。
+            // 係数0.004 → 端(中央から約600px)でも約2.4px/フレーム。歩き(5px/フレーム)で逆らえるやんわり強度。
+            if (restrictionManager.IsActive(REST_TUG)) {
+                const float TUG_CENTER = 640.0f;
+                const float TUG_PULL = 0.008f;
+                player1.x += (TUG_CENTER - player1.x) * TUG_PULL;
+                player2.x += (TUG_CENTER - player2.x) * TUG_PULL;
+            }
         }
 
-        // ノックバック画面外チェック
-        if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
+        // ノックバック画面外チェック（投げダメなし・近接無双はどちらも場外で負け）
+        if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE) ||
+            restrictionManager.IsActive(REST_MELEE_MUSOU)) {
             if (player1.isKnockedBack && (player1.x < 0.0f || player1.x > 1280.0f))
                 EnterHitState(true, true);
             if (player2.isKnockedBack && (player2.x < 0.0f || player2.x > 1280.0f))
                 EnterHitState(false, true);
+        }
+
+        // 入れ替え制限：一定時間ごとに「本体（赤と青）だけ」が位置を交換する。
+        // 分身は連れていかない＝置いてけぼり。だからワープ直後は本体が群れから飛び出す。
+        if (restrictionManager.IsActive(REST_SWAP)) {
+            // 分身は常に勝手に漂わせ続ける
+            UpdateDecoys();
+            if (swapTimer > 0) swapTimer--;
+            else {
+                float t;
+                t = player1.x;  player1.x  = player2.x;  player2.x  = t;
+                t = player1.y;  player1.y  = player2.y;  player2.y  = t;
+                t = player1.vx; player1.vx = player2.vx; player2.vx = t;
+                t = player1.vy; player1.vy = player2.vy; player2.vy = t;
+                PlaySoundMem(sound->setsunaSign, DX_PLAYTYPE_BACK); // 入れ替わり合図の仮の音
+                swapTimer = 180 + rand() % 120; // 次の交換まで3〜5秒
+            }
         }
 
         UpdateMashMove();
@@ -923,7 +1062,12 @@ void SceneGame::Update() {
         // リザルト表示タイマー
         if (RESULT_TIMER > 0) RESULT_TIMER--;
         else {
-            if (player1.winCount >= WINNING_SCORE || player2.winCount >= WINNING_SCORE) {
+            if (setsunaRedoPending) {
+                // 刹那の両者遅すぎ→同じ刹那をもう一回（スコアそのまま・別の制限に進まない）
+                setsunaRedoPending = false;
+                ResetGame(true, true);
+            }
+            else if (player1.winCount >= WINNING_SCORE || player2.winCount >= WINNING_SCORE) {
                 state = STATE_GAMEEND;
             }
             else {
@@ -1039,11 +1183,19 @@ void SceneGame::UpdateSetsuna() {
     else if (setsunaPhase == SETSUNA_WAIT) {
         player1.canAttack = false;
         player2.canAttack = false;
-        // フライングチェック
+        // フライングチェック（！が出る前に攻撃したら負け＋やらかし爆発）
         bool p1Attack = CheckHitKey(KEY_INPUT_F);
         bool p2Attack = GetMouseInput() & MOUSE_INPUT_LEFT;
-        if (p1Attack) { EnterHitState(true, true); }
-        else if (p2Attack) { EnterHitState(false, true); }
+        if (p1Attack) {
+            flyExplodeActive = true; flyExplodeX = player1.x; flyExplodeY = player1.y - 60.0f; flyExplodeTimer = 45;
+            PlaySoundMem(sound->explosion, DX_PLAYTYPE_BACK);
+            EnterHitState(true, true);
+        }
+        else if (p2Attack) {
+            flyExplodeActive = true; flyExplodeX = player2.x; flyExplodeY = player2.y - 60.0f; flyExplodeTimer = 45;
+            PlaySoundMem(sound->explosion, DX_PLAYTYPE_BACK);
+            EnterHitState(false, true);
+        }
 
         setsunaPhaseTimer--;
         if (setsunaPhaseTimer <= 0) {
@@ -1051,7 +1203,24 @@ void SceneGame::UpdateSetsuna() {
             player1.canAttack = true;
             player2.canAttack = true;
             setsunaSignVisible = true;
+            setsunaPhaseTimer = 180; // ！が出てからの反応猶予3秒
             PlaySoundMem(sound->setsunaSign, DX_PLAYTYPE_BACK); // ！が出た合図
+        }
+    }
+    else if (setsunaPhase == SETSUNA_ACTIVE) {
+        // ！が出てから3秒、どちらも決め手を出さなければ「両者遅すぎ」で引き分けやり直し
+        if (setsunaPhaseTimer > 0) setsunaPhaseTimer--;
+        if (setsunaPhaseTimer <= 0 && !player1.attacking && !player2.attacking) {
+            isDraw = true;
+            setsunaRedoPending = true;
+            player1.animFrame = 6;
+            player2.animFrame = 6;
+            p1HpIndex = 1;
+            p2HpIndex = 1;
+            HIT_TIMER = 60;
+            RESULT_TIMER = 120;
+            state = STATE_HIT;
+            JUDGE = false;
         }
     }
 }
@@ -1118,6 +1287,7 @@ void SceneGame::Draw() {
         }
         DrawMementoMori(player1);
         DrawMementoMori(player2);
+        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
@@ -1174,6 +1344,7 @@ void SceneGame::Draw() {
         }
         DrawMementoMori(player1);
         DrawMementoMori(player2);
+        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
@@ -1181,6 +1352,7 @@ void SceneGame::Draw() {
         }
         orbManager.Draw();
         itemManager.Draw();
+        DrawFlyExplosion();
         DrawUI();
     }
     else if (state == STATE_RESULT) {
@@ -1189,6 +1361,7 @@ void SceneGame::Draw() {
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
         }
+        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
@@ -1199,7 +1372,9 @@ void SceneGame::Draw() {
         DrawUI();
 
         SetFontSize(72);
-        const TCHAR* resultText = isDraw ? _T("ちんたらすんな！") :
+        const TCHAR* resultText =
+            (isDraw && setsunaRedoPending) ? _T("画面見てないのか？") :
+            isDraw ? _T("ちんたらすんな！") :
             !JUDGE ? _T("赤の勝ち！") :
             _T("青の勝ち！");
         unsigned int resultColor = isDraw ? GetColor(255, 255, 0) :
@@ -1233,6 +1408,7 @@ void SceneGame::Draw() {
     else if (state == STATE_COUNTDOWN) {
         DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
+        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         DrawUI();

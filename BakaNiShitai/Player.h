@@ -79,6 +79,8 @@ public:
 	void Update(Stage& stage, Weapon* weapons, const RestrictionManager& restrictions);
 	void ApplyGravity(const RestrictionManager& restrictions);
 	void Draw(Weapon* weapons, ImageManager& imgMgr);
+	// 分身用：指定座標に「体だけ」を描く。画像・アニメ・黄色状態は本体に追従し、向きだけ引数で渡す。
+	void DrawDecoy(float dx, float dy, bool faceRight, ImageManager& imgMgr);
 	void SwapImageWith(Player& other);
 private:
 	int playerImage[7];

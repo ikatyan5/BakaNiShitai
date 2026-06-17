@@ -17,7 +17,7 @@ class SceneGame : public BaseScene {
 public:
     void Init(ImageManager& imgMgr, GameSettings& settings, SoundManager& sndMgr);
     void InitPlayers(bool keepWinCount = false);
-    void ResetGame(bool keepWinCount);
+    void ResetGame(bool keepWinCount, bool keepRestriction = false);
     void Update() override;
     void Draw() override;
     void DrawUI();
@@ -33,6 +33,7 @@ public:
     void PickupWeapon(Player& player);
     void CheckMementoMori(Player& attacker, Player& target, bool judgeValue);
     void DrawMementoMori(Player& attacker);
+    void DrawFlyExplosion();
 private:
     enum GameState {
         STATE_COUNTDOWN,
@@ -76,6 +77,12 @@ private:
 
     bool setsunaSignVisible; // ！表示フラグ
 
+    bool setsunaRedoPending;  // 刹那で両者遅すぎ→引き分けやり直し待ち
+    bool flyExplodeActive;    // フライング爆発演出が出ているか
+    float flyExplodeX;        // フライング爆発の中心X
+    float flyExplodeY;        // フライング爆発の中心Y
+    int  flyExplodeTimer;     // フライング爆発の残り表示フレーム
+
     int countdownTimer;
 
     int currentTex;  // 今フレームの描画テクスチャ
@@ -90,6 +97,25 @@ private:
 
     int flipPattern;   // 0=上下+左右  1=上下+スワップ  2=左右+スワップ
     int flipTimer;     // 切り替えまでのカウントダウン
+
+    int swapTimer;     // 入れ替え制限：次に位置を交換するまでのカウントダウン
+
+    // 分身（入れ替え制限に同梱）。当たり判定なしの描画専用。
+    // 縦は本体に追従して重力・接地・ジャンプをタダでもらい、横だけ本体の歩きに合わせて散らす。
+    static const int DECOY_COUNT = 5; // プレイヤー1人につきの分身の数
+    struct Decoy {
+        float x, y;      // ワールド座標（yは本体のジャンプを倍率付きで反映）
+        int moveSign;    // 進む向き（+1=右 / -1=左）。本体が歩いてる間だけこの向きに進む
+        float jumpScale; // ジャンプの高さ倍率（1.0で本体と同じ。個体差でバラバラに見せる）
+        bool faceRight;  // 向き（進行方向に合わせる）
+    };
+    Decoy p1Decoys[DECOY_COUNT];
+    Decoy p2Decoys[DECOY_COUNT];
+    float p1GroundY; // 本体1が接地してる時のY（分身のジャンプ計算の地面基準）
+    float p2GroundY; // 本体2が接地してる時のY
+    void InitDecoys();   // 本体のまわりに散らして初期化
+    void UpdateDecoys(); // 毎フレームの漂い更新（REST_SWAP中のみ）
+    void DrawDecoys();   // 分身の描画（REST_SWAP以外は即return）
 
     bool wallEndLeft;
     bool wallEndRight;

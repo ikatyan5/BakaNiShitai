@@ -134,12 +134,11 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else if (roll < 9) type = ITEM_POTION_YELLOW; // 20%
                 else               type = ITEM_HANKACHI;       // 10%
             }
-            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_MELEE_NO_DAMAGE)) {
-                int roll = rand() % 4;
-                if (roll == 0)      type = ITEM_POTION_BLUE;
-                else if (roll == 1) type = ITEM_POTION_PURPLE;
-                else if (roll == 2) type = ITEM_POTION_YELLOW;
-                else                type = ITEM_HANKACHI;
+            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_MELEE_MUSOU)) {
+                type = (rand() % 2 == 0) ? ITEM_POTION_PURPLE : ITEM_HANKACHI;
+            }
+            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_SWAP)) {
+                type = ITEM_POTION_YELLOW; // 入れ替え制限中は黄ポーションしか降らせない
             }
 #else
             ItemType type;
@@ -169,12 +168,11 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else if (roll < 9) type = ITEM_POTION_YELLOW; // 20%
                 else               type = ITEM_HANKACHI;       // 10%
             }
-            else if (restrictions.IsActive(REST_MELEE_NO_DAMAGE)) {
-                int roll = rand() % 4;
-                if (roll == 0)      type = ITEM_POTION_BLUE;
-                else if (roll == 1) type = ITEM_POTION_PURPLE;
-                else if (roll == 2) type = ITEM_POTION_YELLOW;
-                else                type = ITEM_HANKACHI;
+            else if (restrictions.IsActive(REST_MELEE_MUSOU)) {
+                type = (rand() % 2 == 0) ? ITEM_POTION_PURPLE : ITEM_HANKACHI;
+            }
+            else if (restrictions.IsActive(REST_SWAP)) {
+                type = ITEM_POTION_YELLOW; // 入れ替え制限中は黄ポーションしか降らせない
             }
             else {
                 do {
