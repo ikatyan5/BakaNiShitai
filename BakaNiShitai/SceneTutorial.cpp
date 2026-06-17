@@ -26,7 +26,7 @@ void SceneTutorial::Init(ImageManager& imgMgr_) {
     animTimer = animFrame = 0;
 
     // 武器図鑑エントリ
-    weaponEntries[0] = { _T("鎌"),            imgMgr->weaponImages[WEAPON_KAMA],           _T("シンプルなカマ"), _T("特筆していうことはない") };
+    weaponEntries[0] = { _T("鎌"),             imgMgr->weaponImages[WEAPON_KAMA],          _T("シンプルなカマ"), _T("特筆していうことはない") };
     weaponEntries[1] = { _T("棍棒"),           imgMgr->weaponImages[WEAPON_KONBOU],        _T("スタンダードで使いやすい"), _T("はたき落とす回数が多めだ") };
     weaponEntries[2] = { _T("剣"),             imgMgr->weaponImages[WEAPON_KEN],           _T("投げた時の速度が早め"), _T("振った時の判定は少し狭いから注意だ") };
     weaponEntries[3] = { _T("銃"),             imgMgr->weaponImages[WEAPON_GUN],           _T("遠距離から攻撃できる..と思ったら大間違いだ"), _T("意外と振りが一番早い") };
@@ -36,7 +36,7 @@ void SceneTutorial::Init(ImageManager& imgMgr_) {
     weaponEntries[7] = { _T("ブーメラン"),     imgMgr->weaponImages[WEAPON_BOOMERANG],     _T("投げると戻ってくる 当たらないように") , _T("気を付けて投げるべし 当たったらダサいぞ") };
     weaponEntries[8] = { _T("メメントモリ"),   imgMgr->weaponImages[WEAPON_MEMENTO_MORI],  _T("攻撃すると撃てる 外したら自分がやられる") , _T("覚悟を決めて撃つんだ") };
     weaponEntries[9] = { _T("ピコハン"),       imgMgr->weaponImages[WEAPON_PIKOHAN],       _T("特定の制限でしか出ないぞ"), _T("当てるとスタン 近接の方がスタン時間が長い") };
-    weaponEntries[10] = { _T("テンサイノツエ"), imgMgr->weaponImages[WEAPON_TENSAI_TSUE],  _T("普通の杖に見えるが…?") , _T("拾うと何かしらで変化が起きているぞ") };
+    weaponEntries[10] = { _T("テンサイノツエ"),imgMgr->weaponImages[WEAPON_TENSAI_TSUE],   _T("普通の杖に見えるが…?") , _T("拾うと何かしらで変化が起きているぞ") };
 
     // アイテム図鑑エントリ
     itemEntries[0] = { _T("青ポーション"), imgMgr->potionBlue,   _T("拾うとジャンプ力が上がる"),  _T("場合によっては不利になるかも") };
