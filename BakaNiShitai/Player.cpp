@@ -617,6 +617,21 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 #endif
 }
 
+void Player::DrawDecoy(float dx, float dy, bool faceRight, ImageManager& imgMgr) {
+	// 本体の Draw から「体の絵」部分だけを抜き出したもの。
+	// 画像(playerImage/playerGlowImage)とアニメ枚数(animFrame)は本体に追従するので、
+	// 黄ポーション中は本体ごと分身も黄色く光る。向きだけ引数で個別に渡す。
+	float drawX = dx - 48.0f;
+	float drawY = dy - 128.0f;
+	int* drawImage = isGlowing ? playerGlowImage : playerImage;
+	if (faceRight) {
+		DrawExtendGraphF(drawX, drawY, drawX + 96, drawY + 128, drawImage[animFrame], TRUE);
+	}
+	else {
+		DrawExtendGraphF(drawX + 96, drawY, drawX, drawY + 128, drawImage[animFrame], TRUE);
+	}
+}
+
 void Player::SwapImageWith(Player& other) {
 	for (int i = 0; i < 7; i++) {
 		std::swap(playerImage[i], other.playerImage[i]);

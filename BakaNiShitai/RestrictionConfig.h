@@ -19,5 +19,7 @@ enum RestrictionType {
     REST_HYPETSUYOI,          // 〇 ハイパー強いモード
     REST_JUMP_LIMIT,          // 〇 ジャンプ制限（空中のみ横移動）
     REST_SCREEN_BLUR,         // 〇 画面ぼやけ
+    REST_SWAP,                // 〇 入れ替え（一定時間ごとに2人の位置を交換）
+    REST_TUG,                 // 〇 綱引き（常に画面中央へ引っ張られる）
     REST_TYPE_MAX
 };

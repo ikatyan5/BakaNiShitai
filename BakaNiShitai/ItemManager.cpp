@@ -141,6 +141,9 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else if (roll == 2) type = ITEM_POTION_YELLOW;
                 else                type = ITEM_HANKACHI;
             }
+            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_SWAP)) {
+                type = ITEM_POTION_YELLOW; // 入れ替え制限中は黄ポーションしか降らせない
+            }
 #else
             ItemType type;
             if (restrictions.IsActive(REST_MASH_MOVE)) {
@@ -175,6 +178,9 @@ void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
                 else if (roll == 1) type = ITEM_POTION_PURPLE;
                 else if (roll == 2) type = ITEM_POTION_YELLOW;
                 else                type = ITEM_HANKACHI;
+            }
+            else if (restrictions.IsActive(REST_SWAP)) {
+                type = ITEM_POTION_YELLOW; // 入れ替え制限中は黄ポーションしか降らせない
             }
             else {
                 do {

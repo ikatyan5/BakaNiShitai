@@ -20,6 +20,8 @@ static const TCHAR* RESTRICTION_NAMES[] = {
     _T("強いやつから逃げ切れ 触れられたら負けだぞ！"),
     _T("地上で移動できないぞ！"),
     _T("なんか画面おかしくね？"),
+    _T("分身が出現！＋位置が入れ替わるぞ！"),
+    _T("画面の真ん中へ引っ張られるぞ！"),
 };
 
 static void DrawRotatedUI(float cx, float cy, float w, float h, float angle, int img) {
@@ -112,6 +114,7 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
     }
     InitFallingUI();
     InitPlayers(false);
+    InitDecoys(); // 初回ラウンドでも分身と地面基準を初期化しておく
     gravityInsaneLevel = 2;
     gravityInsaneTimer = 120 + rand() % 60;
     player1.gravityInsaneLevel = gravityInsaneLevel;
@@ -302,6 +305,8 @@ void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     if (flipPattern == 1 || flipPattern == 2) {
         player1.SwapImageWith(player2);
     }
+    // 入れ替え制限：最初の交換までの間
+    swapTimer = 180 + rand() % 120;
     weaponSpawnTimer = 0;
     mementoMoriTimer = 0;
     mementoMoriShooterID = 0;
@@ -317,6 +322,80 @@ void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     }
     InitFallingUI();
     InitPlayers(keepWinCount);
+    InitDecoys(); // 分身を本体のまわりに散らして初期化（REST_SWAP以外でも持っておくだけなら害なし）
+}
+
+void SceneGame::InitDecoys() {
+    const float MINX = 60.0f, MAXX = 1220.0f;
+    p1GroundY = player1.y; // 開始時は接地している前提
+    p2GroundY = player2.y;
+    for (int i = 0; i < DECOY_COUNT; i++) {
+        // 本体から±420pxの広い範囲に散らす（画面内にクランプ）
+        float x1 = player1.x + (float)(rand() % 841 - 420);
+        if (x1 < MINX) x1 = MINX; if (x1 > MAXX) x1 = MAXX;
+        p1Decoys[i].x = x1;
+        p1Decoys[i].y = player1.y; // 縦は本体に合わせる＝地面に立つ
+        p1Decoys[i].moveSign = (rand() % 2 == 0) ? 1 : -1;
+        p1Decoys[i].jumpScale = 0.65f + (float)(rand() % 66) / 100.0f; // 0.65〜1.30倍
+        p1Decoys[i].faceRight = (p1Decoys[i].moveSign > 0);
+
+        float x2 = player2.x + (float)(rand() % 841 - 420);
+        if (x2 < MINX) x2 = MINX; if (x2 > MAXX) x2 = MAXX;
+        p2Decoys[i].x = x2;
+        p2Decoys[i].y = player2.y;
+        p2Decoys[i].moveSign = (rand() % 2 == 0) ? 1 : -1;
+        p2Decoys[i].jumpScale = 0.65f + (float)(rand() % 66) / 100.0f;
+        p2Decoys[i].faceRight = (p2Decoys[i].moveSign > 0);
+    }
+}
+
+void SceneGame::UpdateDecoys() {
+    // ▼ここの数字をいじると分身の挙動を調整できる
+    const float FOLLOW = 1.0f;  // 本体の速さに対する分身の速さの倍率（1.0で本体と同速）
+    const int   FLIP_CHANCE = 180; // 1/FLIP_CHANCEの確率で進む向きを気まぐれに変える
+    const float MINX = 60.0f, MAXX = 1220.0f; // 画面内に留める横の境界
+
+    Decoy* arrs[2]   = { p1Decoys, p2Decoys };
+    Player* owners[2] = { &player1, &player2 };
+    float* grounds[2] = { &p1GroundY, &p2GroundY };
+
+    for (int s = 0; s < 2; s++) {
+        Decoy* arr = arrs[s];
+        Player& p = *owners[s];
+        float& groundY = *grounds[s];
+        // 地面＝本体が到達する一番下（y座標が最大の点）として記録する。
+        // ジャンプ中はyが小さくなるので地面を上書きしない＝onGroundの挙動に左右されず壊れない。
+        if (p.y > groundY) groundY = p.y;
+        // 本体が地面からどれだけ浮いてるか（正＝ジャンプ中）
+        float jumpHeight = groundY - p.y;
+        if (jumpHeight < 0.0f) jumpHeight = 0.0f;
+        for (int i = 0; i < DECOY_COUNT; i++) {
+            Decoy& d = arr[i];
+            // 縦は本体のジャンプ高さに個体差(jumpScale)を掛けて反映。
+            // 接地時は高さ0なので全員ちゃんと地面に立つ。跳ぶ高さだけバラける。
+            d.y = groundY - jumpHeight * d.jumpScale;
+            // 本体が左右に歩いてる時だけ、自分の向き(moveSign)へ前進する。
+            // 本体が止まれば分身も止まる＝プルプルしないので本物と見分けがつかない。
+            if (p.vx != 0.0f) {
+                d.x += fabsf(p.vx) * FOLLOW * (float)d.moveSign;
+            }
+            // たまに気まぐれで進む向きを反転（みんなが同じ方へ抜けていかないように）
+            if (rand() % FLIP_CHANCE == 0) d.moveSign = -d.moveSign;
+            // 画面端で折り返す
+            if (d.x < MINX) { d.x = MINX; d.moveSign = 1; }
+            if (d.x > MAXX) { d.x = MAXX; d.moveSign = -1; }
+            // 向きは進む方向に合わせる
+            d.faceRight = (d.moveSign > 0);
+        }
+    }
+}
+
+void SceneGame::DrawDecoys() {
+    if (!restrictionManager.IsActive(REST_SWAP)) return;
+    for (int i = 0; i < DECOY_COUNT; i++) {
+        player1.DrawDecoy(p1Decoys[i].x, p1Decoys[i].y, p1Decoys[i].faceRight, *imgMgr);
+        player2.DrawDecoy(p2Decoys[i].x, p2Decoys[i].y, p2Decoys[i].faceRight, *imgMgr);
+    }
 }
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {
@@ -821,6 +900,15 @@ void SceneGame::Update() {
             // 素手攻撃を出した瞬間に音を鳴らしてフラグを戻す
             if (player1.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player1.justBareAttacked = false; }
             if (player2.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player2.justBareAttacked = false; }
+
+            // 綱引き制限：常に画面中央(X=640)へ引っ張る。中央から遠いほど強く引かれる。
+            // 係数0.004 → 端(中央から約600px)でも約2.4px/フレーム。歩き(5px/フレーム)で逆らえるやんわり強度。
+            if (restrictionManager.IsActive(REST_TUG)) {
+                const float TUG_CENTER = 640.0f;
+                const float TUG_PULL = 0.008f;
+                player1.x += (TUG_CENTER - player1.x) * TUG_PULL;
+                player2.x += (TUG_CENTER - player2.x) * TUG_PULL;
+            }
         }
 
         // ノックバック画面外チェック
@@ -829,6 +917,23 @@ void SceneGame::Update() {
                 EnterHitState(true, true);
             if (player2.isKnockedBack && (player2.x < 0.0f || player2.x > 1280.0f))
                 EnterHitState(false, true);
+        }
+
+        // 入れ替え制限：一定時間ごとに「本体（赤と青）だけ」が位置を交換する。
+        // 分身は連れていかない＝置いてけぼり。だからワープ直後は本体が群れから飛び出す。
+        if (restrictionManager.IsActive(REST_SWAP)) {
+            // 分身は常に勝手に漂わせ続ける
+            UpdateDecoys();
+            if (swapTimer > 0) swapTimer--;
+            else {
+                float t;
+                t = player1.x;  player1.x  = player2.x;  player2.x  = t;
+                t = player1.y;  player1.y  = player2.y;  player2.y  = t;
+                t = player1.vx; player1.vx = player2.vx; player2.vx = t;
+                t = player1.vy; player1.vy = player2.vy; player2.vy = t;
+                PlaySoundMem(sound->setsunaSign, DX_PLAYTYPE_BACK); // 入れ替わり合図の仮の音
+                swapTimer = 180 + rand() % 120; // 次の交換まで3〜5秒
+            }
         }
 
         UpdateMashMove();
@@ -1167,6 +1272,7 @@ void SceneGame::Draw() {
         }
         DrawMementoMori(player1);
         DrawMementoMori(player2);
+        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
@@ -1223,6 +1329,7 @@ void SceneGame::Draw() {
         }
         DrawMementoMori(player1);
         DrawMementoMori(player2);
+        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
@@ -1239,6 +1346,7 @@ void SceneGame::Draw() {
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
         }
+        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
@@ -1285,6 +1393,7 @@ void SceneGame::Draw() {
     else if (state == STATE_COUNTDOWN) {
         DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
+        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         DrawUI();
