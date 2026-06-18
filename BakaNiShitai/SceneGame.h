@@ -105,11 +105,7 @@ private:
     int flipPattern;   // 0=上下+左右  1=上下+スワップ  2=左右+スワップ
     int flipTimer;     // 切り替えまでのカウントダウン
 
-    // 入れ替え＋分身の状態・挙動・描画は SwapRestriction（Restriction.cpp）へ移設済み。
-
-    bool wallEndLeft;
-    bool wallEndRight;
-    int wallEndTimer;
+    // 入れ替え＋分身は SwapRestriction、連打移動の壁は MashMoveRestriction（Restriction.cpp）へ移設済み。
 
     // 刹那の見切り
     enum SetsunaPhase {
@@ -152,7 +148,6 @@ private:
     void UpdateSetsuna();
     void UpdateScreenFlip();
     void UpdateMeteor();
-    void UpdateMashMove();
     void CheckMeleeHit(Player& attacker, Player& target, bool judgeValue);
 
     SceneID nextScene = SCENE_NONE;

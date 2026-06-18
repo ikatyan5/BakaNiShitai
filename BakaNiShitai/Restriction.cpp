@@ -39,8 +39,47 @@ namespace {
     class ScreenFlipRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("画面がひっくり返るぞ！"); }
     };
+    // 連打移動：横移動は連打式（Player側）。SceneGame側は「端に壁が出て、押し込まれたら場外負け」。
     class MashMoveRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("横移動は連打しろ！"); }
+    public:
+        const TCHAR* Name() const override { return _T("横移動は連打しろ！"); }
+
+        void OnRoundStart(SceneGame& g) override {
+            wallEndLeft = false;
+            wallEndRight = false;
+            wallEndTimer = 180 + rand() % 300;
+        }
+
+        void UpdatePlaying(SceneGame& g) override {
+            if (wallEndTimer > 0) wallEndTimer--;
+            else {
+                int roll = rand() % 3;
+                wallEndLeft = (roll == 0 || roll == 2);
+                wallEndRight = (roll == 1 || roll == 2);
+                wallEndTimer = 180 + rand() % 240;
+            }
+            CheckWall(g, g.GetPlayer1(), 2);
+            CheckWall(g, g.GetPlayer2(), 1);
+        }
+
+        void DrawForeground(SceneGame& g) override {
+            unsigned int wallColor = GetColor(255, 0, 0);
+            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
+            if (wallEndLeft)  DrawBoxAA(0.0f, 0.0f, 50.0f, 920.0f, wallColor, TRUE);
+            if (wallEndRight) DrawBoxAA(1230.0f, 0.0f, 1280.0f, 920.0f, wallColor, TRUE);
+            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        }
+
+    private:
+        bool wallEndLeft = false;
+        bool wallEndRight = false;
+        int wallEndTimer = 0;
+
+        // 壁が出てる端に押し込まれたら場外負け
+        void CheckWall(SceneGame& g, Player& player, int winnerID) {
+            if (wallEndLeft && player.x < 80.0f) g.EnterHitState(winnerID == 2, true);
+            if (wallEndRight && player.x > 1250.0f) g.EnterHitState(winnerID == 2, true);
+        }
     };
     class MeteorRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("隕石が降ってくるぞ 相手をスタンさせよう！"); }

@@ -24,8 +24,10 @@ public:
     // 対戦中の毎フレーム更新（座標いじり・専用タイマー・湧き制御など）
     virtual void UpdatePlaying(SceneGame& game) {}
 
-    // 妨害専用の画面演出
+    // 妨害専用の画面演出。Draw はプレイヤーより後ろ（背景寄り・分身など）、
+    // DrawForeground は UI も含めた一番手前（壁などのオーバーレイ）に描く。
     virtual void Draw(SceneGame& game) {}
+    virtual void DrawForeground(SceneGame& game) {}
 };
 
 // RestrictionType から対応する具象 Restriction を生成するファクトリ（Factory パターン）。
