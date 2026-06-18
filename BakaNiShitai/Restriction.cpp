@@ -37,11 +37,20 @@ namespace {
     class BoomerangOnlyRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("ブーメランばっか降ってくるぞ！"); }
     };
+    // 刹那の見切り：早撃ち勝負。状態・描画・武器配り・BGM など多くが横断的なので SceneGame に残し、
+    // ここでは毎フレームの進行（UpdateSetsuna）をプレイヤー更新前に委譲で呼ぶ。
     class SetsunaRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("！マークが出たら攻撃だ！"); }
+    public:
+        const TCHAR* Name() const override { return _T("！マークが出たら攻撃だ！"); }
+        void UpdateBeforePlayers(SceneGame& g) override { g.UpdateSetsuna(); }
     };
+    // 重力ランダム：重力レベルを時間で変える。レベルは武器の飛び方・UI・プレイヤー物理と
+    // 広く読まれる共有パラメータなので SceneGame に残し、ここでは毎フレームの駆動を
+    // プレイヤー更新前（物理に反映させるため）に委譲で呼ぶ。
     class GravityInsaneRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("重力がおかしくなったぞ！"); }
+    public:
+        const TCHAR* Name() const override { return _T("重力がおかしくなったぞ！"); }
+        void UpdateBeforePlayers(SceneGame& g) override { g.UpdateGravityInsane(); }
     };
     // 画面反転：上下/左右の反転パターンを時間で切り替える。反転パターンの状態と、
     // それを使った画面の反転描画は描画パイプラインに食い込むため SceneGame 側に残し、
@@ -96,14 +105,23 @@ namespace {
     class MeteorRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("隕石が降ってくるぞ 相手をスタンさせよう！"); }
     };
+    // ハイパー強い：強い側から逃げ切る。突進はプレイヤー更新前（速度を本体更新に反映させるため）、
+    // 接触判定は更新後に走る。担当割り当て・時間切れ・ヒット判定は横断的なので SceneGame に残す。
     class HyperTsuyoiRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("強いやつから逃げ切れ 触れられたら負けだぞ！"); }
+    public:
+        const TCHAR* Name() const override { return _T("強いやつから逃げ切れ 触れられたら負けだぞ！"); }
+        void UpdateBeforePlayers(SceneGame& g) override { g.UpdateHyperDash(); }
+        void UpdatePlaying(SceneGame& g) override { g.CheckHyperTouch(); }
     };
     class IceFloorRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("床がツルツルで滑るぞ！"); }
     };
+    // 画面ぼやけ：ぼかしの強さ(blurMode)は描画の合成に使う共有状態なので SceneGame に残し、
+    // ここでは毎フレームの駆動（強さの切り替え＋広告更新）を委譲で呼ぶ。
     class ScreenBlurRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("なんか画面おかしくね？"); }
+    public:
+        const TCHAR* Name() const override { return _T("なんか画面おかしくね？"); }
+        void UpdateBeforePlayers(SceneGame& g) override { g.UpdateScreenBlur(); }
     };
     // 入れ替え＋分身：本体（赤と青）だけが一定間隔で位置を交換し、分身は置いてけぼり。
     // 分身は当たり判定なしの描画専用で、本体のまわりを地に足つけてウロウロする。

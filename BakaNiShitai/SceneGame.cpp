@@ -233,6 +233,8 @@ void SceneGame::InitFallingUI() {
 
 void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     isDraw = false;
+    blurMode = 0;  // ぼやけ以外のラウンドでは合成がかからないよう毎ラウンド0に戻す
+    blurTimer = 0;
     flyExplodeActive = false;
     flyExplodeTimer = 0;
     p1HpIndex = 0;
@@ -727,79 +729,12 @@ void SceneGame::Update() {
             }
         }
 
-        if (restrictionManager.IsActive(REST_SCREEN_BLUR)) {
-            if (blurTimer > 0) blurTimer--;
-            else {
-                blurMode = rand() % 3;
-                blurTimer = 120 + rand() % 181;
-            }
-        }
-        else {
-            blurMode = 0;
-            blurTimer = 0;
-        }
-
         UpdateMeteor();
 
-        if (restrictionManager.IsActive(REST_SETSUNA)) {
-            UpdateSetsuna();
-        }
+        // 前処理が必要な妨害（刹那・重力ランダム）の毎フレーム駆動を委譲（プレイヤー更新の前）
+        if (restrictionManager.Active()) restrictionManager.Active()->UpdateBeforePlayers(*this);
 
-        if (restrictionManager.IsActive(REST_GRAVITY_INSANE)) {
-            uiShakeTimer++;
-
-            bool enteredHeavy = false; // 今フレーム重いレベルに入ったか
-
-            if (gravityInsaneTimer > 0) gravityInsaneTimer--;
-            else {
-                int newLevel;
-                do {
-                    newLevel = rand() % 5;
-                } while (newLevel == gravityInsaneLevel);
-                gravityInsaneLevel = newLevel;
-                gravityInsaneTimer = 120 + rand() % 60;
-                player1.gravityInsaneLevel = gravityInsaneLevel;
-                player2.gravityInsaneLevel = gravityInsaneLevel;
-
-                if (gravityInsaneLevel == 3 || gravityInsaneLevel == 4) {
-                    enteredHeavy = true; // フラグ立てるだけ
-                }
-            }
-
-            UpdateFallingUI(enteredHeavy); // UI落下処理を一括で呼ぶ
-        }
-
-        // ハイパー突進処理
-        if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
-            Player& hp = (hyperPlayerID == 1) ? player1 : player2;
-
-            if (hyperDashCooldown > 0) hyperDashCooldown--;
-
-            // 構え→攻撃の遷移瞬間に突進発動
-            if (!hyperDashing && hyperDashCooldown == 0 && hp.attacking) {
-                if (hp.attackTimer == BARE_HAND_CHARGE_FRAMES - 1) {
-                    hyperDashing = true;
-                    hyperDashDistance = 0.0f;
-                }
-            }
-
-            // ダッシュ中の処理
-            const float DASH_SPEED = 35.0f;
-            if (hyperDashing) {
-                hp.vx = hp.facingRight ? DASH_SPEED : -DASH_SPEED;
-                hp.vy = 0.0f;          // 重力無視で高さキープ
-                hp.isDashing = true;
-                hyperDashDistance += DASH_SPEED;
-                if (hyperDashDistance >= 1280.0f) {
-                    hyperDashing = false;
-                    hp.isDashing = false;
-                    hyperDashCooldown = 420;
-                }
-            }
-            else {
-                hp.isDashing = false;
-            }
-        }
+        // ハイパー突進は HyperTsuyoiRestriction::UpdateBeforePlayers（委譲）が呼ぶ。
 
         // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding && !mementoMoriPending) {
@@ -832,10 +767,8 @@ void SceneGame::Update() {
             itemManager.Update(player1, player2, restrictionManager);
         }
         orbManager.Update(player1, player2);
-        if (restrictionManager.IsActive(REST_SCREEN_BLUR)) {
-            adManager.Update();
-        }
 
+        // ぼやけの駆動と広告更新は ScreenBlurRestriction::UpdateBeforePlayers（委譲）が呼ぶ。
         // 画面反転の毎フレーム駆動は ScreenFlipRestriction::UpdatePlaying（委譲）が呼ぶ。
 
         // 爆発ヒット判定
@@ -852,11 +785,7 @@ void SceneGame::Update() {
         p1Glowing = player1.isGlowing;
         p2Glowing = player2.isGlowing;
 
-        // ハイパー強いモード
-        if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
-            // 接触判定
-            CheckHyperTouch();
-        }
+        // ハイパーの接触判定は HyperTsuyoiRestriction::UpdatePlaying（委譲）が呼ぶ。
 
         // メメントモリ判定
         CheckMementoMori(player1, player2, false);
@@ -1096,6 +1025,67 @@ void SceneGame::UpdateSetsuna() {
             JUDGE = false;
         }
     }
+}
+
+void SceneGame::UpdateScreenBlur() {
+    if (blurTimer > 0) blurTimer--;
+    else {
+        blurMode = rand() % 3;
+        blurTimer = 120 + rand() % 181;
+    }
+    adManager.Update();
+}
+
+void SceneGame::UpdateHyperDash() {
+    if (hyperPlayerID == 0) return;
+    Player& hp = (hyperPlayerID == 1) ? player1 : player2;
+
+    if (hyperDashCooldown > 0) hyperDashCooldown--;
+
+    // 構え→攻撃の遷移瞬間に突進発動
+    if (!hyperDashing && hyperDashCooldown == 0 && hp.attacking) {
+        if (hp.attackTimer == BARE_HAND_CHARGE_FRAMES - 1) {
+            hyperDashing = true;
+            hyperDashDistance = 0.0f;
+        }
+    }
+
+    // ダッシュ中の処理
+    const float DASH_SPEED = 35.0f;
+    if (hyperDashing) {
+        hp.vx = hp.facingRight ? DASH_SPEED : -DASH_SPEED;
+        hp.vy = 0.0f;          // 重力無視で高さキープ
+        hp.isDashing = true;
+        hyperDashDistance += DASH_SPEED;
+        if (hyperDashDistance >= 1280.0f) {
+            hyperDashing = false;
+            hp.isDashing = false;
+            hyperDashCooldown = 420;
+        }
+    }
+    else {
+        hp.isDashing = false;
+    }
+}
+
+void SceneGame::UpdateGravityInsane() {
+    uiShakeTimer++;
+    bool enteredHeavy = false; // 今フレーム重いレベルに入ったか
+    if (gravityInsaneTimer > 0) gravityInsaneTimer--;
+    else {
+        int newLevel;
+        do {
+            newLevel = rand() % 5;
+        } while (newLevel == gravityInsaneLevel);
+        gravityInsaneLevel = newLevel;
+        gravityInsaneTimer = 120 + rand() % 60;
+        player1.gravityInsaneLevel = gravityInsaneLevel;
+        player2.gravityInsaneLevel = gravityInsaneLevel;
+        if (gravityInsaneLevel == 3 || gravityInsaneLevel == 4) {
+            enteredHeavy = true; // フラグ立てるだけ
+        }
+    }
+    UpdateFallingUI(enteredHeavy); // UI落下処理を一括で呼ぶ
 }
 
 void SceneGame::UpdateScreenFlip() {

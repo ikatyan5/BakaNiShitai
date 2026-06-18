@@ -21,7 +21,10 @@ public:
     // ラウンド開始時の準備（プレイヤーへのシールド付与・タイマー初期化など）
     virtual void OnRoundStart(SceneGame& game) {}
 
-    // 対戦中の毎フレーム更新（座標いじり・専用タイマー・湧き制御など）
+    // プレイヤー更新の「前」に走る毎フレーム更新（重力レベルの反映など、本体更新前に必要なもの）
+    virtual void UpdateBeforePlayers(SceneGame& game) {}
+
+    // プレイヤー更新の「後」に走る毎フレーム更新（座標いじり・専用タイマー・湧き制御など）
     virtual void UpdatePlaying(SceneGame& game) {}
 
     // 妨害専用の画面演出。Draw はプレイヤーより後ろ（背景寄り・分身など）、

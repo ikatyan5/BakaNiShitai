@@ -43,6 +43,10 @@ public:
     ImageManager& GetImageManager() { return *imgMgr; }
     // 妨害（Restriction）が委譲先として呼ぶ更新処理
     void UpdateScreenFlip();
+    void UpdateSetsuna();
+    void UpdateGravityInsane();
+    void UpdateScreenBlur();
+    void UpdateHyperDash();
 private:
     enum GameState {
         STATE_COUNTDOWN,
@@ -147,7 +151,6 @@ private:
     int uiShakeTimer;      // 揺れ演出用のフレームカウンタ
     void InitFallingUI();
     void UpdateFallingUI(bool enteredHeavy);
-    void UpdateSetsuna();
     void UpdateMeteor();
     void CheckMeleeHit(Player& attacker, Player& target, bool judgeValue);
 
