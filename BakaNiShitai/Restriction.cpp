@@ -6,8 +6,9 @@
 #include <cmath>
 
 // 各妨害の振る舞いを表す具象クラス群（Strategy パターンの具象 Strategy 役）。
-// 段階リファクタリング中：まずは表示名だけを各クラスへ持たせ、
-// SceneGame 側に散らばっている挙動・描画・準備は今後ここへ順次移植していく。
+// SceneGame 内に if 分岐で散らばっていた妨害ごとの挙動・描画・準備を、ここへ集約した。
+// 自己完結する妨害は状態ごとこのクラスが所有し、描画パイプラインや当たり判定など
+// 横断的な処理だけは SceneGame 側に残して「今の妨害は何か」を問い合わせる形にしている。
 namespace {
 
     class NoneRestriction : public Restriction {
