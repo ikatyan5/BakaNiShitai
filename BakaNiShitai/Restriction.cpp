@@ -21,8 +21,15 @@ namespace {
     class ThrowNoDamageRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("武器を投げてもダメージがないぞ！"); }
     };
+    // 近接無双：武器近接で場外まで吹っ飛ばす。当たり判定の挙動は横断的なのでヒット処理側に残し、
+    // ここでは「両プレイヤーに最初からシールドを配る」ラウンド準備だけを担当する。
     class MeleeMusouRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("近接が必殺だ！武器で殴って場外へ！"); }
+    public:
+        const TCHAR* Name() const override { return _T("近接が必殺だ！武器で殴って場外へ！"); }
+        void OnRoundStart(SceneGame& g) override {
+            g.GetPlayer1().hasShield = true; // 投げを1回だけ無効化するシールド
+            g.GetPlayer2().hasShield = true;
+        }
     };
     class StickOnlyRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("杖ばっか降ってくるぞ！"); }
@@ -36,8 +43,13 @@ namespace {
     class GravityInsaneRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("重力がおかしくなったぞ！"); }
     };
+    // 画面反転：上下/左右の反転パターンを時間で切り替える。反転パターンの状態と、
+    // それを使った画面の反転描画は描画パイプラインに食い込むため SceneGame 側に残し、
+    // ここでは毎フレームの駆動（パターン切り替え）を委譲で呼ぶ。
     class ScreenFlipRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("画面がひっくり返るぞ！"); }
+    public:
+        const TCHAR* Name() const override { return _T("画面がひっくり返るぞ！"); }
+        void UpdatePlaying(SceneGame& g) override { g.UpdateScreenFlip(); }
     };
     // 連打移動：横移動は連打式（Player側）。SceneGame側は「端に壁が出て、押し込まれたら場外負け」。
     class MashMoveRestriction : public Restriction {

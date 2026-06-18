@@ -41,6 +41,8 @@ public:
     Player& GetPlayer2() { return player2; }
     SoundManager* GetSound() { return sound; }
     ImageManager& GetImageManager() { return *imgMgr; }
+    // 妨害（Restriction）が委譲先として呼ぶ更新処理
+    void UpdateScreenFlip();
 private:
     enum GameState {
         STATE_COUNTDOWN,
@@ -146,7 +148,6 @@ private:
     void InitFallingUI();
     void UpdateFallingUI(bool enteredHeavy);
     void UpdateSetsuna();
-    void UpdateScreenFlip();
     void UpdateMeteor();
     void CheckMeleeHit(Player& attacker, Player& target, bool judgeValue);
 

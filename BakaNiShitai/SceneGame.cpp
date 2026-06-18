@@ -147,11 +147,7 @@ void SceneGame::InitPlayers(bool keepWinCount) {
         }
     }
 
-    // 近接無双：両プレイヤーに最初からシールド（投げを1回だけ無効化）
-    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
-        player1.hasShield = true;
-        player2.hasShield = true;
-    }
+    // 近接無双のシールド付与は MeleeMusouRestriction::OnRoundStart へ移設した。
 
     // 弱い側にピコハンを持たせる
     if (restrictionManager.IsActive(REST_HYPETSUYOI)) {
@@ -840,9 +836,7 @@ void SceneGame::Update() {
             adManager.Update();
         }
 
-        if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
-            UpdateScreenFlip();
-        }
+        // 画面反転の毎フレーム駆動は ScreenFlipRestriction::UpdatePlaying（委譲）が呼ぶ。
 
         // 爆発ヒット判定
         if (itemManager.hitOccurred) {
