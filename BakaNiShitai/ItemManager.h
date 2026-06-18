@@ -35,6 +35,9 @@ public:
     bool isExploding;
 
 private:
+    // 現在の妨害に応じて降ってくるアイテム種別を決める（デバッグ／本番で共通）
+    ItemType SelectItemType(const RestrictionManager& restrictions);
+
     Item* items[ITEM_MAX];
     int itemSpawnTimer;
     ImageManager* imgMgr;

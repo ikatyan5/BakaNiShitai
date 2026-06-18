@@ -39,7 +39,6 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	mashCount = 0;
 	mashDecay = 0;
 	airTime = 0;
-	speedDownTimer = 0;
 	stanTimer = 0;
 	isStunned = false;
 	hasShield = false;
@@ -388,13 +387,6 @@ void Player::UpdateAnim(Weapon* weapons) {
 			isBlinking = false;
 			wantExplode = true;
 			canAttack = true;
-		}
-	}
-	// 減速タイマー
-	if (speedDownTimer > 0) {
-		speedDownTimer--;
-		if (speedDownTimer <= 0) {
-			moveSpeed = 5.0f; // 元に戻す
 		}
 	}
 	// 操作反転タイマー

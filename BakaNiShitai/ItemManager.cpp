@@ -95,90 +95,58 @@ void ItemManager::Draw() {
     }
 }
 
+// 現在の妨害に応じて降ってくるアイテムの種類を決める。デバッグ用と本番用で共通の唯一の窓口。
+ItemType ItemManager::SelectItemType(const RestrictionManager& restrictions) {
+    if (restrictions.IsActive(REST_MASH_MOVE)) {
+        return (rand() % 2 == 0) ? ITEM_BANANA : ITEM_KINOKO;
+    }
+    if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
+        int roll = rand() % 10;
+        if (roll < 4)      return ITEM_POTION_PURPLE;
+        else if (roll < 6) return ITEM_POTION_BLUE;
+        else if (roll < 8) return ITEM_POTION_YELLOW;
+        else               return ITEM_HANKACHI;
+    }
+    if (restrictions.IsActive(REST_METEOR)) {
+        // 赤ポーション除外
+        int roll = rand() % 4;
+        if (roll == 0)      return ITEM_POTION_BLUE;
+        else if (roll == 1) return ITEM_POTION_PURPLE;
+        else if (roll == 2) return ITEM_POTION_YELLOW;
+        else                return ITEM_HANKACHI;
+    }
+    if (restrictions.IsActive(REST_HYPETSUYOI)) {
+        // 赤ポーションなし・紫多め
+        int roll = rand() % 10;
+        if (roll < 5)      return ITEM_POTION_PURPLE; // 50%
+        else if (roll < 7) return ITEM_POTION_BLUE;   // 20%
+        else if (roll < 9) return ITEM_POTION_YELLOW; // 20%
+        else               return ITEM_HANKACHI;       // 10%
+    }
+    if (restrictions.IsActive(REST_MELEE_MUSOU)) {
+        return (rand() % 2 == 0) ? ITEM_POTION_PURPLE : ITEM_HANKACHI;
+    }
+    if (restrictions.IsActive(REST_SWAP)) {
+        return ITEM_POTION_YELLOW; // 入れ替え制限中は黄ポーションしか降らせない
+    }
+    // 制限なし：バナナ・毒キノコ以外からランダム
+    ItemType type;
+    do {
+        type = (ItemType)(rand() % ITEM_TYPE_MAX);
+    } while (type == ITEM_BANANA || type == ITEM_KINOKO);
+    return type;
+}
+
 void ItemManager::SpawnItem(const RestrictionManager& restrictions) {
     for (int i = 0; i < ITEM_MAX; i++) {
         if (items[i] == nullptr) {
+            // アイテム種別の抽選は SelectItemType に集約。デバッグ時のみ強制指定で上書きする。
+            ItemType type;
 #ifdef _DEBUG
-            ItemType type;
-            if (DBG_FORCE_ITEM) {
-                type = DBG_ITEM_TYPE;
-            }
-            else {
-                do {
-                    type = (ItemType)(rand() % ITEM_TYPE_MAX);
-                } while (type == ITEM_BANANA || type == ITEM_KINOKO);
-            }
-            // デバッグ時も制限チェックを通す
-            if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_MASH_MOVE)) {
-                type = (rand() % 2 == 0) ? ITEM_BANANA : ITEM_KINOKO;
-            }
-            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
-                int roll = rand() % 10;
-                if (roll < 4)      type = ITEM_POTION_PURPLE;
-                else if (roll < 6) type = ITEM_POTION_BLUE;
-                else if (roll < 8) type = ITEM_POTION_YELLOW;
-                else               type = ITEM_HANKACHI;
-            }
-            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_METEOR)) {
-                int roll = rand() % 4;
-                if (roll == 0)      type = ITEM_POTION_BLUE;
-                else if (roll == 1) type = ITEM_POTION_PURPLE;
-                else if (roll == 2) type = ITEM_POTION_YELLOW;
-                else                type = ITEM_HANKACHI;
-            }
-            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_HYPETSUYOI)) {
-                // 赤ポーションなし・紫多め
-                int roll = rand() % 10;
-                if (roll < 5)      type = ITEM_POTION_PURPLE; // 50%
-                else if (roll < 7) type = ITEM_POTION_BLUE;   // 20%
-                else if (roll < 9) type = ITEM_POTION_YELLOW; // 20%
-                else               type = ITEM_HANKACHI;       // 10%
-            }
-            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_MELEE_MUSOU)) {
-                type = (rand() % 2 == 0) ? ITEM_POTION_PURPLE : ITEM_HANKACHI;
-            }
-            else if (!DBG_FORCE_ITEM && restrictions.IsActive(REST_SWAP)) {
-                type = ITEM_POTION_YELLOW; // 入れ替え制限中は黄ポーションしか降らせない
-            }
+            if (DBG_FORCE_ITEM) type = DBG_ITEM_TYPE;
+            else                type = SelectItemType(restrictions);
 #else
-            ItemType type;
-            if (restrictions.IsActive(REST_MASH_MOVE)) {
-                type = (rand() % 2 == 0) ? ITEM_BANANA : ITEM_KINOKO;
-            }
-            else if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
-                int roll = rand() % 10;
-                if (roll < 4)      type = ITEM_POTION_PURPLE;
-                else if (roll < 6) type = ITEM_POTION_BLUE;
-                else if (roll < 8) type = ITEM_POTION_YELLOW;
-                else               type = ITEM_HANKACHI;
-            }
-            else if (restrictions.IsActive(REST_METEOR)) {
-                // 赤ポーション除外
-                int roll = rand() % 4;
-                if (roll == 0)      type = ITEM_POTION_BLUE;
-                else if (roll == 1) type = ITEM_POTION_PURPLE;
-                else if (roll == 2) type = ITEM_POTION_YELLOW;
-                else                type = ITEM_HANKACHI;
-            }
-            else if (restrictions.IsActive(REST_HYPETSUYOI)) {
-                // 赤ポーションなし・紫多め
-                int roll = rand() % 10;
-                if (roll < 5)      type = ITEM_POTION_PURPLE; // 50%
-                else if (roll < 7) type = ITEM_POTION_BLUE;   // 20%
-                else if (roll < 9) type = ITEM_POTION_YELLOW; // 20%
-                else               type = ITEM_HANKACHI;       // 10%
-            }
-            else if (restrictions.IsActive(REST_MELEE_MUSOU)) {
-                type = (rand() % 2 == 0) ? ITEM_POTION_PURPLE : ITEM_HANKACHI;
-            }
-            else if (restrictions.IsActive(REST_SWAP)) {
-                type = ITEM_POTION_YELLOW; // 入れ替え制限中は黄ポーションしか降らせない
-            }
-            else {
-                do {
-                    type = (ItemType)(rand() % ITEM_TYPE_MAX);
-                } while (type == ITEM_BANANA || type == ITEM_KINOKO);
-            }
+            type = SelectItemType(restrictions);
 #endif
 
             if (type == ITEM_POTION_BLUE) {
