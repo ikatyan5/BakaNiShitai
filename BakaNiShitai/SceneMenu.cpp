@@ -1,5 +1,6 @@
 ﻿// SceneMenu.cpp
 #include "SceneMenu.h"
+#include "Config.h"
 #include "DxLib.h"
 
 static const TCHAR* TIPS[] = {
@@ -90,7 +91,7 @@ void SceneMenu::Update() {
 
 void SceneMenu::Draw() {
     ClearDrawScreen();
-    DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboard[animFrame], TRUE);
+    DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboard[animFrame], TRUE);
 
     int idx0 = (selectIndex == 0) ? (2 + animFrame) : animFrame;
     int idx1 = (selectIndex == 1) ? (2 + animFrame) : animFrame;
@@ -114,7 +115,7 @@ void SceneMenu::Draw() {
 
     SetFontSize(30);
     int tipsW = GetDrawStringWidth(TIPS[tipsIndex], lstrlen(TIPS[tipsIndex]));
-    DrawString((1280 - tipsW) / 2, 70, TIPS[tipsIndex], GetColor(255, 255, 255));
+    DrawString((SCREEN_W - tipsW) / 2, 70, TIPS[tipsIndex], GetColor(255, 255, 255));
     SetFontSize(16);
 }
 

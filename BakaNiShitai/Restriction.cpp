@@ -1,5 +1,6 @@
 ﻿// Restriction.cpp
 #include "Restriction.h"
+#include "Config.h"
 #include "SceneGame.h" // 各妨害は SceneGame のアクセサ経由でゲーム本体を操作する
 #include <cstdlib>
 #include <cmath>
@@ -86,8 +87,8 @@ namespace {
         void DrawForeground(SceneGame& g) override {
             unsigned int wallColor = GetColor(255, 0, 0);
             SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-            if (wallEndLeft)  DrawBoxAA(0.0f, 0.0f, 50.0f, 920.0f, wallColor, TRUE);
-            if (wallEndRight) DrawBoxAA(1230.0f, 0.0f, 1280.0f, 920.0f, wallColor, TRUE);
+            if (wallEndLeft)  DrawBoxAA(0.0f, 0.0f, 50.0f, SCREEN_H, wallColor, TRUE);
+            if (wallEndRight) DrawBoxAA(1230.0f, 0.0f, SCREEN_W, SCREEN_H, wallColor, TRUE);
             SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
         }
 

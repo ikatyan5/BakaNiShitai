@@ -42,7 +42,7 @@ bool MeteorManager::HasActiveMeteor() const {
 void MeteorManager::Spawn(float targetX, float speed) {
     for (int i = 0; i < METEOR_MAX; i++) {
         if (!meteors[i].active) {
-            float startX = (float)(rand() % 1280);
+            float startX = (float)(rand() % SCREEN_W);
             float startY = 0.0f;
             float s = (speed < 0.0f) ? GetCurrentSpeed() : speed;
             float dx = targetX - startX;

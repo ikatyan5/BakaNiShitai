@@ -1,4 +1,5 @@
 ﻿#include "SceneSettings.h"
+#include "Config.h"
 #include "DxLib.h"
 
 void SceneSettings::Init(ImageManager& imgMgr_, GameSettings& settings_) {
@@ -49,7 +50,7 @@ void SceneSettings::Update() {
 
 void SceneSettings::Draw() {
     ClearDrawScreen();
-    DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardSetting[animFrame], TRUE);
+    DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardSetting[animFrame], TRUE);
     DrawStringF(550.0f, 100.0f, _T("設定"), GetColor(255, 255, 255));
     DrawStringF(480.0f, 480.0f, _T("← → で切り替え、ENTERで戻る"), GetColor(255, 255, 255));
 

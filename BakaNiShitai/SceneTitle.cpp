@@ -1,5 +1,6 @@
 ﻿// SceneTitle.cpp
 #include "SceneTitle.h"
+#include "Config.h"
 #include "DxLib.h"
 
 void SceneTitle::Init(ImageManager& imgMgr_, SoundManager& sndMgr_) {
@@ -30,9 +31,9 @@ void SceneTitle::Update() {
 void SceneTitle::Draw() {
     ClearDrawScreen();
 
-    DrawBox(0.0f, 0.0f, 1280.0f, 920.0f, GetColor(255, 255, 255), TRUE);
-    DrawBox(0.0f, 580.0f, 1280.0f, 920.0f, GetColor(0, 0, 0), TRUE);
-    DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+    DrawBox(0.0f, 0.0f, SCREEN_W, SCREEN_H, GetColor(255, 255, 255), TRUE);
+    DrawBox(0.0f, 580.0f, SCREEN_W, SCREEN_H, GetColor(0, 0, 0), TRUE);
+    DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
     // タイトル画像を中央に表示
     DrawExtendGraphF(
         240.0f, 20.0f, 1020.0f, 540.0f,

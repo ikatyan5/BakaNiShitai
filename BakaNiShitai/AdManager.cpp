@@ -1,4 +1,5 @@
 ﻿#include "AdManager.h"
+#include "Config.h"
 #include <cmath>
 
 void AdManager::Init(ImageManager& imgMgr_) {
@@ -22,16 +23,16 @@ void AdManager::Update() {
             slots[i].x = 0.0f;
             slots[i].vx = fabsf(slots[i].vx);
         }
-        if (slots[i].x + AD_W > 1280.0f) {
-            slots[i].x = 1280.0f - AD_W;
+        if (slots[i].x + AD_W > SCREEN_W) {
+            slots[i].x = SCREEN_W - AD_W;
             slots[i].vx = -fabsf(slots[i].vx);
         }
         if (slots[i].y < 0.0f) {
             slots[i].y = 0.0f;
             slots[i].vy = fabsf(slots[i].vy);
         }
-        if (slots[i].y + AD_H > 920.0f) {
-            slots[i].y = 920.0f - AD_H;
+        if (slots[i].y + AD_H > SCREEN_H) {
+            slots[i].y = SCREEN_H - AD_H;
             slots[i].vy = -fabsf(slots[i].vy);
         }
 
@@ -48,8 +49,8 @@ void AdManager::Update() {
             if (!slots[i].active) {
                 slots[i].active = true;
                 slots[i].imageIndex = rand() % 3;
-                slots[i].x = (float)(rand() % (1280 - AD_W));
-                slots[i].y = (float)(rand() % (920 - AD_H));
+                slots[i].x = (float)(rand() % (SCREEN_W - AD_W));
+                slots[i].y = (float)(rand() % (SCREEN_H - AD_H));
                 // ランダムな方向に速度設定
                 slots[i].vx = (rand() % 2 == 0) ? 6.0f : -6.0f;
                 slots[i].vy = (rand() % 2 == 0) ? 6.0f : -6.0f;

@@ -458,8 +458,8 @@ void Player::UpdatePosition(Stage& stage) {
 
 	// 左右ラップ（ノックバック中は無効）
 	if (!isKnockedBack) {
-		if (x < 0.0f) x = 1280.0f;
-		if (x > 1280.0f) x = 0.0f;
+		if (x < 0.0f) x = SCREEN_W;
+		if (x > SCREEN_W) x = 0.0f;
 	}
 
 	float outY = 0.0f;

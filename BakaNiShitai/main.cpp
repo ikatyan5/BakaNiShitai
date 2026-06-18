@@ -1,4 +1,5 @@
 ﻿#include "DxLib.h"
+#include "Config.h"
 #include "ImageManager.h"
 #include "SoundManager.h"
 #include "SceneID.h"
@@ -45,7 +46,7 @@ BaseScene* CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings,
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     ChangeWindowMode(TRUE);
-    SetGraphMode(1280, 920, 32);
+    SetGraphMode(SCREEN_W, SCREEN_H, 32);
     if (DxLib_Init() == -1) return -1;
     int padNum = GetJoypadNum();
     //printfDx(_T("接続パッド数=%d\n"), padNum);

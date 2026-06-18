@@ -56,8 +56,8 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
     mementoMoriWinnerID = 0;
     mementoMoriPending = false;
 
-    currentTex = MakeScreen(1280, 920, TRUE);
-    prevTex = MakeScreen(1280, 920, TRUE);
+    currentTex = MakeScreen(SCREEN_W, SCREEN_H, TRUE);
+    prevTex = MakeScreen(SCREEN_W, SCREEN_H, TRUE);
     blurMode = 0;
     blurTimer = 0;
 
@@ -66,8 +66,8 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
 
     setsunaPhase = SETSUNA_SLIDE;
     setsunaPhaseTimer = 0;
-    setsunaP1UIX = 1280.0f;
-    setsunaP2UIX = -1280.0f;
+    setsunaP1UIX = SCREEN_W;
+    setsunaP2UIX = -SCREEN_W;
 
     setsunaSignVisible = false;
     setsunaRedoPending = false;
@@ -200,7 +200,7 @@ void SceneGame::InitFallingUI() {
     hpUI[0].baseX = 50.0f + UI_HP_W / 2.0f;
     hpUI[0].baseY = 20.0f + UI_HP_H / 2.0f;
     // HP P2：右端基準
-    hpUI[1].baseX = 1280.0f - 50.0f - UI_HP_W / 2.0f;
+    hpUI[1].baseX = SCREEN_W - 50.0f - UI_HP_W / 2.0f;
     hpUI[1].baseY = 20.0f + UI_HP_H / 2.0f;
 
     // スコア P1：3個の塊の中心
@@ -267,8 +267,8 @@ void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     itemManager.hyperPlayerID = 0;
     setsunaPhase = SETSUNA_SLIDE;
     setsunaPhaseTimer = 0;
-    setsunaP1UIX = 1280.0f;
-    setsunaP2UIX = -1280.0f;
+    setsunaP1UIX = SCREEN_W;
+    setsunaP2UIX = -SCREEN_W;
     gravityInsaneLevel = 2;
     gravityInsaneTimer = 120 + rand() % 60;
     player1.gravityInsaneLevel = gravityInsaneLevel;
@@ -683,7 +683,7 @@ void SceneGame::DrawMementoMori(Player& attacker) {
     float cy = attacker.y - PLAYER_HIT_CY;
     float drawY = cy - hitH / 2;
 
-    for (int x = 0; x < 1280; x += 48) {
+    for (int x = 0; x < SCREEN_W; x += 48) {
         DrawExtendGraphF(x, drawY, x + 48, drawY + 20, imgMgr->mementoMoriEffect, TRUE);
     }
 }
@@ -757,9 +757,9 @@ void SceneGame::Update() {
         // ノックバック画面外チェック（投げダメなし・近接無双はどちらも場外で負け）
         if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE) ||
             restrictionManager.IsActive(REST_MELEE_MUSOU)) {
-            if (player1.isKnockedBack && (player1.x < 0.0f || player1.x > 1280.0f))
+            if (player1.isKnockedBack && (player1.x < 0.0f || player1.x > SCREEN_W))
                 EnterHitState(true, true);
-            if (player2.isKnockedBack && (player2.x < 0.0f || player2.x > 1280.0f))
+            if (player2.isKnockedBack && (player2.x < 0.0f || player2.x > SCREEN_W))
                 EnterHitState(false, true);
         }
 
@@ -959,7 +959,7 @@ void SceneGame::UpdateFallingUI(bool enteredHeavy) {
 }
 
 void SceneGame::UpdateSetsuna() {
-    const float SLIDE_SPEED = 1280.0f / 60.0f; // 1秒でスライドイン
+    const float SLIDE_SPEED = SCREEN_W / 60.0f; // 1秒でスライドイン
 
     if (setsunaPhase == SETSUNA_SLIDE) {
         player1.canAttack = false;
@@ -1057,7 +1057,7 @@ void SceneGame::UpdateHyperDash() {
         hp.vy = 0.0f;          // 重力無視で高さキープ
         hp.isDashing = true;
         hyperDashDistance += DASH_SPEED;
-        if (hyperDashDistance >= 1280.0f) {
+        if (hyperDashDistance >= SCREEN_W) {
             hyperDashing = false;
             hp.isDashing = false;
             hyperDashCooldown = 420;
@@ -1126,7 +1126,7 @@ void SceneGame::Draw() {
     if (state == STATE_PLAYING) {
         SetDrawScreen(currentTex);
         ClearDrawScreen();
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
@@ -1150,10 +1150,10 @@ void SceneGame::Draw() {
             bool flipUD = (flipPattern == 0 || flipPattern == 1); // 上下反転
             bool flipLR = (flipPattern == 0 || flipPattern == 2); // 左右反転
 
-            float left = flipLR ? 1280.0f : 0.0f;
-            float right = flipLR ? 0.0f : 1280.0f;
-            float top = flipUD ? 920.0f : 0.0f;
-            float bottom = flipUD ? 0.0f : 920.0f;
+            float left = flipLR ? SCREEN_W : 0.0f;
+            float right = flipLR ? 0.0f : SCREEN_W;
+            float top = flipUD ? SCREEN_H : 0.0f;
+            float bottom = flipUD ? 0.0f : SCREEN_H;
             DrawExtendGraphF(left, top, right, bottom, currentTex, TRUE);
         }
         else {
@@ -1168,7 +1168,7 @@ void SceneGame::Draw() {
         }
 
         // 重ねた後にコピー
-        GetDrawScreenGraph(0, 0, 1280, 920, prevTex);
+        GetDrawScreenGraph(0, 0, SCREEN_W, SCREEN_H, prevTex);
 
 #ifdef _DEBUG
         for (int i = 0; i < restrictionManager.activeCount; i++) {
@@ -1177,7 +1177,7 @@ void SceneGame::Draw() {
 #endif
     }
     else if (state == STATE_HIT) {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
@@ -1196,7 +1196,7 @@ void SceneGame::Draw() {
         DrawUI();
     }
     else if (state == STATE_RESULT) {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
@@ -1221,32 +1221,32 @@ void SceneGame::Draw() {
             !JUDGE ? GetColor(255, 50, 50) :
             GetColor(50, 50, 255);
         int textW = GetDrawStringWidth(resultText, lstrlen(resultText));
-        DrawString((1280 - textW) / 2, 380, resultText, resultColor);
+        DrawString((SCREEN_W - textW) / 2, 380, resultText, resultColor);
         SetFontSize(16);
 
     }
     else if (state == STATE_GAMEEND) {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         SetFontSize(48);
         const TCHAR* winText = !JUDGE ? _T("赤の勝ち！") : _T("青の勝ち！");
         unsigned int winColor = !JUDGE ? GetColor(255, 50, 50) : GetColor(50, 50, 255);
         int winW = GetDrawStringWidth(winText, lstrlen(winText));
-        DrawString((1280 - winW) / 2, 320, winText, winColor);
+        DrawString((SCREEN_W - winW) / 2, 320, winText, winColor);
 
         SetFontSize(72);
         const TCHAR* endText = _T("ゲーム終了！");
         int endW = GetDrawStringWidth(endText, lstrlen(endText));
-        DrawString((1280 - endW) / 2, 420, endText, GetColor(255, 255, 255));
+        DrawString((SCREEN_W - endW) / 2, 420, endText, GetColor(255, 255, 255));
 
         SetFontSize(24);
         const TCHAR* retText = _T("Rキーでメニューに戻る");
         int retW = GetDrawStringWidth(retText, lstrlen(retText));
-        DrawString((1280 - retW) / 2, 560, retText, GetColor(0, 0, 0));
+        DrawString((SCREEN_W - retW) / 2, 560, retText, GetColor(0, 0, 0));
 
         SetFontSize(16);
     }
     else if (state == STATE_COUNTDOWN) {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
         player1.Draw(weapons, *imgMgr);
@@ -1256,14 +1256,14 @@ void SceneGame::Draw() {
         // 今回の制限（小さめ）
         SetFontSize(24);
         int titleW = GetDrawStringWidth(_T("今回の制限は！"), 7);
-        DrawString((1280 - titleW) / 2, 330, _T("今回の制限は！"), GetColor(50, 50, 50));
+        DrawString((SCREEN_W - titleW) / 2, 330, _T("今回の制限は！"), GetColor(50, 50, 50));
 
         // 制限名を大きく表示
         SetFontSize(48);
         for (int i = 0; i < restrictionManager.activeCount; i++) {
             const TCHAR* text = restrictionManager.ActiveName();
             int textW = GetDrawStringWidth(text, lstrlen(text));
-            DrawString((1280 - textW) / 2, 390 + i * 60, text, GetColor(255, 50, 50));
+            DrawString((SCREEN_W - textW) / 2, 390 + i * 60, text, GetColor(255, 50, 50));
         }
 
         // カウントダウン数字
@@ -1272,7 +1272,7 @@ void SceneGame::Draw() {
         TCHAR buf[8];
         wsprintf(buf, _T("%d"), sec);
         int numW = GetDrawStringWidth(buf, lstrlen(buf));
-        DrawString((1280 - numW) / 2, 700, buf, GetColor(50, 50, 50));
+        DrawString((SCREEN_W - numW) / 2, 700, buf, GetColor(50, 50, 50));
 
         SetFontSize(16);
     }
@@ -1306,7 +1306,7 @@ void SceneGame::DrawUI()
             DrawRotatedUI(ui.x, ui.y, UI_HP_W, UI_HP_H, ui.angle, p2HpImg);
         }
         else {
-            DrawExtendGraphF(1280.0f - 50.0f - UI_HP_W + shakeX, 20.0f, 1280.0f - 50.0f + shakeX, 20.0f + UI_HP_H, p2HpImg, TRUE);
+            DrawExtendGraphF(SCREEN_W - 50.0f - UI_HP_W + shakeX, 20.0f, SCREEN_W - 50.0f + shakeX, 20.0f + UI_HP_H, p2HpImg, TRUE);
         }
     }
 
@@ -1393,13 +1393,13 @@ void SceneGame::DrawUI()
         // 上部UI（P1）
         DrawExtendGraphF(
             setsunaP1UIX, 0.0f,
-            setsunaP1UIX + 1280.0f, 300.0f,
+            setsunaP1UIX + SCREEN_W, 300.0f,
             imgMgr->setsunaP1[p1Idx], TRUE
         );
         // 下部UI（P2）
         DrawExtendGraphF(
             setsunaP2UIX, 620.0f,
-            setsunaP2UIX + 1280.0f, 920.0f,
+            setsunaP2UIX + SCREEN_W, SCREEN_H,
             imgMgr->setsunaP2[p2Idx], TRUE
         );
     }
