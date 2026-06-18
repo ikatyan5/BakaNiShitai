@@ -4,25 +4,8 @@
 #include "DebugConfig.h"
 #include <cmath>
 
-static const TCHAR* RESTRICTION_NAMES[] = {
-    _T("なにもなし！"),
-    _T("重力がなくなった！"),
-    _T("ジャンプ回数が無制限に！"),
-    _T("武器を投げてもダメージがないぞ！"),
-    _T("近接が必殺だ！武器で殴って場外へ！"),
-    _T("杖ばっか降ってくるぞ！"),
-    _T("ブーメランばっか降ってくるぞ！"),
-    _T("！マークが出たら攻撃だ！"),
-    _T("重力がおかしくなったぞ！"),
-    _T("画面がひっくり返るぞ！"),
-    _T("横移動は連打しろ！"),
-    _T("隕石が降ってくるぞ 相手をスタンさせよう！"),
-    _T("強いやつから逃げ切れ 触れられたら負けだぞ！"),
-    _T("床がツルツルで滑るぞ！"),
-    _T("なんか画面おかしくね？"),
-    _T("分身が出現！＋位置が入れ替わるぞ！"),
-    _T("画面の真ん中へ引っ張られるぞ！"),
-};
+// 妨害の説明文は各 Restriction 派生クラスの Name() が持つ（Restriction.cpp 参照）。
+// 表示は restrictionManager.ActiveName() 経由で取得する。
 
 static void DrawRotatedUI(float cx, float cy, float w, float h, float angle, int img) {
     float hw = w / 2.0f;
@@ -1332,7 +1315,7 @@ void SceneGame::Draw() {
 
 #ifdef _DEBUG
         for (int i = 0; i < restrictionManager.activeCount; i++) {
-            DrawString(10, 10 + i * 20, RESTRICTION_NAMES[restrictionManager.active[i]], GetColor(255, 255, 0));
+            DrawString(10, 10 + i * 20, restrictionManager.ActiveName(), GetColor(255, 255, 0));
         }
 #endif
     }
@@ -1421,7 +1404,7 @@ void SceneGame::Draw() {
         // 制限名を大きく表示
         SetFontSize(48);
         for (int i = 0; i < restrictionManager.activeCount; i++) {
-            const TCHAR* text = RESTRICTION_NAMES[restrictionManager.active[i]];
+            const TCHAR* text = restrictionManager.ActiveName();
             int textW = GetDrawStringWidth(text, lstrlen(text));
             DrawString((1280 - textW) / 2, 390 + i * 60, text, GetColor(255, 50, 50));
         }

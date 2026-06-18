@@ -1,8 +1,19 @@
 ﻿// RestrictionManager.cpp
-#pragma once
 #include "RestrictionManager.h"
 #include "DebugConfig.h"
 #include <cstdlib>
+
+RestrictionManager::~RestrictionManager() {
+    delete activeRestriction;
+}
+
+// active配列（横断的な IsActive 用）と activeRestriction（Strategy 本体）をまとめて差し替える。
+void RestrictionManager::SetActive(RestrictionType type) {
+    active[0] = type;
+    activeCount = 1;
+    delete activeRestriction;
+    activeRestriction = CreateRestriction(type);
+}
 
 void RestrictionManager::Init() {
     activeCount = 0;
@@ -13,6 +24,8 @@ void RestrictionManager::Init() {
     for (int i = 0; i < REST_TYPE_MAX; i++) {
         used[i] = false;
     }
+    delete activeRestriction;
+    activeRestriction = nullptr;
 }
 
 void RestrictionManager::SelectRandom() {
@@ -24,8 +37,7 @@ void RestrictionManager::SelectRandom() {
 
 #ifdef _DEBUG
     if (DBG_FORCE_RESTRICTION) {
-        active[0] = DBG_RESTRICTION_TYPE;
-        activeCount = 1;
+        SetActive(DBG_RESTRICTION_TYPE);
         return;
     }
 #endif
@@ -49,8 +61,7 @@ void RestrictionManager::SelectRandom() {
 
     RestrictionType picked = candidates[rand() % candidateCount];
     used[picked] = true;
-    active[0] = picked;
-    activeCount = 1;
+    SetActive(picked);
 }
 
 bool RestrictionManager::IsActive(RestrictionType type) const {
@@ -58,4 +69,8 @@ bool RestrictionManager::IsActive(RestrictionType type) const {
         if (active[i] == type) return true;
     }
     return false;
+}
+
+const TCHAR* RestrictionManager::ActiveName() const {
+    return activeRestriction ? activeRestriction->Name() : _T("");
 }

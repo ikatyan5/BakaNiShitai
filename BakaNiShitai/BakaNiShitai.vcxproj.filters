@@ -72,6 +72,9 @@
     <ClCompile Include="Item.cpp">
       <Filter>ソース ファイル\Item</Filter>
     </ClCompile>
+    <ClCompile Include="Restriction.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="RestrictionManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -148,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="Item.h">
       <Filter>ヘッダー ファイル\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Restriction.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="RestrictionManager.h">
       <Filter>ヘッダー ファイル</Filter>
