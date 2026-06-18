@@ -34,6 +34,11 @@ public:
     void CheckMementoMori(Player& attacker, Player& target, bool judgeValue);
     void DrawMementoMori(Player& attacker);
     void DrawFlyExplosion();
+
+    // 妨害（Restriction）が対戦中の状態を操作するためのアクセサ。
+    // 各 Restriction はこれら経由でゲーム本体に手を入れる。
+    Player& GetPlayer1() { return player1; }
+    Player& GetPlayer2() { return player2; }
 private:
     enum GameState {
         STATE_COUNTDOWN,

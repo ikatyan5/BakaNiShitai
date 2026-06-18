@@ -1,5 +1,7 @@
 ﻿// Restriction.cpp
 #include "Restriction.h"
+#include "SceneGame.h" // 各妨害は SceneGame のアクセサ経由でゲーム本体を操作する
+#include <cstdlib>
 
 // 各妨害の振る舞いを表す具象クラス群（Strategy パターンの具象 Strategy 役）。
 // 段階リファクタリング中：まずは表示名だけを各クラスへ持たせ、
@@ -55,7 +57,17 @@ namespace {
     public: const TCHAR* Name() const override { return _T("分身が出現！＋位置が入れ替わるぞ！"); }
     };
     class TugRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("画面の真ん中へ引っ張られるぞ！"); }
+    public:
+        const TCHAR* Name() const override { return _T("画面の真ん中へ引っ張られるぞ！"); }
+        // 常に画面中央(X=640)へ引っ張る。中央から遠いほど強く引かれる。
+        void UpdatePlaying(SceneGame& g) override {
+            const float TUG_CENTER = 640.0f;
+            const float TUG_PULL = 0.008f;
+            Player& p1 = g.GetPlayer1();
+            Player& p2 = g.GetPlayer2();
+            p1.x += (TUG_CENTER - p1.x) * TUG_PULL;
+            p2.x += (TUG_CENTER - p2.x) * TUG_PULL;
+        }
     };
 
 } // namespace

@@ -898,15 +898,10 @@ void SceneGame::Update() {
             if (player1.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player1.justBareAttacked = false; }
             if (player2.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player2.justBareAttacked = false; }
 
-            // 綱引き制限：常に画面中央(X=640)へ引っ張る。中央から遠いほど強く引かれる。
-            // 係数0.004 → 端(中央から約600px)でも約2.4px/フレーム。歩き(5px/フレーム)で逆らえるやんわり強度。
-            if (restrictionManager.IsActive(REST_TUG)) {
-                const float TUG_CENTER = 640.0f;
-                const float TUG_PULL = 0.008f;
-                player1.x += (TUG_CENTER - player1.x) * TUG_PULL;
-                player2.x += (TUG_CENTER - player2.x) * TUG_PULL;
-            }
         }
+
+        // 各妨害の毎フレーム挙動を委譲する（Strategy）。移植済みの妨害だけがここで動く。
+        if (restrictionManager.Active()) restrictionManager.Active()->UpdatePlaying(*this);
 
         // ノックバック画面外チェック（投げダメなし・近接無双はどちらも場外で負け）
         if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE) ||

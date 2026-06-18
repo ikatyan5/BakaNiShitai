@@ -17,5 +17,5 @@ const WeaponType DBG_WEAPON_TYPE = WEAPON_HAMMER;
 
 // 制限強制適用
 const bool DBG_FORCE_RESTRICTION = true;
-const RestrictionType DBG_RESTRICTION_TYPE = REST_ICE_FLOOR;
+const RestrictionType DBG_RESTRICTION_TYPE = REST_TUG;
 #endif
