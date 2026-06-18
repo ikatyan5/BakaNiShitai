@@ -15,7 +15,7 @@ const float GROUND_Y = 800.0f; // 仮の地面の位置
 const int WINNING_SCORE = 3; // 勝利条件のスコア
 
 // 武器関係
-const float WEAPON_SPEED = 10.0f;			// 投げたときの速度
+// 投げ速度は武器ごとに WeaponConfig.h の WEAPON_DATA[].throwSpeed を使う
 const float WEAPON_ROTATE = 0.15f;			// 回転速度
 const int   WEAPON_W = 40;					// 判定の幅
 const int   WEAPON_H = 20;					// 判定の高さ
