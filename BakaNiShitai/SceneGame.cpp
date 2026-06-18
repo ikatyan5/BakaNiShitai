@@ -4,25 +4,8 @@
 #include "DebugConfig.h"
 #include <cmath>
 
-static const TCHAR* RESTRICTION_NAMES[] = {
-    _T("なにもなし！"),
-    _T("重力がなくなった！"),
-    _T("ジャンプ回数が無制限に！"),
-    _T("武器を投げてもダメージがないぞ！"),
-    _T("近接が必殺だ！武器で殴って場外へ！"),
-    _T("杖ばっか降ってくるぞ！"),
-    _T("ブーメランばっか降ってくるぞ！"),
-    _T("！マークが出たら攻撃だ！"),
-    _T("重力がおかしくなったぞ！"),
-    _T("画面がひっくり返るぞ！"),
-    _T("横移動は連打しろ！"),
-    _T("隕石が降ってくるぞ 相手をスタンさせよう！"),
-    _T("強いやつから逃げ切れ 触れられたら負けだぞ！"),
-    _T("床がツルツルで滑るぞ！"),
-    _T("なんか画面おかしくね？"),
-    _T("分身が出現！＋位置が入れ替わるぞ！"),
-    _T("画面の真ん中へ引っ張られるぞ！"),
-};
+// 妨害の説明文は各 Restriction 派生クラスの Name() が持つ（Restriction.cpp 参照）。
+// 表示は restrictionManager.ActiveName() 経由で取得する。
 
 static void DrawRotatedUI(float cx, float cy, float w, float h, float angle, int img) {
     float hw = w / 2.0f;
@@ -73,12 +56,8 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
     mementoMoriWinnerID = 0;
     mementoMoriPending = false;
 
-    wallEndLeft = false;
-    wallEndRight = false;
-    wallEndTimer = 180 + rand() % 300;
-
-    currentTex = MakeScreen(1280, 920, TRUE);
-    prevTex = MakeScreen(1280, 920, TRUE);
+    currentTex = MakeScreen(SCREEN_W, SCREEN_H, TRUE);
+    prevTex = MakeScreen(SCREEN_W, SCREEN_H, TRUE);
     blurMode = 0;
     blurTimer = 0;
 
@@ -87,8 +66,8 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
 
     setsunaPhase = SETSUNA_SLIDE;
     setsunaPhaseTimer = 0;
-    setsunaP1UIX = 1280.0f;
-    setsunaP2UIX = -1280.0f;
+    setsunaP1UIX = SCREEN_W;
+    setsunaP2UIX = -SCREEN_W;
 
     setsunaSignVisible = false;
     setsunaRedoPending = false;
@@ -114,7 +93,7 @@ void SceneGame::Init(ImageManager& imgMgr_, GameSettings& settings, SoundManager
     }
     InitFallingUI();
     InitPlayers(false);
-    InitDecoys(); // 初回ラウンドでも分身と地面基準を初期化しておく
+    if (restrictionManager.Active()) restrictionManager.Active()->OnRoundStart(*this); // 妨害のラウンド準備（デバッグ強制時のみ有効）
     gravityInsaneLevel = 2;
     gravityInsaneTimer = 120 + rand() % 60;
     player1.gravityInsaneLevel = gravityInsaneLevel;
@@ -168,11 +147,7 @@ void SceneGame::InitPlayers(bool keepWinCount) {
         }
     }
 
-    // 近接無双：両プレイヤーに最初からシールド（投げを1回だけ無効化）
-    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
-        player1.hasShield = true;
-        player2.hasShield = true;
-    }
+    // 近接無双のシールド付与は MeleeMusouRestriction::OnRoundStart へ移設した。
 
     // 弱い側にピコハンを持たせる
     if (restrictionManager.IsActive(REST_HYPETSUYOI)) {
@@ -225,7 +200,7 @@ void SceneGame::InitFallingUI() {
     hpUI[0].baseX = 50.0f + UI_HP_W / 2.0f;
     hpUI[0].baseY = 20.0f + UI_HP_H / 2.0f;
     // HP P2：右端基準
-    hpUI[1].baseX = 1280.0f - 50.0f - UI_HP_W / 2.0f;
+    hpUI[1].baseX = SCREEN_W - 50.0f - UI_HP_W / 2.0f;
     hpUI[1].baseY = 20.0f + UI_HP_H / 2.0f;
 
     // スコア P1：3個の塊の中心
@@ -258,6 +233,8 @@ void SceneGame::InitFallingUI() {
 
 void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     isDraw = false;
+    blurMode = 0;  // ぼやけ以外のラウンドでは合成がかからないよう毎ラウンド0に戻す
+    blurTimer = 0;
     flyExplodeActive = false;
     flyExplodeTimer = 0;
     p1HpIndex = 0;
@@ -286,15 +263,12 @@ void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     } else {
         sound->ResumeGameBgm();
     }
-    wallEndLeft = false;
-    wallEndRight = false;
-    wallEndTimer = 180 + rand() % 300;
     hyperPlayerID = 0;
     itemManager.hyperPlayerID = 0;
     setsunaPhase = SETSUNA_SLIDE;
     setsunaPhaseTimer = 0;
-    setsunaP1UIX = 1280.0f;
-    setsunaP2UIX = -1280.0f;
+    setsunaP1UIX = SCREEN_W;
+    setsunaP2UIX = -SCREEN_W;
     gravityInsaneLevel = 2;
     gravityInsaneTimer = 120 + rand() % 60;
     player1.gravityInsaneLevel = gravityInsaneLevel;
@@ -311,8 +285,6 @@ void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     if (flipPattern == 1 || flipPattern == 2) {
         player1.SwapImageWith(player2);
     }
-    // 入れ替え制限：最初の交換までの間
-    swapTimer = 180 + rand() % 120;
     weaponSpawnTimer = 0;
     mementoMoriTimer = 0;
     mementoMoriShooterID = 0;
@@ -328,81 +300,10 @@ void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     }
     InitFallingUI();
     InitPlayers(keepWinCount);
-    InitDecoys(); // 分身を本体のまわりに散らして初期化（REST_SWAP以外でも持っておくだけなら害なし）
+    if (restrictionManager.Active()) restrictionManager.Active()->OnRoundStart(*this); // 妨害のラウンド準備
 }
 
-void SceneGame::InitDecoys() {
-    const float MINX = 60.0f, MAXX = 1220.0f;
-    p1GroundY = player1.y; // 開始時は接地している前提
-    p2GroundY = player2.y;
-    for (int i = 0; i < DECOY_COUNT; i++) {
-        // 本体から±420pxの広い範囲に散らす（画面内にクランプ）
-        float x1 = player1.x + (float)(rand() % 841 - 420);
-        if (x1 < MINX) x1 = MINX; if (x1 > MAXX) x1 = MAXX;
-        p1Decoys[i].x = x1;
-        p1Decoys[i].y = player1.y; // 縦は本体に合わせる＝地面に立つ
-        p1Decoys[i].moveSign = (rand() % 2 == 0) ? 1 : -1;
-        p1Decoys[i].jumpScale = 0.65f + (float)(rand() % 66) / 100.0f; // 0.65〜1.30倍
-        p1Decoys[i].faceRight = (p1Decoys[i].moveSign > 0);
-
-        float x2 = player2.x + (float)(rand() % 841 - 420);
-        if (x2 < MINX) x2 = MINX; if (x2 > MAXX) x2 = MAXX;
-        p2Decoys[i].x = x2;
-        p2Decoys[i].y = player2.y;
-        p2Decoys[i].moveSign = (rand() % 2 == 0) ? 1 : -1;
-        p2Decoys[i].jumpScale = 0.65f + (float)(rand() % 66) / 100.0f;
-        p2Decoys[i].faceRight = (p2Decoys[i].moveSign > 0);
-    }
-}
-
-void SceneGame::UpdateDecoys() {
-    // ▼ここの数字をいじると分身の挙動を調整できる
-    const float FOLLOW = 1.0f;  // 本体の速さに対する分身の速さの倍率（1.0で本体と同速）
-    const int   FLIP_CHANCE = 180; // 1/FLIP_CHANCEの確率で進む向きを気まぐれに変える
-    const float MINX = 60.0f, MAXX = 1220.0f; // 画面内に留める横の境界
-
-    Decoy* arrs[2]   = { p1Decoys, p2Decoys };
-    Player* owners[2] = { &player1, &player2 };
-    float* grounds[2] = { &p1GroundY, &p2GroundY };
-
-    for (int s = 0; s < 2; s++) {
-        Decoy* arr = arrs[s];
-        Player& p = *owners[s];
-        float& groundY = *grounds[s];
-        // 地面＝本体が到達する一番下（y座標が最大の点）として記録する。
-        // ジャンプ中はyが小さくなるので地面を上書きしない＝onGroundの挙動に左右されず壊れない。
-        if (p.y > groundY) groundY = p.y;
-        // 本体が地面からどれだけ浮いてるか（正＝ジャンプ中）
-        float jumpHeight = groundY - p.y;
-        if (jumpHeight < 0.0f) jumpHeight = 0.0f;
-        for (int i = 0; i < DECOY_COUNT; i++) {
-            Decoy& d = arr[i];
-            // 縦は本体のジャンプ高さに個体差(jumpScale)を掛けて反映。
-            // 接地時は高さ0なので全員ちゃんと地面に立つ。跳ぶ高さだけバラける。
-            d.y = groundY - jumpHeight * d.jumpScale;
-            // 本体が左右に歩いてる時だけ、自分の向き(moveSign)へ前進する。
-            // 本体が止まれば分身も止まる＝プルプルしないので本物と見分けがつかない。
-            if (p.vx != 0.0f) {
-                d.x += fabsf(p.vx) * FOLLOW * (float)d.moveSign;
-            }
-            // たまに気まぐれで進む向きを反転（みんなが同じ方へ抜けていかないように）
-            if (rand() % FLIP_CHANCE == 0) d.moveSign = -d.moveSign;
-            // 画面端で折り返す
-            if (d.x < MINX) { d.x = MINX; d.moveSign = 1; }
-            if (d.x > MAXX) { d.x = MAXX; d.moveSign = -1; }
-            // 向きは進む方向に合わせる
-            d.faceRight = (d.moveSign > 0);
-        }
-    }
-}
-
-void SceneGame::DrawDecoys() {
-    if (!restrictionManager.IsActive(REST_SWAP)) return;
-    for (int i = 0; i < DECOY_COUNT; i++) {
-        player1.DrawDecoy(p1Decoys[i].x, p1Decoys[i].y, p1Decoys[i].faceRight, *imgMgr);
-        player2.DrawDecoy(p2Decoys[i].x, p2Decoys[i].y, p2Decoys[i].faceRight, *imgMgr);
-    }
-}
+// 入れ替え＋分身の実装は SwapRestriction（Restriction.cpp）へ移設した。
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {
     if (!attacker.attacking) return;
@@ -782,7 +683,7 @@ void SceneGame::DrawMementoMori(Player& attacker) {
     float cy = attacker.y - PLAYER_HIT_CY;
     float drawY = cy - hitH / 2;
 
-    for (int x = 0; x < 1280; x += 48) {
+    for (int x = 0; x < SCREEN_W; x += 48) {
         DrawExtendGraphF(x, drawY, x + 48, drawY + 20, imgMgr->mementoMoriEffect, TRUE);
     }
 }
@@ -828,79 +729,12 @@ void SceneGame::Update() {
             }
         }
 
-        if (restrictionManager.IsActive(REST_SCREEN_BLUR)) {
-            if (blurTimer > 0) blurTimer--;
-            else {
-                blurMode = rand() % 3;
-                blurTimer = 120 + rand() % 181;
-            }
-        }
-        else {
-            blurMode = 0;
-            blurTimer = 0;
-        }
-
         UpdateMeteor();
 
-        if (restrictionManager.IsActive(REST_SETSUNA)) {
-            UpdateSetsuna();
-        }
+        // 前処理が必要な妨害（刹那・重力ランダム）の毎フレーム駆動を委譲（プレイヤー更新の前）
+        if (restrictionManager.Active()) restrictionManager.Active()->UpdateBeforePlayers(*this);
 
-        if (restrictionManager.IsActive(REST_GRAVITY_INSANE)) {
-            uiShakeTimer++;
-
-            bool enteredHeavy = false; // 今フレーム重いレベルに入ったか
-
-            if (gravityInsaneTimer > 0) gravityInsaneTimer--;
-            else {
-                int newLevel;
-                do {
-                    newLevel = rand() % 5;
-                } while (newLevel == gravityInsaneLevel);
-                gravityInsaneLevel = newLevel;
-                gravityInsaneTimer = 120 + rand() % 60;
-                player1.gravityInsaneLevel = gravityInsaneLevel;
-                player2.gravityInsaneLevel = gravityInsaneLevel;
-
-                if (gravityInsaneLevel == 3 || gravityInsaneLevel == 4) {
-                    enteredHeavy = true; // フラグ立てるだけ
-                }
-            }
-
-            UpdateFallingUI(enteredHeavy); // UI落下処理を一括で呼ぶ
-        }
-
-        // ハイパー突進処理
-        if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
-            Player& hp = (hyperPlayerID == 1) ? player1 : player2;
-
-            if (hyperDashCooldown > 0) hyperDashCooldown--;
-
-            // 構え→攻撃の遷移瞬間に突進発動
-            if (!hyperDashing && hyperDashCooldown == 0 && hp.attacking) {
-                if (hp.attackTimer == BARE_HAND_CHARGE_FRAMES - 1) {
-                    hyperDashing = true;
-                    hyperDashDistance = 0.0f;
-                }
-            }
-
-            // ダッシュ中の処理
-            const float DASH_SPEED = 35.0f;
-            if (hyperDashing) {
-                hp.vx = hp.facingRight ? DASH_SPEED : -DASH_SPEED;
-                hp.vy = 0.0f;          // 重力無視で高さキープ
-                hp.isDashing = true;
-                hyperDashDistance += DASH_SPEED;
-                if (hyperDashDistance >= 1280.0f) {
-                    hyperDashing = false;
-                    hp.isDashing = false;
-                    hyperDashCooldown = 420;
-                }
-            }
-            else {
-                hp.isDashing = false;
-            }
-        }
+        // ハイパー突進は HyperTsuyoiRestriction::UpdateBeforePlayers（委譲）が呼ぶ。
 
         // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding && !mementoMoriPending) {
@@ -915,55 +749,27 @@ void SceneGame::Update() {
             if (player1.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player1.justBareAttacked = false; }
             if (player2.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player2.justBareAttacked = false; }
 
-            // 綱引き制限：常に画面中央(X=640)へ引っ張る。中央から遠いほど強く引かれる。
-            // 係数0.004 → 端(中央から約600px)でも約2.4px/フレーム。歩き(5px/フレーム)で逆らえるやんわり強度。
-            if (restrictionManager.IsActive(REST_TUG)) {
-                const float TUG_CENTER = 640.0f;
-                const float TUG_PULL = 0.008f;
-                player1.x += (TUG_CENTER - player1.x) * TUG_PULL;
-                player2.x += (TUG_CENTER - player2.x) * TUG_PULL;
-            }
         }
+
+        // 各妨害の毎フレーム挙動を委譲する（Strategy）。移植済みの妨害だけがここで動く。
+        if (restrictionManager.Active()) restrictionManager.Active()->UpdatePlaying(*this);
 
         // ノックバック画面外チェック（投げダメなし・近接無双はどちらも場外で負け）
         if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE) ||
             restrictionManager.IsActive(REST_MELEE_MUSOU)) {
-            if (player1.isKnockedBack && (player1.x < 0.0f || player1.x > 1280.0f))
+            if (player1.isKnockedBack && (player1.x < 0.0f || player1.x > SCREEN_W))
                 EnterHitState(true, true);
-            if (player2.isKnockedBack && (player2.x < 0.0f || player2.x > 1280.0f))
+            if (player2.isKnockedBack && (player2.x < 0.0f || player2.x > SCREEN_W))
                 EnterHitState(false, true);
         }
-
-        // 入れ替え制限：一定時間ごとに「本体（赤と青）だけ」が位置を交換する。
-        // 分身は連れていかない＝置いてけぼり。だからワープ直後は本体が群れから飛び出す。
-        if (restrictionManager.IsActive(REST_SWAP)) {
-            // 分身は常に勝手に漂わせ続ける
-            UpdateDecoys();
-            if (swapTimer > 0) swapTimer--;
-            else {
-                float t;
-                t = player1.x;  player1.x  = player2.x;  player2.x  = t;
-                t = player1.y;  player1.y  = player2.y;  player2.y  = t;
-                t = player1.vx; player1.vx = player2.vx; player2.vx = t;
-                t = player1.vy; player1.vy = player2.vy; player2.vy = t;
-                PlaySoundMem(sound->setsunaSign, DX_PLAYTYPE_BACK); // 入れ替わり合図の仮の音
-                swapTimer = 180 + rand() % 120; // 次の交換まで3〜5秒
-            }
-        }
-
-        UpdateMashMove();
 
         if (!restrictionManager.IsActive(REST_SETSUNA)) {
             itemManager.Update(player1, player2, restrictionManager);
         }
         orbManager.Update(player1, player2);
-        if (restrictionManager.IsActive(REST_SCREEN_BLUR)) {
-            adManager.Update();
-        }
 
-        if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
-            UpdateScreenFlip();
-        }
+        // ぼやけの駆動と広告更新は ScreenBlurRestriction::UpdateBeforePlayers（委譲）が呼ぶ。
+        // 画面反転の毎フレーム駆動は ScreenFlipRestriction::UpdatePlaying（委譲）が呼ぶ。
 
         // 爆発ヒット判定
         if (itemManager.hitOccurred) {
@@ -979,11 +785,7 @@ void SceneGame::Update() {
         p1Glowing = player1.isGlowing;
         p2Glowing = player2.isGlowing;
 
-        // ハイパー強いモード
-        if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
-            // 接触判定
-            CheckHyperTouch();
-        }
+        // ハイパーの接触判定は HyperTsuyoiRestriction::UpdatePlaying（委譲）が呼ぶ。
 
         // メメントモリ判定
         CheckMementoMori(player1, player2, false);
@@ -1157,7 +959,7 @@ void SceneGame::UpdateFallingUI(bool enteredHeavy) {
 }
 
 void SceneGame::UpdateSetsuna() {
-    const float SLIDE_SPEED = 1280.0f / 60.0f; // 1秒でスライドイン
+    const float SLIDE_SPEED = SCREEN_W / 60.0f; // 1秒でスライドイン
 
     if (setsunaPhase == SETSUNA_SLIDE) {
         player1.canAttack = false;
@@ -1225,6 +1027,67 @@ void SceneGame::UpdateSetsuna() {
     }
 }
 
+void SceneGame::UpdateScreenBlur() {
+    if (blurTimer > 0) blurTimer--;
+    else {
+        blurMode = rand() % 3;
+        blurTimer = 120 + rand() % 181;
+    }
+    adManager.Update();
+}
+
+void SceneGame::UpdateHyperDash() {
+    if (hyperPlayerID == 0) return;
+    Player& hp = (hyperPlayerID == 1) ? player1 : player2;
+
+    if (hyperDashCooldown > 0) hyperDashCooldown--;
+
+    // 構え→攻撃の遷移瞬間に突進発動
+    if (!hyperDashing && hyperDashCooldown == 0 && hp.attacking) {
+        if (hp.attackTimer == BARE_HAND_CHARGE_FRAMES - 1) {
+            hyperDashing = true;
+            hyperDashDistance = 0.0f;
+        }
+    }
+
+    // ダッシュ中の処理
+    const float DASH_SPEED = 35.0f;
+    if (hyperDashing) {
+        hp.vx = hp.facingRight ? DASH_SPEED : -DASH_SPEED;
+        hp.vy = 0.0f;          // 重力無視で高さキープ
+        hp.isDashing = true;
+        hyperDashDistance += DASH_SPEED;
+        if (hyperDashDistance >= SCREEN_W) {
+            hyperDashing = false;
+            hp.isDashing = false;
+            hyperDashCooldown = 420;
+        }
+    }
+    else {
+        hp.isDashing = false;
+    }
+}
+
+void SceneGame::UpdateGravityInsane() {
+    uiShakeTimer++;
+    bool enteredHeavy = false; // 今フレーム重いレベルに入ったか
+    if (gravityInsaneTimer > 0) gravityInsaneTimer--;
+    else {
+        int newLevel;
+        do {
+            newLevel = rand() % 5;
+        } while (newLevel == gravityInsaneLevel);
+        gravityInsaneLevel = newLevel;
+        gravityInsaneTimer = 120 + rand() % 60;
+        player1.gravityInsaneLevel = gravityInsaneLevel;
+        player2.gravityInsaneLevel = gravityInsaneLevel;
+        if (gravityInsaneLevel == 3 || gravityInsaneLevel == 4) {
+            enteredHeavy = true; // フラグ立てるだけ
+        }
+    }
+    UpdateFallingUI(enteredHeavy); // UI落下処理を一括で呼ぶ
+}
+
 void SceneGame::UpdateScreenFlip() {
     if (flipTimer > 0) flipTimer--;
     else {
@@ -1256,38 +1119,21 @@ void SceneGame::UpdateMeteor() {
     }
 }
 
-void SceneGame::UpdateMashMove() {
-    if (!restrictionManager.IsActive(REST_MASH_MOVE)) return;
-
-    if (wallEndTimer > 0) wallEndTimer--;
-    else {
-        int roll = rand() % 3;
-        wallEndLeft = (roll == 0 || roll == 2);
-        wallEndRight = (roll == 1 || roll == 2);
-        wallEndTimer = 180 + rand() % 240;
-    }
-
-    auto checkWallEnd = [&](Player& player, int winnerID) {
-        if (wallEndLeft && player.x < 80.0f) EnterHitState(winnerID == 2, true);
-        if (wallEndRight && player.x > 1250.0f) EnterHitState(winnerID == 2, true);
-        };
-    checkWallEnd(player1, 2);
-    checkWallEnd(player2, 1);
-}
+// 連打移動の壁判定は MashMoveRestriction（Restriction.cpp）へ移設した。
 
 void SceneGame::Draw() {
     ClearDrawScreen();
     if (state == STATE_PLAYING) {
         SetDrawScreen(currentTex);
         ClearDrawScreen();
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
         }
         DrawMementoMori(player1);
         DrawMementoMori(player2);
-        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
+        if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         orbManager.Draw();
@@ -1297,23 +1143,17 @@ void SceneGame::Draw() {
         itemManager.Draw();
         DrawUI();
         adManager.Draw();
-        if (restrictionManager.IsActive(REST_MASH_MOVE)) {
-            unsigned int wallColor = GetColor(255, 0, 0);
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-            if (wallEndLeft)  DrawBoxAA(0.0f, 0.0f, 50.0f, 920.0f, wallColor, TRUE);
-            if (wallEndRight) DrawBoxAA(1230.0f, 0.0f, 1280.0f, 920.0f, wallColor, TRUE);
-            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-        }
+        if (restrictionManager.Active()) restrictionManager.Active()->DrawForeground(*this); // 妨害の前景演出（連打の壁など）
         SetDrawScreen(DX_SCREEN_BACK);
 
         if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
             bool flipUD = (flipPattern == 0 || flipPattern == 1); // 上下反転
             bool flipLR = (flipPattern == 0 || flipPattern == 2); // 左右反転
 
-            float left = flipLR ? 1280.0f : 0.0f;
-            float right = flipLR ? 0.0f : 1280.0f;
-            float top = flipUD ? 920.0f : 0.0f;
-            float bottom = flipUD ? 0.0f : 920.0f;
+            float left = flipLR ? SCREEN_W : 0.0f;
+            float right = flipLR ? 0.0f : SCREEN_W;
+            float top = flipUD ? SCREEN_H : 0.0f;
+            float bottom = flipUD ? 0.0f : SCREEN_H;
             DrawExtendGraphF(left, top, right, bottom, currentTex, TRUE);
         }
         else {
@@ -1328,23 +1168,23 @@ void SceneGame::Draw() {
         }
 
         // 重ねた後にコピー
-        GetDrawScreenGraph(0, 0, 1280, 920, prevTex);
+        GetDrawScreenGraph(0, 0, SCREEN_W, SCREEN_H, prevTex);
 
 #ifdef _DEBUG
         for (int i = 0; i < restrictionManager.activeCount; i++) {
-            DrawString(10, 10 + i * 20, RESTRICTION_NAMES[restrictionManager.active[i]], GetColor(255, 255, 0));
+            DrawString(10, 10 + i * 20, restrictionManager.ActiveName(), GetColor(255, 255, 0));
         }
 #endif
     }
     else if (state == STATE_HIT) {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
         }
         DrawMementoMori(player1);
         DrawMementoMori(player2);
-        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
+        if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
@@ -1356,12 +1196,12 @@ void SceneGame::Draw() {
         DrawUI();
     }
     else if (state == STATE_RESULT) {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
         for (int i = 0; i < WEAPON_MAX; i++) {
             weapons[i].Draw();
         }
-        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
+        if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
@@ -1381,34 +1221,34 @@ void SceneGame::Draw() {
             !JUDGE ? GetColor(255, 50, 50) :
             GetColor(50, 50, 255);
         int textW = GetDrawStringWidth(resultText, lstrlen(resultText));
-        DrawString((1280 - textW) / 2, 380, resultText, resultColor);
+        DrawString((SCREEN_W - textW) / 2, 380, resultText, resultColor);
         SetFontSize(16);
 
     }
     else if (state == STATE_GAMEEND) {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         SetFontSize(48);
         const TCHAR* winText = !JUDGE ? _T("赤の勝ち！") : _T("青の勝ち！");
         unsigned int winColor = !JUDGE ? GetColor(255, 50, 50) : GetColor(50, 50, 255);
         int winW = GetDrawStringWidth(winText, lstrlen(winText));
-        DrawString((1280 - winW) / 2, 320, winText, winColor);
+        DrawString((SCREEN_W - winW) / 2, 320, winText, winColor);
 
         SetFontSize(72);
         const TCHAR* endText = _T("ゲーム終了！");
         int endW = GetDrawStringWidth(endText, lstrlen(endText));
-        DrawString((1280 - endW) / 2, 420, endText, GetColor(255, 255, 255));
+        DrawString((SCREEN_W - endW) / 2, 420, endText, GetColor(255, 255, 255));
 
         SetFontSize(24);
         const TCHAR* retText = _T("Rキーでメニューに戻る");
         int retW = GetDrawStringWidth(retText, lstrlen(retText));
-        DrawString((1280 - retW) / 2, 560, retText, GetColor(0, 0, 0));
+        DrawString((SCREEN_W - retW) / 2, 560, retText, GetColor(0, 0, 0));
 
         SetFontSize(16);
     }
     else if (state == STATE_COUNTDOWN) {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboardGame[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         stage.Draw();
-        DrawDecoys(); // 本体の裏に分身を描く（REST_SWAP中のみ。それ以外は即return）
+        if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
         player1.Draw(weapons, *imgMgr);
         player2.Draw(weapons, *imgMgr);
         DrawUI();
@@ -1416,14 +1256,14 @@ void SceneGame::Draw() {
         // 今回の制限（小さめ）
         SetFontSize(24);
         int titleW = GetDrawStringWidth(_T("今回の制限は！"), 7);
-        DrawString((1280 - titleW) / 2, 330, _T("今回の制限は！"), GetColor(50, 50, 50));
+        DrawString((SCREEN_W - titleW) / 2, 330, _T("今回の制限は！"), GetColor(50, 50, 50));
 
         // 制限名を大きく表示
         SetFontSize(48);
         for (int i = 0; i < restrictionManager.activeCount; i++) {
-            const TCHAR* text = RESTRICTION_NAMES[restrictionManager.active[i]];
+            const TCHAR* text = restrictionManager.ActiveName();
             int textW = GetDrawStringWidth(text, lstrlen(text));
-            DrawString((1280 - textW) / 2, 390 + i * 60, text, GetColor(255, 50, 50));
+            DrawString((SCREEN_W - textW) / 2, 390 + i * 60, text, GetColor(255, 50, 50));
         }
 
         // カウントダウン数字
@@ -1432,7 +1272,7 @@ void SceneGame::Draw() {
         TCHAR buf[8];
         wsprintf(buf, _T("%d"), sec);
         int numW = GetDrawStringWidth(buf, lstrlen(buf));
-        DrawString((1280 - numW) / 2, 700, buf, GetColor(50, 50, 50));
+        DrawString((SCREEN_W - numW) / 2, 700, buf, GetColor(50, 50, 50));
 
         SetFontSize(16);
     }
@@ -1466,7 +1306,7 @@ void SceneGame::DrawUI()
             DrawRotatedUI(ui.x, ui.y, UI_HP_W, UI_HP_H, ui.angle, p2HpImg);
         }
         else {
-            DrawExtendGraphF(1280.0f - 50.0f - UI_HP_W + shakeX, 20.0f, 1280.0f - 50.0f + shakeX, 20.0f + UI_HP_H, p2HpImg, TRUE);
+            DrawExtendGraphF(SCREEN_W - 50.0f - UI_HP_W + shakeX, 20.0f, SCREEN_W - 50.0f + shakeX, 20.0f + UI_HP_H, p2HpImg, TRUE);
         }
     }
 
@@ -1553,13 +1393,13 @@ void SceneGame::DrawUI()
         // 上部UI（P1）
         DrawExtendGraphF(
             setsunaP1UIX, 0.0f,
-            setsunaP1UIX + 1280.0f, 300.0f,
+            setsunaP1UIX + SCREEN_W, 300.0f,
             imgMgr->setsunaP1[p1Idx], TRUE
         );
         // 下部UI（P2）
         DrawExtendGraphF(
             setsunaP2UIX, 620.0f,
-            setsunaP2UIX + 1280.0f, 920.0f,
+            setsunaP2UIX + SCREEN_W, SCREEN_H,
             imgMgr->setsunaP2[p2Idx], TRUE
         );
     }

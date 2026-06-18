@@ -1,4 +1,5 @@
 ﻿#include "SceneTutorial.h"
+#include "Config.h"
 #include "WeaponConfig.h"
 #include "DxLib.h"
 
@@ -131,14 +132,14 @@ void SceneTutorial::Draw() {
     case TUTO_TOP:
     case TUTO_ZUKAN_SELECT:
     {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboard[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboard[animFrame], TRUE);
         const TCHAR** items = (state == TUTO_TOP) ? TOP_ITEMS : ZUKAN_ITEMS;
         int count = (state == TUTO_TOP) ? TOP_COUNT : ZUKAN_COUNT;
         SetFontSize(48);
         for (int i = 0; i < count; i++) {
             unsigned int color = (i == selectIndex) ? GetColor(255, 50, 50) : GetColor(255, 255, 255);
             int w = GetDrawStringWidth(items[i], lstrlen(items[i]));
-            DrawString((1280 - w) / 2, 280 + i * 120, items[i], color);
+            DrawString((SCREEN_W - w) / 2, 280 + i * 120, items[i], color);
         }
         SetFontSize(24);
         DrawString(40, 860, _T("ESC: 戻る"), GetColor(180, 180, 180));
@@ -149,7 +150,7 @@ void SceneTutorial::Draw() {
     case TUTO_WEAPON:
     case TUTO_ITEM:
     {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->zukan, TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->zukan, TRUE);
         ZukanEntry* entries = (state == TUTO_WEAPON) ? weaponEntries : itemEntries;
         int count = (state == TUTO_WEAPON) ? WEAPON_ENTRY_COUNT : ITEM_ENTRY_COUNT;
 
@@ -181,7 +182,7 @@ void SceneTutorial::Draw() {
     }
 
     case TUTO_CONTROL:
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->blackboard[animFrame], TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboard[animFrame], TRUE);
         // TODO: 操作説明は後で実装
         SetFontSize(36);
         DrawString(100, 200, _T("操作説明"), GetColor(255, 255, 255));
@@ -192,7 +193,7 @@ void SceneTutorial::Draw() {
 
     case TUTO_RESTRICTION:
     {
-        DrawExtendGraphF(0.0f, 0.0f, 1280.0f, 920.0f, imgMgr->zukan_restriction, TRUE);
+        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->zukan_restriction, TRUE);
 
         // 左ページ リスト
         SetFontSize(24);

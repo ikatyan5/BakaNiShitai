@@ -34,6 +34,19 @@ public:
     void CheckMementoMori(Player& attacker, Player& target, bool judgeValue);
     void DrawMementoMori(Player& attacker);
     void DrawFlyExplosion();
+
+    // 妨害（Restriction）が対戦中の状態を操作するためのアクセサ。
+    // 各 Restriction はこれら経由でゲーム本体に手を入れる。
+    Player& GetPlayer1() { return player1; }
+    Player& GetPlayer2() { return player2; }
+    SoundManager* GetSound() { return sound; }
+    ImageManager& GetImageManager() { return *imgMgr; }
+    // 妨害（Restriction）が委譲先として呼ぶ更新処理
+    void UpdateScreenFlip();
+    void UpdateSetsuna();
+    void UpdateGravityInsane();
+    void UpdateScreenBlur();
+    void UpdateHyperDash();
 private:
     enum GameState {
         STATE_COUNTDOWN,
@@ -98,28 +111,7 @@ private:
     int flipPattern;   // 0=上下+左右  1=上下+スワップ  2=左右+スワップ
     int flipTimer;     // 切り替えまでのカウントダウン
 
-    int swapTimer;     // 入れ替え制限：次に位置を交換するまでのカウントダウン
-
-    // 分身（入れ替え制限に同梱）。当たり判定なしの描画専用。
-    // 縦は本体に追従して重力・接地・ジャンプをタダでもらい、横だけ本体の歩きに合わせて散らす。
-    static const int DECOY_COUNT = 5; // プレイヤー1人につきの分身の数
-    struct Decoy {
-        float x, y;      // ワールド座標（yは本体のジャンプを倍率付きで反映）
-        int moveSign;    // 進む向き（+1=右 / -1=左）。本体が歩いてる間だけこの向きに進む
-        float jumpScale; // ジャンプの高さ倍率（1.0で本体と同じ。個体差でバラバラに見せる）
-        bool faceRight;  // 向き（進行方向に合わせる）
-    };
-    Decoy p1Decoys[DECOY_COUNT];
-    Decoy p2Decoys[DECOY_COUNT];
-    float p1GroundY; // 本体1が接地してる時のY（分身のジャンプ計算の地面基準）
-    float p2GroundY; // 本体2が接地してる時のY
-    void InitDecoys();   // 本体のまわりに散らして初期化
-    void UpdateDecoys(); // 毎フレームの漂い更新（REST_SWAP中のみ）
-    void DrawDecoys();   // 分身の描画（REST_SWAP以外は即return）
-
-    bool wallEndLeft;
-    bool wallEndRight;
-    int wallEndTimer;
+    // 入れ替え＋分身は SwapRestriction、連打移動の壁は MashMoveRestriction（Restriction.cpp）へ移設済み。
 
     // 刹那の見切り
     enum SetsunaPhase {
@@ -159,10 +151,7 @@ private:
     int uiShakeTimer;      // 揺れ演出用のフレームカウンタ
     void InitFallingUI();
     void UpdateFallingUI(bool enteredHeavy);
-    void UpdateSetsuna();
-    void UpdateScreenFlip();
     void UpdateMeteor();
-    void UpdateMashMove();
     void CheckMeleeHit(Player& attacker, Player& target, bool judgeValue);
 
     SceneID nextScene = SCENE_NONE;

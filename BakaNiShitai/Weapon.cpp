@@ -73,7 +73,7 @@ void Weapon::Update() {
         angle += (vx > 0) ? WEAPON_ROTATE : -WEAPON_ROTATE; // 向きで回転方向変える
         
         // 消滅判定
-        if (x < 0 || x > 1280) weaponState = WEAPON_INACTIVE;
+        if (x < 0 || x > SCREEN_W) weaponState = WEAPON_INACTIVE;
         else if (y < 0)weaponState = WEAPON_INACTIVE;
         else if (y >= GROUND_Y)weaponState = WEAPON_INACTIVE;
 

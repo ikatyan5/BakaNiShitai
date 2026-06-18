@@ -25,7 +25,7 @@ void Orb::Update() {
     if (!active) return;
     x += vx;
     angle += (vx > 0) ? WEAPON_ROTATE : -WEAPON_ROTATE;
-    if (x < 0 || x > 1280) active = false;
+    if (x < 0 || x > SCREEN_W) active = false;
 }
 
 void Orb::Draw() {

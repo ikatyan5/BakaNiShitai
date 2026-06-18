@@ -147,6 +147,7 @@
     <ClCompile Include="Orb.cpp" />
     <ClCompile Include="OrbManager.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Restriction.cpp" />
     <ClCompile Include="RestrictionManager.cpp" />
     <ClCompile Include="SceneGame.cpp" />
     <ClCompile Include="SceneMenu.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="Orb.h" />
     <ClInclude Include="OrbManager.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Restriction.h" />
     <ClInclude Include="RestrictionConfig.h" />
     <ClInclude Include="RestrictionManager.h" />
     <ClInclude Include="SceneGame.h" />

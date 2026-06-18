@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+// 画面サイズ（ウィンドウの幅・高さ）。描画や画面端判定で広く使う。
+const int SCREEN_W = 1280;
+const int SCREEN_H = 920;
+
 // プレイヤーの当たり判定
 const float PLAYER_HIT_W = 60.0f;
 const float PLAYER_HIT_H = 110.0f;
