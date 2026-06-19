@@ -24,11 +24,13 @@ void Weapon::Init(WeaponType type, ImageManager& imgMgr) {
 void Weapon::Throw(float startX, float startY, bool facingRight, int id, WeaponType type, ImageManager& imgMgr) {
     x = startX;
     y = startY;
-    vx = facingRight ? WEAPON_SPEED : -WEAPON_SPEED;
+    // 投げ速度は武器ごとに WEAPON_DATA の throwSpeed を使う
+    float speed = WEAPON_DATA[type].throwSpeed;
+    vx = facingRight ? speed : -speed;
     vy = 0.0f;
     throwGravity = 0.0f;
     if (type == WEAPON_BOOMERANG) {
-        vx = facingRight ? 16.0f : -16.0f;
+        vx = facingRight ? speed : -speed;
         boomerangDecel = facingRight ? 0.3f : -0.3f;
         boomerangReturning = rand() % 2 == 0; // ランダムで挙動選択！
     }
@@ -39,6 +41,7 @@ void Weapon::Throw(float startX, float startY, bool facingRight, int id, WeaponT
     ownerID = id;
     weaponType = type;
 }
+
 
 void Weapon::Update() {
     if (weaponState == WEAPON_FALLING) {
