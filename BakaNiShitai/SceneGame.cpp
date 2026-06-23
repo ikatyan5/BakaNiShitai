@@ -294,10 +294,6 @@ void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     for (int i = 0; i < WEAPON_MAX; i++) {
         weapons[i].Init(WEAPON_KAMA, *imgMgr);
     }
-    if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
-        player1.moveSpeed = 5.0f * 1.2f;
-        player2.moveSpeed = 5.0f * 1.2f;
-    }
     InitFallingUI();
     InitPlayers(keepWinCount);
     if (restrictionManager.Active()) restrictionManager.Active()->OnRoundStart(*this); // 妨害のラウンド準備
@@ -389,19 +385,6 @@ void SceneGame::CheckWeaponHit(Player& target, Player& attacker, bool judgeValue
         }
         return;
     }
-    // 投げものダメージなしの場合
-    if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
-        for (int i = 0; i < WEAPON_MAX; i++) {
-            if (weapons[i].weaponState != Weapon::WEAPON_THROWN) continue;
-            if (weapons[i].CheckHit(
-                target.x, target.y - PLAYER_HIT_CY,
-                PLAYER_HIT_W, PLAYER_HIT_H, targetID)) {
-                weapons[i].weaponState = Weapon::WEAPON_INACTIVE;
-                target.AddKnockbackCount(); // 蓄積+1
-            }
-        }
-        return;
-    }
     // 近接無双：投げはシールドで1回だけ無効化。シールドが無ければ小さく押すだけ（場外には届かない）。
     if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
         for (int i = 0; i < WEAPON_MAX; i++) {
@@ -478,6 +461,15 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
             else if (gravityInsaneLevel == 4) weapons[idx].vy = 10.0f;  // ほぼ飛ばない
         }
 
+        // REST_BOUND：水平一直線をやめ、上下ランダム初速＋跳ね返り属性を付ける
+        if (restrictionManager.IsActive(REST_BOUND)) {
+            weapons[idx].bouncing = true;
+            weapons[idx].bounceCount = 4;     // 反射回数の寿命
+            weapons[idx].throwGravity = 0.0f; // 重力なしでまっすぐ→壁でランダムに散る
+            float kick = fabsf(weapons[idx].vx) * 0.8f;
+            weapons[idx].vy = (((rand() % 1000) / 1000.0f) - 0.5f) * 2.0f * kick; // ±kick
+        }
+
     }
     player.wantThrow = false;
 }
@@ -520,28 +512,6 @@ void SceneGame::CheckMeleeHit(Player& attacker, Player& target, bool judgeValue)
             attacker.holdingWeaponIndex = -1;
             attacker.pikohanRespawnTimer = 180;
         }
-        return;
-    }
-
-    if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
-        bool hasWeapon = attacker.holdingWeaponIndex != -1;
-        float kbVx, kbVy;
-
-        if (!hasWeapon && target.knockbackCount == 0) {
-            kbVx = 15.0f; kbVy = -6.0f; // 素手・未蓄積：小
-        }
-        else if (hasWeapon && target.knockbackCount == 0) {
-            kbVx = 60.0f; kbVy = -10.0f; // 武器・未蓄積：中
-        }
-        else if (!hasWeapon && target.knockbackCount == 1) {
-            kbVx = 170.0f; kbVy = -8.0f; // 素手・蓄積済：中
-        }
-        else {
-            kbVx = 200.0f; kbVy = -10.0f; // 武器・蓄積済：大
-        }
-
-        float dirVx = (attacker.x < target.x) ? kbVx : -kbVx;
-        target.ApplyKnockback(dirVx, kbVy);
         return;
     }
 
@@ -623,14 +593,6 @@ void SceneGame::SpawnWeapon()
                     }
                     else if (restrictionManager.IsActive(REST_BOOMERANG_ONLY)) {
                         type = WEAPON_BOOMERANG;
-                    }
-                    else if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE)) {
-                        while (type == WEAPON_STICK ||
-                            type == WEAPON_MEMENTO_MORI ||
-                            type == WEAPON_TENSAI_TSUE ||
-                            type == WEAPON_PIKOHAN) {
-                            type = (WeaponType)(rand() % WEAPON_TYPE_MAX);
-                        }
                     }
                     else {
                         // 通常時はピコハンを出さない
@@ -754,9 +716,8 @@ void SceneGame::Update() {
         // 各妨害の毎フレーム挙動を委譲する（Strategy）。移植済みの妨害だけがここで動く。
         if (restrictionManager.Active()) restrictionManager.Active()->UpdatePlaying(*this);
 
-        // ノックバック画面外チェック（投げダメなし・近接無双はどちらも場外で負け）
-        if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE) ||
-            restrictionManager.IsActive(REST_MELEE_MUSOU)) {
+        // ノックバック画面外チェック（近接無双は場外で負け）
+        if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
             for (int i = 0; i < 2; i++) {
                 if (players[i]->isKnockedBack && (players[i]->x < 0.0f || players[i]->x > SCREEN_W))
                     EnterHitState(i == 0, true); // i==0=P1が場外

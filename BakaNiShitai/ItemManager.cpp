@@ -100,13 +100,6 @@ ItemType ItemManager::SelectItemType(const RestrictionManager& restrictions) {
     if (restrictions.IsActive(REST_MASH_MOVE)) {
         return (rand() % 2 == 0) ? ITEM_BANANA : ITEM_KINOKO;
     }
-    if (restrictions.IsActive(REST_THROW_NO_DAMAGE)) {
-        int roll = rand() % 10;
-        if (roll < 4)      return ITEM_POTION_PURPLE;
-        else if (roll < 6) return ITEM_POTION_BLUE;
-        else if (roll < 8) return ITEM_POTION_YELLOW;
-        else               return ITEM_HANKACHI;
-    }
     if (restrictions.IsActive(REST_METEOR)) {
         // 赤ポーション除外
         int roll = rand() % 4;

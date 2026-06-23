@@ -9,6 +9,8 @@ public:
     float vx;
     float vy;
     float throwGravity;
+    bool bouncing;      // 反射制限：壁・床でランダムに跳ね返る
+    int bounceCount;    // 残り反射回数（0で消滅）
     float angle;
     int weaponType;
     int ownerID; 

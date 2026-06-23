@@ -9,6 +9,8 @@ void Weapon::Init(WeaponType type, ImageManager& imgMgr) {
     x = y = vx = 0.0f;
     vy = 0.0f;
     throwGravity = 0.0f;
+    bouncing = false;
+    bounceCount = 0;
     ownerID = 0;
     weaponType = type;
     groundTimer = 0;
@@ -29,6 +31,8 @@ void Weapon::Throw(float startX, float startY, bool facingRight, int id, WeaponT
     vx = facingRight ? speed : -speed;
     vy = 0.0f;
     throwGravity = 0.0f;
+    bouncing = false;
+    bounceCount = 0;
     if (type == WEAPON_BOOMERANG) {
         vx = facingRight ? speed : -speed;
         boomerangDecel = facingRight ? 0.3f : -0.3f;
@@ -75,10 +79,31 @@ void Weapon::Update() {
         vy += throwGravity;
         angle += (vx > 0) ? WEAPON_ROTATE : -WEAPON_ROTATE; // 向きで回転方向変える
         
-        // 消滅判定
-        if (x < 0 || x > SCREEN_W) weaponState = WEAPON_INACTIVE;
-        else if (y < 0)weaponState = WEAPON_INACTIVE;
-        else if (y >= GROUND_Y)weaponState = WEAPON_INACTIVE;
+        if (bouncing) {
+            // 反射制限：画面端で消えずに、ランダムな方向へ跳ね返る
+            bool hit = false;
+            float baseAng = 0.0f; // 跳ね返り後の「画面内へ向かう」基準角
+            if (x < 0)             { x = 0.0f;     baseAng = 0.0f;     hit = true; } // 左壁→右へ
+            else if (x > SCREEN_W) { x = SCREEN_W; baseAng = 3.14159f; hit = true; } // 右壁→左へ
+            if (y < 0)             { y = 0.0f;     baseAng = 1.5708f;  hit = true; } // 天井→下へ
+            else if (y >= GROUND_Y){ y = GROUND_Y; baseAng = -1.5708f; hit = true; } // 床→上へ
+            if (hit) {
+                // 基準角から±40度ほどランダムに散らす＝意味わからん方向へ飛ぶ
+                float speed = sqrtf(vx * vx + vy * vy) * 0.95f;
+                if (speed < 7.0f) speed = 7.0f;
+                float spread = (((rand() % 1000) / 1000.0f) - 0.5f) * 1.9f;
+                float ang = baseAng + spread;
+                vx = cosf(ang) * speed;
+                vy = sinf(ang) * speed;
+                if (--bounceCount <= 0) weaponState = WEAPON_INACTIVE;
+            }
+        }
+        else {
+            // 通常の消滅判定
+            if (x < 0 || x > SCREEN_W) weaponState = WEAPON_INACTIVE;
+            else if (y < 0)weaponState = WEAPON_INACTIVE;
+            else if (y >= GROUND_Y)weaponState = WEAPON_INACTIVE;
+        }
 
     }
 }

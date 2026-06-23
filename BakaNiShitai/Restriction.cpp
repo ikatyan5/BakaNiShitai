@@ -20,8 +20,8 @@ namespace {
     class HoverJumpRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("ジャンプ回数が無制限に！"); }
     };
-    class ThrowNoDamageRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("武器を投げてもダメージがないぞ！"); }
+    class BounceRestriction : public Restriction {
+    public: const TCHAR* Name() const override { return _T("武器が跳ね回るぞ！"); }
     };
     // 近接無双：武器近接で場外まで吹っ飛ばす。当たり判定の挙動は横断的なのでヒット処理側に残し、
     // ここでは「両プレイヤーに最初からシールドを配る」ラウンド準備だけを担当する。
@@ -233,7 +233,7 @@ Restriction* CreateRestriction(RestrictionType type) {
     switch (type) {
     case REST_GRAVITY_ZERO:    return new GravityZeroRestriction();
     case REST_HOVER_JUMP:      return new HoverJumpRestriction();
-    case REST_THROW_NO_DAMAGE: return new ThrowNoDamageRestriction();
+    case REST_BOUND:           return new BounceRestriction();
     case REST_MELEE_MUSOU:     return new MeleeMusouRestriction();
     case REST_STICK_ONLY:      return new StickOnlyRestriction();
     case REST_BOOMERANG_ONLY:  return new BoomerangOnlyRestriction();

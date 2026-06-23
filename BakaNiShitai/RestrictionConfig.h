@@ -7,7 +7,7 @@ enum RestrictionType {
     REST_NONE,
     REST_GRAVITY_ZERO,        // 〇 重力ゼロ
     REST_HOVER_JUMP,          // 〇 ホバリングジャンプ
-    REST_THROW_NO_DAMAGE,     // 〇 投げダメなし
+    REST_BOUND,               // 〇 反射（投げた武器が壁でランダムに跳ね回る）
     REST_MELEE_MUSOU,         // 〇 近接無双（武器近接で場外まで吹っ飛ばす＋最初からシールド）
     REST_STICK_ONLY,          // 〇 杖だけ
     REST_BOOMERANG_ONLY,      // 〇 ブーメランだけ
