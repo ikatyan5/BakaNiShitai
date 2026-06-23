@@ -303,6 +303,7 @@ void SceneGame::ResetGame(bool keepWinCount, bool keepRestriction) {
     if (restrictionManager.Active()) restrictionManager.Active()->OnRoundStart(*this); // 妨害のラウンド準備
 }
 
+
 // 入れ替え＋分身の実装は SwapRestriction（Restriction.cpp）へ移設した。
 
 void SceneGame::CheckParry(Player& attacker, int ownerID) {
@@ -703,6 +704,9 @@ void SceneGame::Update() {
     }
 
     if (state == STATE_PLAYING) {
+        // P1/P2を配列で扱い、左右対称な処理をループで一度だけ書く
+        Player* players[2] = { &player1, &player2 };
+
         animTimer++;
         if (animTimer >= 10) {
             animTimer = 0;
@@ -738,17 +742,13 @@ void SceneGame::Update() {
 
         // 爆発中はプレイヤーの更新を止める
         if (!itemManager.isExploding && !mementoMoriPending) {
-            player1.Update(stage, weapons, restrictionManager);
-            player2.Update(stage, weapons, restrictionManager);
+            for (Player* p : players) {
+                p->Update(stage, weapons, restrictionManager);
 
-            // ジャンプした瞬間に音を鳴らしてフラグを戻す
-            if (player1.justJumped) { PlaySoundMem(sound->jump, DX_PLAYTYPE_BACK); player1.justJumped = false; }
-            if (player2.justJumped) { PlaySoundMem(sound->jump, DX_PLAYTYPE_BACK); player2.justJumped = false; }
-
-            // 素手攻撃を出した瞬間に音を鳴らしてフラグを戻す
-            if (player1.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player1.justBareAttacked = false; }
-            if (player2.justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); player2.justBareAttacked = false; }
-
+                // ジャンプ・素手攻撃を出した瞬間に音を鳴らしてフラグを戻す
+                if (p->justJumped)       { PlaySoundMem(sound->jump,   DX_PLAYTYPE_BACK); p->justJumped = false; }
+                if (p->justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); p->justBareAttacked = false; }
+            }
         }
 
         // 各妨害の毎フレーム挙動を委譲する（Strategy）。移植済みの妨害だけがここで動く。
@@ -757,10 +757,10 @@ void SceneGame::Update() {
         // ノックバック画面外チェック（投げダメなし・近接無双はどちらも場外で負け）
         if (restrictionManager.IsActive(REST_THROW_NO_DAMAGE) ||
             restrictionManager.IsActive(REST_MELEE_MUSOU)) {
-            if (player1.isKnockedBack && (player1.x < 0.0f || player1.x > SCREEN_W))
-                EnterHitState(true, true);
-            if (player2.isKnockedBack && (player2.x < 0.0f || player2.x > SCREEN_W))
-                EnterHitState(false, true);
+            for (int i = 0; i < 2; i++) {
+                if (players[i]->isKnockedBack && (players[i]->x < 0.0f || players[i]->x > SCREEN_W))
+                    EnterHitState(i == 0, true); // i==0=P1が場外
+            }
         }
 
         if (!restrictionManager.IsActive(REST_SETSUNA)) {

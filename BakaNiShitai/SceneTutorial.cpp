@@ -54,7 +54,7 @@ void SceneTutorial::Init(ImageManager& imgMgr_) {
     restrictionEntries[1] = { _T("重力がなくなった！"),                   _T("ふわふわ浮いて動きが別物になる"),              _T("空中戦が得意なやつが有利かも") };
     restrictionEntries[2] = { _T("ジャンプ回数が無制限に！"),             _T("何度でもジャンプできるぞ"),                    _T("空中をうまく使って立ち回ろう") };
     restrictionEntries[3] = { _T("武器を投げてもダメージがないぞ！"),     _T("投げるたびにノックバックが蓄積される"),        _T("近接攻撃でまとめて吹っ飛ばせ！") };
-    restrictionEntries[4] = { _T("近接ダメージがゼロだ！"),               _T("殴っても倒せない 投げて当てよう"),             _T("武器を拾い続けることが大事だ") };
+    restrictionEntries[4] = { _T("近接が必殺だ！武器で殴って場外へ！"),   _T("素手じゃ倒せない 武器で殴るんだ"),             _T("素手よりも武器のほうが飛ぶぞ！") };
     restrictionEntries[5] = { _T("杖ばっか降ってくるぞ！"),               _T("降ってくる武器が杖だけになる"),                _T("まれに暴走した杖が混ざるかも…") };
     restrictionEntries[6] = { _T("ブーメランばっか降ってくるぞ！"),       _T("降ってくる武器がブーメランだけになる"),        _T("自分に当たらないように気をつけろ！") };
     restrictionEntries[7] = { _T("！マークが出たら攻撃だ！"),             _T("！マークが出たら攻撃を仕掛けよう"),           _T("マークが出てない時に攻撃したら負けだ") };
@@ -63,8 +63,10 @@ void SceneTutorial::Init(ImageManager& imgMgr_) {
     restrictionEntries[10] = { _T("横移動は連打しろ！"),                   _T("移動は連打しないといけない"),            _T("壁に触れたらダメな時があるから気を付けるべし") };
     restrictionEntries[11] = { _T("隕石が降ってくるぞ！"),                 _T("隕石が降ってきて当たると負けだ"),          _T("持っているピコハンを使って妨害だ") };
     restrictionEntries[12] = { _T("強いやつから逃げ切れ！"),               _T("片方がめっちゃ強くなる 逃げきれ！"),         _T("強い方は攻撃キーで突進ができるぞ") };
-    restrictionEntries[13] = { _T("地上で移動できないぞ！"),               _T("地面にいる間は横移動ができない"),             _T("ジャンプで移動するしかない") };
+    restrictionEntries[13] = { _T("床がツルツルで滑るぞ！"),               _T("地面が氷みたいに滑って急に止まれない"),       _T("勢い余って場外注意 早めに動くべし") };
     restrictionEntries[14] = { _T("なんか画面おかしくね？"),               _T("画面が終わるぞ 目を酷使するべし"),            _T("邪魔なものが飛び回るぞ") };
+    restrictionEntries[15] = { _T("分身が出現＋位置が入れ替わるぞ！"),   _T("分身に紛れつつ 時々2人の位置が入れ替わる"),   _T("どれが本体か見失うなよ！") };
+    restrictionEntries[16] = { _T("画面の真ん中へ引っ張られるぞ！"),       _T("放っておくと画面中央へ吸い寄せられる"),       _T("歩けば逆らえる 端を取るなら踏ん張れ") };
 }
 
 void SceneTutorial::Update() {
@@ -199,8 +201,8 @@ void SceneTutorial::Draw() {
         SetFontSize(24);
         for (int i = 0; i < RESTRICTION_ENTRY_COUNT; i++) {
             unsigned int color = (i == zukanIndex) ? GetColor(200, 50, 50) : GetColor(50, 50, 50);
-            DrawString(50, 60 + i * 54, _T("・"), color);
-            DrawString(90, 60 + i * 54, restrictionEntries[i].name, color);
+            DrawString(50, 55 + i * 48, _T("・"), color);
+            DrawString(90, 55 + i * 48, restrictionEntries[i].name, color);
         }
 
         // 右ページ 制限名を大きく

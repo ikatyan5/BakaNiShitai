@@ -50,8 +50,8 @@ private:
     static const int WEAPON_ENTRY_COUNT = 11;
     static const int ITEM_ENTRY_COUNT = 8;
 
-    static const int RESTRICTION_ENTRY_COUNT = 15;
-    RestrictionEntry restrictionEntries[15];
+    static const int RESTRICTION_ENTRY_COUNT = 17;
+    RestrictionEntry restrictionEntries[17];
     ZukanEntry weaponEntries[11];
     ZukanEntry itemEntries[8];
 };

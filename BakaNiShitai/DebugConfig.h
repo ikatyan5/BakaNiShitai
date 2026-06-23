@@ -13,7 +13,7 @@ const ItemType DBG_ITEM_TYPE = ITEM_POTION_RED;
 
 // 武器強制スポーン
 const bool DBG_FORCE_WEAPON = false;
-const WeaponType DBG_WEAPON_TYPE = WEAPON_HAMMER;
+const WeaponType DBG_WEAPON_TYPE = WEAPON_TENSAI_TSUE;
 
 // 制限強制適用
 const bool DBG_FORCE_RESTRICTION = false;
