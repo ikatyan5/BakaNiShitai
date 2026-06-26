@@ -20,9 +20,6 @@ namespace {
     class HoverJumpRestriction : public Restriction {
     public: const TCHAR* Name() const override { return _T("ジャンプ回数が無制限に！"); }
     };
-    class BounceRestriction : public Restriction {
-    public: const TCHAR* Name() const override { return _T("武器が跳ね回るぞ！"); }
-    };
     // 近接無双：武器近接で場外まで吹っ飛ばす。当たり判定の挙動は横断的なのでヒット処理側に残し、
     // ここでは「両プレイヤーに最初からシールドを配る」ラウンド準備だけを担当する。
     class MeleeMusouRestriction : public Restriction {
@@ -62,46 +59,38 @@ namespace {
         const TCHAR* Name() const override { return _T("画面がひっくり返るぞ！"); }
         void UpdatePlaying(SceneGame& g) override { g.UpdateScreenFlip(); }
     };
-    // 連打移動：横移動は連打式（Player側）。SceneGame側は「端に壁が出て、押し込まれたら場外負け」。
-    class MashMoveRestriction : public Restriction {
+    // 加速＋反射：プレイヤーの移動・ジャンプが時間で加速し、投げた武器は壁でランダムに跳ね回る。
+    // ラウンドは30秒のまま、20秒で最大倍率(3倍)に到達し、残り10秒は最高速を維持する。
+    // 武器の反射属性付与は SceneGame::ThrowWeapon 側（武器の投げ速度自体は加速させない）。
+    class AccelRestriction : public Restriction {
     public:
-        const TCHAR* Name() const override { return _T("横移動は連打しろ！"); }
+        const TCHAR* Name() const override { return _T("加速＆武器が跳ね回るぞ！"); }
 
         void OnRoundStart(SceneGame& g) override {
-            wallEndLeft = false;
-            wallEndRight = false;
-            wallEndTimer = 180 + rand() % 300;
+            elapsed = 0;
+            Apply(g, 1.0f); // 開始は等倍に戻しておく
         }
 
-        void UpdatePlaying(SceneGame& g) override {
-            if (wallEndTimer > 0) wallEndTimer--;
-            else {
-                int roll = rand() % 3;
-                wallEndLeft = (roll == 0 || roll == 2);
-                wallEndRight = (roll == 1 || roll == 2);
-                wallEndTimer = 180 + rand() % 240;
-            }
-            CheckWall(g, g.GetPlayer1(), 2);
-            CheckWall(g, g.GetPlayer2(), 1);
-        }
-
-        void DrawForeground(SceneGame& g) override {
-            unsigned int wallColor = GetColor(255, 0, 0);
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, 180);
-            if (wallEndLeft)  DrawBoxAA(0.0f, 0.0f, 50.0f, SCREEN_H, wallColor, TRUE);
-            if (wallEndRight) DrawBoxAA(1230.0f, 0.0f, SCREEN_W, SCREEN_H, wallColor, TRUE);
-            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+        void UpdateBeforePlayers(SceneGame& g) override {
+            const int   RAMP = 20 * 60;   // 20秒(1200フレーム)で最大倍率に到達
+            const float MAX_MULT = 3.0f;  // 最大3倍
+            if (elapsed < RAMP) elapsed++;
+            float t = (float)elapsed / RAMP;            // 0.0(開始)→1.0(20秒で頭打ち)
+            float mult = 1.0f + t * (MAX_MULT - 1.0f);  // 1.0倍→3.0倍へ線形
+            Apply(g, mult);
         }
 
     private:
-        bool wallEndLeft = false;
-        bool wallEndRight = false;
-        int wallEndTimer = 0;
+        int elapsed = 0;
 
-        // 壁が出てる端に押し込まれたら場外負け
-        void CheckWall(SceneGame& g, Player& player, int winnerID) {
-            if (wallEndLeft && player.x < 80.0f) g.EnterHitState(winnerID == 2, true);
-            if (wallEndRight && player.x > 1250.0f) g.EnterHitState(winnerID == 2, true);
+        // 移動速度・ジャンプ力を基準値×倍率で設定。倍率は武器投げにも使うので保持する。
+        void Apply(SceneGame& g, float mult) {
+            Player* ps[2] = { &g.GetPlayer1(), &g.GetPlayer2() };
+            for (Player* p : ps) {
+                p->accelMult = mult;
+                p->moveSpeed = 5.0f * mult;        // Player::Init の基準値 5.0 に合わせる
+                p->jumpPower = JUMP_POWER * mult;  // Config.h の基準ジャンプ初速
+            }
         }
     };
     class MeteorRestriction : public Restriction {
@@ -162,9 +151,13 @@ namespace {
         void Draw(SceneGame& g) override {
             Player* owners[2] = { &g.GetPlayer1(), &g.GetPlayer2() };
             ImageManager& img = g.GetImageManager();
-            for (int s = 0; s < 2; s++)
+            for (int s = 0; s < 2; s++) {
+                // 本体が武器を持っている間だけ、分身も武器を見せる（投げて手ぶらになったら消える）
+                bool showWeapon = (owners[s]->holdingWeaponIndex != -1);
                 for (int i = 0; i < DECOY_COUNT; i++)
-                    owners[s]->DrawDecoy(decoys[s][i].x, decoys[s][i].y, decoys[s][i].faceRight, img);
+                    owners[s]->DrawDecoy(decoys[s][i].x, decoys[s][i].y, decoys[s][i].faceRight,
+                                         decoys[s][i].weaponType, showWeapon, img);
+            }
         }
 
     private:
@@ -174,6 +167,7 @@ namespace {
             int moveSign;    // 進む向き（+1=右 / -1=左）
             float jumpScale; // ジャンプの高さ倍率（個体差でバラバラに見せる）
             bool faceRight;  // 向き
+            int weaponType;  // この分身が持つ武器（ラウンド開始時に抽選して固定。見た目だけ）
         };
         Decoy decoys[2][DECOY_COUNT];
         float groundY[2] = { 0.0f, 0.0f }; // 各本体の地面基準
@@ -190,6 +184,7 @@ namespace {
                 arr[i].moveSign = (rand() % 2 == 0) ? 1 : -1;
                 arr[i].jumpScale = 0.65f + (float)(rand() % 66) / 100.0f; // 0.65〜1.30倍
                 arr[i].faceRight = (arr[i].moveSign > 0);
+                arr[i].weaponType = rand() % WEAPON_TYPE_MAX; // 本体と無関係にバラバラの武器を固定
             }
         }
 
@@ -233,14 +228,13 @@ Restriction* CreateRestriction(RestrictionType type) {
     switch (type) {
     case REST_GRAVITY_ZERO:    return new GravityZeroRestriction();
     case REST_HOVER_JUMP:      return new HoverJumpRestriction();
-    case REST_BOUND:           return new BounceRestriction();
     case REST_MELEE_MUSOU:     return new MeleeMusouRestriction();
     case REST_STICK_ONLY:      return new StickOnlyRestriction();
     case REST_BOOMERANG_ONLY:  return new BoomerangOnlyRestriction();
     case REST_SETSUNA:         return new SetsunaRestriction();
     case REST_GRAVITY_INSANE:  return new GravityInsaneRestriction();
     case REST_SCREEN_FLIP:     return new ScreenFlipRestriction();
-    case REST_MASH_MOVE:       return new MashMoveRestriction();
+    case REST_ACCEL:           return new AccelRestriction();
     case REST_METEOR:          return new MeteorRestriction();
     case REST_HYPETSUYOI:      return new HyperTsuyoiRestriction();
     case REST_ICE_FLOOR:       return new IceFloorRestriction();

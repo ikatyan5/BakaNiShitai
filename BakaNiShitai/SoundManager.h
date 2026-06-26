@@ -7,7 +7,7 @@
 class SoundManager {
 public:
     int hit;          // 攻撃を当てた時
-    int explosion;    // 赤ポーションが爆発した時
+    int explosion;    // 赤ポーションで爆発した時
     int pickup;       // アイテムを拾った時
     int mementoMori;  // メメントモリを撃った時
     int menu;         // メニューのカーソル移動

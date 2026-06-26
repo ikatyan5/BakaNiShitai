@@ -7,14 +7,13 @@ enum RestrictionType {
     REST_NONE,
     REST_GRAVITY_ZERO,        // 〇 重力ゼロ
     REST_HOVER_JUMP,          // 〇 ホバリングジャンプ
-    REST_BOUND,               // 〇 反射（投げた武器が壁でランダムに跳ね回る）
     REST_MELEE_MUSOU,         // 〇 近接無双（武器近接で場外まで吹っ飛ばす＋最初からシールド）
     REST_STICK_ONLY,          // 〇 杖だけ
     REST_BOOMERANG_ONLY,      // 〇 ブーメランだけ
     REST_SETSUNA,             // 〇 刹那の見切り
     REST_GRAVITY_INSANE,      // 〇 重力ランダム
     REST_SCREEN_FLIP,         // 〇 画面上下反転
-    REST_MASH_MOVE,           // 〇 連打移動
+    REST_ACCEL,               // 〇 加速＋反射（移動・ジャンプが時間で加速＋投げた武器が跳ね回る）
     REST_METEOR,              // 〇 隕石避けモード
     REST_HYPETSUYOI,          // 〇 ハイパー強いモード
     REST_ICE_FLOOR,           // 〇 氷の床（地上がツルツル滑る慣性移動）

@@ -461,11 +461,17 @@ void SceneGame::ThrowWeapon(Player& player, int ownerID) {
             else if (gravityInsaneLevel == 4) weapons[idx].vy = 10.0f;  // ほぼ飛ばない
         }
 
-        // REST_BOUND：水平一直線をやめ、上下ランダム初速＋跳ね返り属性を付ける
-        if (restrictionManager.IsActive(REST_BOUND)) {
+        // REST_ACCEL（加速＋反射）：投げた武器に跳ね返り属性を付ける。
+        // 上下ランダム初速で水平一直線をやめ、壁でランダムに散る。
+        // 武器の投げ速度自体は加速させない（超高速反射は理不尽なので、加速はプレイヤーだけ）。
+        if (restrictionManager.IsActive(REST_ACCEL)) {
             weapons[idx].bouncing = true;
             weapons[idx].bounceCount = 4;     // 反射回数の寿命
             weapons[idx].throwGravity = 0.0f; // 重力なしでまっすぐ→壁でランダムに散る
+            // 武器の投げ速度はプレイヤーより控えめに加速させる。
+            // プレイヤーの倍率(最大3.0)の増加分を1/4に圧縮＝武器は最大1.5倍まで。
+            float weaponMult = 1.0f + (player.accelMult - 1.0f) * 0.25f;
+            weapons[idx].vx *= weaponMult;
             float kick = fabsf(weapons[idx].vx) * 0.8f;
             weapons[idx].vy = (((rand() % 1000) / 1000.0f) - 0.5f) * 2.0f * kick; // ±kick
         }
@@ -587,9 +593,6 @@ void SceneGame::SpawnWeapon()
 
                     if (restrictionManager.IsActive(REST_STICK_ONLY)) {
                         type = (rand() % 10 == 0) ? WEAPON_TENSAI_TSUE : WEAPON_STICK;
-                    }
-                    else if (restrictionManager.IsActive(REST_MASH_MOVE)) {
-                        type = WEAPON_BOOMERANG;
                     }
                     else if (restrictionManager.IsActive(REST_BOOMERANG_ONLY)) {
                         type = WEAPON_BOOMERANG;

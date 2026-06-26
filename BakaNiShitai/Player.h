@@ -46,6 +46,7 @@ public:
 	bool useGamepad; // trueならコントローラー入力を使う
 	int padID;       // DX_INPUT_PAD1 or DX_INPUT_PAD2
 	int gravityInsaneLevel; // REST_GRAVITY_INSANEの重力段階
+	float accelMult;        // REST_ACCEL：時間で上がる加速倍率（移動・ジャンプ・投げに使う）
 	int reverseTimer; // 操作反転タイマー
 	int tensaiAnimTimer;
 	void EnterStun();   // スタン開始
@@ -79,7 +80,7 @@ public:
 	void ApplyGravity(const RestrictionManager& restrictions);
 	void Draw(Weapon* weapons, ImageManager& imgMgr);
 	// 分身用：指定座標に「体だけ」を描く。画像・アニメ・黄色状態は本体に追従し、向きだけ引数で渡す。
-	void DrawDecoy(float dx, float dy, bool faceRight, ImageManager& imgMgr);
+	void DrawDecoy(float dx, float dy, bool faceRight, int weaponType, bool showWeapon, ImageManager& imgMgr);
 	void SwapImageWith(Player& other);
 private:
 	int playerImage[7];
@@ -92,7 +93,5 @@ private:
 	bool prevLeftKey;
 	bool prevRightKey;
 
-	int mashCount;		// 連打カウント
-	int mashDecay;		// カウントが減るまでのタイマー
 	int airTime;		// 空中にいたフレーム数
 };

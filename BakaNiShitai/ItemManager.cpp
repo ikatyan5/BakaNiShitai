@@ -97,9 +97,6 @@ void ItemManager::Draw() {
 
 // 現在の妨害に応じて降ってくるアイテムの種類を決める。デバッグ用と本番用で共通の唯一の窓口。
 ItemType ItemManager::SelectItemType(const RestrictionManager& restrictions) {
-    if (restrictions.IsActive(REST_MASH_MOVE)) {
-        return (rand() % 2 == 0) ? ITEM_BANANA : ITEM_KINOKO;
-    }
     if (restrictions.IsActive(REST_METEOR)) {
         // 赤ポーション除外
         int roll = rand() % 4;

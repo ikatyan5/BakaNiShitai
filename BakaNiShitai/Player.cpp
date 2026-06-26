@@ -36,8 +36,6 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	isReadyThrow = false;
 	isGlowing = false;
 	canAttack = true;
-	mashCount = 0;
-	mashDecay = 0;
 	airTime = 0;
 	stanTimer = 0;
 	isStunned = false;
@@ -46,6 +44,7 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	dashAttack = false;
 	useGamepad = false;
 	reverseTimer = 0;
+	accelMult = 1.0f;
 	tensaiAnimTimer = 0;
 	knockbackCount = 0;
 	knockbackDecayTimer = 0;
@@ -161,44 +160,7 @@ void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons
 		return;
 	}
 
-	bool mashMove = restrictions.IsActive(REST_MASH_MOVE);
-
-	if (mashMove) {
-		vx *= 0.95f;
-
-		bool leftKey, rightKey;
-		if (useGamepad) {
-			int pad = GetJoypadInputState(padID);
-			int stickX = 0, stickY = 0;
-			GetJoypadAnalogInput(&stickX, &stickY, padID);
-			leftKey = (pad & PAD_INPUT_LEFT) || stickX < -500;
-			rightKey = (pad & PAD_INPUT_RIGHT) || stickX > 500;
-		}
-		else if (PlayerID == 1) {
-			leftKey = CheckHitKey(KEY_INPUT_A);
-			rightKey = CheckHitKey(KEY_INPUT_D);
-		}
-		else {
-			leftKey = CheckHitKey(KEY_INPUT_LEFT);
-			rightKey = CheckHitKey(KEY_INPUT_RIGHT);
-		}
-
-		if (reverseTimer > 0) std::swap(leftKey, rightKey);
-
-		if (leftKey && !prevLeftKey) {
-			float randomSpeed = (float)(rand() % 20 + 1);
-			vx -= randomSpeed;
-			facingRight = false;
-		}
-		if (rightKey && !prevRightKey) {
-			float randomSpeed = (float)(rand() % 20 + 1);
-			vx += randomSpeed;
-			facingRight = true;
-		}
-		prevLeftKey = leftKey;
-		prevRightKey = rightKey;
-	}
-	else {
+	{
 		vx = 0;
 		bool leftKey, rightKey, upKey, downKey;
 
@@ -624,7 +586,7 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 #endif
 }
 
-void Player::DrawDecoy(float dx, float dy, bool faceRight, ImageManager& imgMgr) {
+void Player::DrawDecoy(float dx, float dy, bool faceRight, int weaponType, bool showWeapon, ImageManager& imgMgr) {
 	// 本体の Draw から「体の絵」部分だけを抜き出したもの。
 	// 画像(playerImage/playerGlowImage)とアニメ枚数(animFrame)は本体に追従するので、
 	// 黄ポーション中は本体ごと分身も黄色く光る。向きだけ引数で個別に渡す。
@@ -636,6 +598,14 @@ void Player::DrawDecoy(float dx, float dy, bool faceRight, ImageManager& imgMgr)
 	}
 	else {
 		DrawExtendGraphF(drawX + 96, drawY, drawX, drawY + 128, drawImage[animFrame], TRUE);
+	}
+	// 本体が武器を持っている間だけ、分身も自分の固定武器を手元に描く（本体が投げて手ぶらになったら消える）。
+	// 当たり判定は持たない、あくまで見た目だけ。位置は本体の「通常持ち」を流用（構え・攻撃の特殊位置は省略）。
+	if (showWeapon) {
+		float wx = faceRight ? dx + 60.0f : dx - 60.0f;
+		float wy = dy - 64.0f;
+		if (animFrame == 1) wy -= 60.0f; // 歩きの上下動に合わせる
+		DrawRotaGraphF(wx, wy, 1.5, 0.0f, imgMgr.weaponImages[weaponType], TRUE, !faceRight);
 	}
 }
 

@@ -13,9 +13,9 @@ const ItemType DBG_ITEM_TYPE = ITEM_POTION_RED;
 
 // 武器強制スポーン
 const bool DBG_FORCE_WEAPON = false;
-const WeaponType DBG_WEAPON_TYPE = WEAPON_TENSAI_TSUE;
+const WeaponType DBG_WEAPON_TYPE = WEAPON_BOOMERANG;
 
 // 制限強制適用
 const bool DBG_FORCE_RESTRICTION = true;
-const RestrictionType DBG_RESTRICTION_TYPE = REST_BOUND;
+const RestrictionType DBG_RESTRICTION_TYPE = REST_SWAP;
 #endif
