@@ -6,6 +6,8 @@
 
 class Player;
 
+// 隕石避けモードの隕石たちを、まとめて湧かせ・動かし・当たり判定する係。
+
 class MeteorManager {
 public:
     void Init(SoundManager& sndMgr);

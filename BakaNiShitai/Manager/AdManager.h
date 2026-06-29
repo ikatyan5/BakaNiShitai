@@ -2,6 +2,8 @@
 #include "DxLib.h"
 #include "ImageManager.h"
 
+// 広告（アド）を画面に湧かせて動かす演出を管理する係
+
 class AdManager {
 public:
     void Init(ImageManager& imgMgr);

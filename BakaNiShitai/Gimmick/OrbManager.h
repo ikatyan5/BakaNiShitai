@@ -7,6 +7,8 @@ class Player;
 
 const int ORB_MAX = 10;
 
+// 杖から出るオーブをまとめて管理する係（発射・更新・当たり判定）
+
 class OrbManager {
 public:
     void Init(ImageManager& imgMgr);

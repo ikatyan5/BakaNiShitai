@@ -2,6 +2,9 @@
 #include "DxLib.h"
 #include "WeaponConfig.h"
 
+// 画像をまとめて読み込んで持っておくクラス
+// main で1回だけ読み込み、全体で使い回す（SoundManagerの画像版）
+
 class ImageManager {
 public:
     // プレイヤー画像

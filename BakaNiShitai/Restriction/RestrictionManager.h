@@ -5,6 +5,9 @@
 
 const int RESTRICTION_MAX = 3; // 同時にかかる制限の最大数
 
+// いま発生している妨害(Restriction)を1つ持つ係
+// ランダム抽選と「同じ試合では二度出さない」履歴の管理を担当する
+
 class RestrictionManager {
 public:
     RestrictionType active[RESTRICTION_MAX];

@@ -4,6 +4,8 @@
 
 class Player;
 
+// 杖から撃ち出される弾（オーブ）1発ぶん。飛んで、当たり判定とパリィ判定を持つ
+
 class Orb {
 public:
     float x, y;
