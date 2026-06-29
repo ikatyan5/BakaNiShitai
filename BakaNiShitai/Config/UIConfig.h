@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+// UIの見た目の数値。HPバーやスコア表示の大きさ・位置をまとめる
+
 // HPバー
 const float UI_HP_W = 400.0f;
 const float UI_HP_H = 180.0f;

@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+// 武器の種類(WeaponType)と、その性能をまとめた WeaponData の定義
+
 enum WeaponType {
     WEAPON_KAMA,
     WEAPON_KONBOU,
@@ -42,5 +44,5 @@ const WeaponData WEAPON_DATA[] = {
       { 20.0f,  20.0f, 1.5f,  true,     0,     10.0f,      7,      20.0f,   60.0f, 20,     4  }, // MEMENTO_MORI
       { 100.0f, 80.0f, 1.5f,  true,     0,     10.0f,      7,      20.0f,   60.0f,  7,     4  }, // PIKOHAN
       { 60.0f, 100.0f, 1.5f,  true,     1,     10.0f,      7,      60.0f,  100.0f,  8,     6  }, // TENSAI_TSUE
-      // これから武器が増えたらここに追加する！
+      // これから武器が増えたらここに追加
 };
