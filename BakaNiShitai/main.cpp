@@ -49,8 +49,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     ChangeWindowMode(TRUE);
     SetGraphMode(SCREEN_W, SCREEN_H, 32);
     if (DxLib_Init() == -1) return -1;
-    int padNum = GetJoypadNum();
-    //printfDx(_T("接続パッド数=%d\n"), padNum);
     SetBackgroundColor(135, 206, 235);
     SetWaitVSyncFlag(TRUE);
     SetMainWindowText("君たちを\"バカ\"にしたい");
