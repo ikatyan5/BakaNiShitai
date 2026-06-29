@@ -90,8 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories> .\プロジェクトに追加すべきファイル_VC用
- </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Scene;Player;Weapon;Item;Restriction;Gimmick;Stage;Manager;Config;.\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -106,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.\プロジェクトに追加すべきファイル_VC用</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Scene;Player;Weapon;Item;Restriction;Gimmick;Stage;Manager;Config;.\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -122,8 +121,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories> .\プロジェクトに追加すべきファイル_VC用
- </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Scene;Player;Weapon;Item;Restriction;Gimmick;Stage;Manager;Config;.\プロジェクトに追加すべきファイル_VC用;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -134,69 +132,69 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AdManager.cpp" />
-    <ClCompile Include="ImageManager.cpp" />
-    <ClCompile Include="Item.cpp" />
-    <ClCompile Include="ItemBanana.cpp" />
-    <ClCompile Include="ItemHankachi.cpp" />
-    <ClCompile Include="ItemKinoko.cpp" />
-    <ClCompile Include="ItemManager.cpp" />
-    <ClCompile Include="ItemPotionBlue.cpp" />
-    <ClCompile Include="ItemPotionPurple.cpp" />
-    <ClCompile Include="ItemPotionRed.cpp" />
-    <ClCompile Include="ItemPotionYellow.cpp" />
+    <ClCompile Include="Manager\AdManager.cpp" />
+    <ClCompile Include="Manager\ImageManager.cpp" />
+    <ClCompile Include="Item\Item.cpp" />
+    <ClCompile Include="Item\ItemBanana.cpp" />
+    <ClCompile Include="Item\ItemHankachi.cpp" />
+    <ClCompile Include="Item\ItemKinoko.cpp" />
+    <ClCompile Include="Item\ItemManager.cpp" />
+    <ClCompile Include="Item\ItemPotionBlue.cpp" />
+    <ClCompile Include="Item\ItemPotionPurple.cpp" />
+    <ClCompile Include="Item\ItemPotionRed.cpp" />
+    <ClCompile Include="Item\ItemPotionYellow.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Meteor.cpp" />
-    <ClCompile Include="MeteorManager.cpp" />
-    <ClCompile Include="Orb.cpp" />
-    <ClCompile Include="OrbManager.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Restriction.cpp" />
-    <ClCompile Include="RestrictionManager.cpp" />
-    <ClCompile Include="SceneGame.cpp" />
-    <ClCompile Include="SceneMenu.cpp" />
-    <ClCompile Include="SceneSettings.cpp" />
-    <ClCompile Include="SceneTitle.cpp" />
-    <ClCompile Include="SceneTutorial.cpp" />
-    <ClCompile Include="SoundManager.cpp" />
-    <ClCompile Include="Stage.cpp" />
-    <ClCompile Include="Weapon.cpp" />
+    <ClCompile Include="Gimmick\Meteor.cpp" />
+    <ClCompile Include="Gimmick\MeteorManager.cpp" />
+    <ClCompile Include="Gimmick\Orb.cpp" />
+    <ClCompile Include="Gimmick\OrbManager.cpp" />
+    <ClCompile Include="Player\Player.cpp" />
+    <ClCompile Include="Restriction\Restriction.cpp" />
+    <ClCompile Include="Restriction\RestrictionManager.cpp" />
+    <ClCompile Include="Scene\SceneGame.cpp" />
+    <ClCompile Include="Scene\SceneMenu.cpp" />
+    <ClCompile Include="Scene\SceneSettings.cpp" />
+    <ClCompile Include="Scene\SceneTitle.cpp" />
+    <ClCompile Include="Scene\SceneTutorial.cpp" />
+    <ClCompile Include="Manager\SoundManager.cpp" />
+    <ClCompile Include="Stage\Stage.cpp" />
+    <ClCompile Include="Weapon\Weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AdManager.h" />
-    <ClInclude Include="BaseScene.h" />
-    <ClInclude Include="Config.h" />
-    <ClInclude Include="DebugConfig.h" />
-    <ClInclude Include="GameSettings.h" />
-    <ClInclude Include="ImageManager.h" />
-    <ClInclude Include="Item.h" />
-    <ClInclude Include="ItemBanana.h" />
-    <ClInclude Include="ItemHankachi.h" />
-    <ClInclude Include="ItemKinoko.h" />
-    <ClInclude Include="ItemManager.h" />
-    <ClInclude Include="ItemPotionBlue.h" />
-    <ClInclude Include="ItemPotionPurple.h" />
-    <ClInclude Include="ItemPotionRed.h" />
-    <ClInclude Include="ItemPotionYellow.h" />
-    <ClInclude Include="Meteor.h" />
-    <ClInclude Include="MeteorManager.h" />
-    <ClInclude Include="Orb.h" />
-    <ClInclude Include="OrbManager.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Restriction.h" />
-    <ClInclude Include="RestrictionConfig.h" />
-    <ClInclude Include="RestrictionManager.h" />
-    <ClInclude Include="SceneGame.h" />
-    <ClInclude Include="SceneID.h" />
-    <ClInclude Include="SceneMenu.h" />
-    <ClInclude Include="SceneSettings.h" />
-    <ClInclude Include="SceneTitle.h" />
-    <ClInclude Include="SceneTutorial.h" />
-    <ClInclude Include="SoundManager.h" />
-    <ClInclude Include="Stage.h" />
-    <ClInclude Include="UIConfig.h" />
-    <ClInclude Include="Weapon.h" />
-    <ClInclude Include="WeaponConfig.h" />
+    <ClInclude Include="Manager\AdManager.h" />
+    <ClInclude Include="Scene\BaseScene.h" />
+    <ClInclude Include="Config\Config.h" />
+    <ClInclude Include="Config\DebugConfig.h" />
+    <ClInclude Include="Config\GameSettings.h" />
+    <ClInclude Include="Manager\ImageManager.h" />
+    <ClInclude Include="Item\Item.h" />
+    <ClInclude Include="Item\ItemBanana.h" />
+    <ClInclude Include="Item\ItemHankachi.h" />
+    <ClInclude Include="Item\ItemKinoko.h" />
+    <ClInclude Include="Item\ItemManager.h" />
+    <ClInclude Include="Item\ItemPotionBlue.h" />
+    <ClInclude Include="Item\ItemPotionPurple.h" />
+    <ClInclude Include="Item\ItemPotionRed.h" />
+    <ClInclude Include="Item\ItemPotionYellow.h" />
+    <ClInclude Include="Gimmick\Meteor.h" />
+    <ClInclude Include="Gimmick\MeteorManager.h" />
+    <ClInclude Include="Gimmick\Orb.h" />
+    <ClInclude Include="Gimmick\OrbManager.h" />
+    <ClInclude Include="Player\Player.h" />
+    <ClInclude Include="Restriction\Restriction.h" />
+    <ClInclude Include="Restriction\RestrictionConfig.h" />
+    <ClInclude Include="Restriction\RestrictionManager.h" />
+    <ClInclude Include="Scene\SceneGame.h" />
+    <ClInclude Include="Scene\SceneID.h" />
+    <ClInclude Include="Scene\SceneMenu.h" />
+    <ClInclude Include="Scene\SceneSettings.h" />
+    <ClInclude Include="Scene\SceneTitle.h" />
+    <ClInclude Include="Scene\SceneTutorial.h" />
+    <ClInclude Include="Manager\SoundManager.h" />
+    <ClInclude Include="Stage\Stage.h" />
+    <ClInclude Include="Config\UIConfig.h" />
+    <ClInclude Include="Weapon\Weapon.h" />
+    <ClInclude Include="Weapon\WeaponConfig.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

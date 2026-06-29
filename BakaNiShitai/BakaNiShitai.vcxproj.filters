@@ -1,219 +1,217 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="ソース ファイル">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{a1111111-1111-4111-8111-111111111111}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Player">
+      <UniqueIdentifier>{a2222222-2222-4222-8222-222222222222}</UniqueIdentifier>
     </Filter>
-    <Filter Include="リソース ファイル">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Weapon">
+      <UniqueIdentifier>{a3333333-3333-4333-8333-333333333333}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Item">
-      <UniqueIdentifier>{469b8d13-f6d5-49bb-854e-9f29066fb7db}</UniqueIdentifier>
+    <Filter Include="Item">
+      <UniqueIdentifier>{a4444444-4444-4444-8444-444444444444}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\Item">
-      <UniqueIdentifier>{d805a2cc-540a-4c8d-9bec-102f2fa0925b}</UniqueIdentifier>
+    <Filter Include="Restriction">
+      <UniqueIdentifier>{a5555555-5555-4555-8555-555555555555}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\Config">
-      <UniqueIdentifier>{5f8f31a4-627a-41ee-a8d9-9df7fe4f12c8}</UniqueIdentifier>
+    <Filter Include="Gimmick">
+      <UniqueIdentifier>{a6666666-6666-4666-8666-666666666666}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Scene">
-      <UniqueIdentifier>{ac6b957b-d9dc-417e-a85d-96bcd01b856b}</UniqueIdentifier>
+    <Filter Include="Stage">
+      <UniqueIdentifier>{a7777777-7777-4777-8777-777777777777}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\Scene">
-      <UniqueIdentifier>{19141380-9d19-46cd-9916-19c5eee8799d}</UniqueIdentifier>
+    <Filter Include="Manager">
+      <UniqueIdentifier>{a8888888-8888-4888-8888-888888888888}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{a9999999-9999-4999-8999-999999999999}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Scene\SceneGame.cpp">
+      <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Scene\SceneMenu.cpp">
+      <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Weapon.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Scene\SceneSettings.cpp">
+      <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="ImageManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Scene\SceneTitle.cpp">
+      <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Stage.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Scene\SceneTutorial.cpp">
+      <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="ItemPotionBlue.cpp">
-      <Filter>ソース ファイル\Item</Filter>
+    <ClCompile Include="Player\Player.cpp">
+      <Filter>Player</Filter>
     </ClCompile>
-    <ClCompile Include="ItemPotionRed.cpp">
-      <Filter>ソース ファイル\Item</Filter>
+    <ClCompile Include="Weapon\Weapon.cpp">
+      <Filter>Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="ItemPotionPurple.cpp">
-      <Filter>ソース ファイル\Item</Filter>
+    <ClCompile Include="Item\Item.cpp">
+      <Filter>Item</Filter>
     </ClCompile>
-    <ClCompile Include="ItemManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Item\ItemBanana.cpp">
+      <Filter>Item</Filter>
     </ClCompile>
-    <ClCompile Include="Orb.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Item\ItemHankachi.cpp">
+      <Filter>Item</Filter>
     </ClCompile>
-    <ClCompile Include="OrbManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Item\ItemKinoko.cpp">
+      <Filter>Item</Filter>
     </ClCompile>
-    <ClCompile Include="ItemPotionYellow.cpp">
-      <Filter>ソース ファイル\Item</Filter>
+    <ClCompile Include="Item\ItemManager.cpp">
+      <Filter>Item</Filter>
     </ClCompile>
-    <ClCompile Include="ItemHankachi.cpp">
-      <Filter>ソース ファイル\Item</Filter>
+    <ClCompile Include="Item\ItemPotionBlue.cpp">
+      <Filter>Item</Filter>
     </ClCompile>
-    <ClCompile Include="Item.cpp">
-      <Filter>ソース ファイル\Item</Filter>
+    <ClCompile Include="Item\ItemPotionPurple.cpp">
+      <Filter>Item</Filter>
     </ClCompile>
-    <ClCompile Include="Restriction.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Item\ItemPotionRed.cpp">
+      <Filter>Item</Filter>
     </ClCompile>
-    <ClCompile Include="RestrictionManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Item\ItemPotionYellow.cpp">
+      <Filter>Item</Filter>
     </ClCompile>
-    <ClCompile Include="Meteor.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Restriction\Restriction.cpp">
+      <Filter>Restriction</Filter>
     </ClCompile>
-    <ClCompile Include="MeteorManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Restriction\RestrictionManager.cpp">
+      <Filter>Restriction</Filter>
     </ClCompile>
-    <ClCompile Include="SceneMenu.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
+    <ClCompile Include="Gimmick\Meteor.cpp">
+      <Filter>Gimmick</Filter>
     </ClCompile>
-    <ClCompile Include="SceneTitle.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
+    <ClCompile Include="Gimmick\MeteorManager.cpp">
+      <Filter>Gimmick</Filter>
     </ClCompile>
-    <ClCompile Include="SceneGame.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
+    <ClCompile Include="Gimmick\Orb.cpp">
+      <Filter>Gimmick</Filter>
     </ClCompile>
-    <ClCompile Include="AdManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Gimmick\OrbManager.cpp">
+      <Filter>Gimmick</Filter>
     </ClCompile>
-    <ClCompile Include="ItemBanana.cpp">
-      <Filter>ソース ファイル\Item</Filter>
+    <ClCompile Include="Stage\Stage.cpp">
+      <Filter>Stage</Filter>
     </ClCompile>
-    <ClCompile Include="ItemKinoko.cpp">
-      <Filter>ソース ファイル\Item</Filter>
+    <ClCompile Include="Manager\AdManager.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="SceneSettings.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
+    <ClCompile Include="Manager\ImageManager.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="SoundManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneTutorial.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
+    <ClCompile Include="Manager\SoundManager.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Player.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Scene\BaseScene.h">
+      <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Weapon.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Scene\SceneID.h">
+      <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="ImageManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Scene\SceneGame.h">
+      <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Stage.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Scene\SceneMenu.h">
+      <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="ItemPotionBlue.h">
-      <Filter>ヘッダー ファイル\Item</Filter>
+    <ClInclude Include="Scene\SceneSettings.h">
+      <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="ItemPotionRed.h">
-      <Filter>ヘッダー ファイル\Item</Filter>
+    <ClInclude Include="Scene\SceneTitle.h">
+      <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="ItemPotionPurple.h">
-      <Filter>ヘッダー ファイル\Item</Filter>
+    <ClInclude Include="Scene\SceneTutorial.h">
+      <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="ItemManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Player\Player.h">
+      <Filter>Player</Filter>
     </ClInclude>
-    <ClInclude Include="Orb.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Weapon\Weapon.h">
+      <Filter>Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="OrbManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Weapon\WeaponConfig.h">
+      <Filter>Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="ItemPotionYellow.h">
-      <Filter>ヘッダー ファイル\Item</Filter>
+    <ClInclude Include="Item\Item.h">
+      <Filter>Item</Filter>
     </ClInclude>
-    <ClInclude Include="ItemHankachi.h">
-      <Filter>ヘッダー ファイル\Item</Filter>
+    <ClInclude Include="Item\ItemBanana.h">
+      <Filter>Item</Filter>
     </ClInclude>
-    <ClInclude Include="Item.h">
-      <Filter>ヘッダー ファイル\Item</Filter>
+    <ClInclude Include="Item\ItemHankachi.h">
+      <Filter>Item</Filter>
     </ClInclude>
-    <ClInclude Include="Restriction.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Item\ItemKinoko.h">
+      <Filter>Item</Filter>
     </ClInclude>
-    <ClInclude Include="RestrictionManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Item\ItemManager.h">
+      <Filter>Item</Filter>
     </ClInclude>
-    <ClInclude Include="Config.h">
-      <Filter>ヘッダー ファイル\Config</Filter>
+    <ClInclude Include="Item\ItemPotionBlue.h">
+      <Filter>Item</Filter>
     </ClInclude>
-    <ClInclude Include="DebugConfig.h">
-      <Filter>ヘッダー ファイル\Config</Filter>
+    <ClInclude Include="Item\ItemPotionPurple.h">
+      <Filter>Item</Filter>
     </ClInclude>
-    <ClInclude Include="UIConfig.h">
-      <Filter>ヘッダー ファイル\Config</Filter>
+    <ClInclude Include="Item\ItemPotionRed.h">
+      <Filter>Item</Filter>
     </ClInclude>
-    <ClInclude Include="WeaponConfig.h">
-      <Filter>ヘッダー ファイル\Config</Filter>
+    <ClInclude Include="Item\ItemPotionYellow.h">
+      <Filter>Item</Filter>
     </ClInclude>
-    <ClInclude Include="Meteor.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Restriction\Restriction.h">
+      <Filter>Restriction</Filter>
     </ClInclude>
-    <ClInclude Include="MeteorManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Restriction\RestrictionConfig.h">
+      <Filter>Restriction</Filter>
     </ClInclude>
-    <ClInclude Include="BaseScene.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
+    <ClInclude Include="Restriction\RestrictionManager.h">
+      <Filter>Restriction</Filter>
     </ClInclude>
-    <ClInclude Include="SceneMenu.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
+    <ClInclude Include="Gimmick\Meteor.h">
+      <Filter>Gimmick</Filter>
     </ClInclude>
-    <ClInclude Include="SceneID.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
+    <ClInclude Include="Gimmick\MeteorManager.h">
+      <Filter>Gimmick</Filter>
     </ClInclude>
-    <ClInclude Include="SceneTitle.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
+    <ClInclude Include="Gimmick\Orb.h">
+      <Filter>Gimmick</Filter>
     </ClInclude>
-    <ClInclude Include="SceneGame.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
+    <ClInclude Include="Gimmick\OrbManager.h">
+      <Filter>Gimmick</Filter>
     </ClInclude>
-    <ClInclude Include="AdManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Stage\Stage.h">
+      <Filter>Stage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSettings.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Manager\AdManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="ItemBanana.h">
-      <Filter>ヘッダー ファイル\Item</Filter>
+    <ClInclude Include="Manager\ImageManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="ItemKinoko.h">
-      <Filter>ヘッダー ファイル\Item</Filter>
+    <ClInclude Include="Manager\SoundManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="RestrictionConfig.h">
-      <Filter>ヘッダー ファイル\Config</Filter>
+    <ClInclude Include="Config\Config.h">
+      <Filter>Config</Filter>
     </ClInclude>
-    <ClInclude Include="SceneSettings.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
+    <ClInclude Include="Config\DebugConfig.h">
+      <Filter>Config</Filter>
     </ClInclude>
-    <ClInclude Include="SoundManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Config\GameSettings.h">
+      <Filter>Config</Filter>
     </ClInclude>
-    <ClInclude Include="SceneTutorial.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
+    <ClInclude Include="Config\UIConfig.h">
+      <Filter>Config</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
