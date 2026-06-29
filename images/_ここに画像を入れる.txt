@@ -1,0 +1,2 @@
+README用のスクリーンショット置き場。
+ここに title.png（タイトル画面）と restriction.gif（妨害が起きている様子）を入れてください。
