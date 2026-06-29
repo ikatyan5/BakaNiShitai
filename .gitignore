@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # DxLibが起動時に自動生成する動作ログ
 Log.txt
+
+# ビルド時のコンパイルログ（作業ファイル）
+compile_log.txt
