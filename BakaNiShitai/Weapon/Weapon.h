@@ -3,6 +3,9 @@
 #include "WeaponConfig.h"
 #include "ImageManager.h"
 
+// 1本ぶんの武器 空から降り、拾われ、投げられて飛ぶ 
+// 種類ごとの性能（投げ速度・反射回数など）は WeaponConfig のテーブルから持ってくる
+
 class Weapon {
 public:
     float x, y;

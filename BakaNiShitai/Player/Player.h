@@ -5,23 +5,26 @@
 #include "ImageManager.h"
 #include "RestrictionManager.h"
 
+// 対戦キャラ1人ぶん 位置・速度・状態を持ち、移動・ジャンプ・攻撃・武器投げを担当する
+// 1P と 2P はこのクラスのインスタンスとして2つ作られる
+
 class Player
 {
 public:
-	float x, y;         // 位置
-	float vx, vy;       // 速度
-	float moveSpeed;	// 移動速度
-	float jumpPower;	// ジャンプの初速(デフォルトはJUMP_POWER)
-	bool onGround;      // 地面にいるか
-	bool attacking;     // 攻撃中か
-	int attackTimer;    // 攻撃判定の残りフレーム数
-	int PlayerID;       // プレイヤーID（1か2）
-	bool wantThrow;     // 武器を投げたいか
-	bool facingRight;   // 向いている方向
-	int winCount;       // 勝利数
-	int jumpCount; // 残りジャンプ回数
-	bool justJumped; // このフレームでジャンプしたか（音用。SceneGameが読んで戻す）
-	bool justBareAttacked; // このフレームで素手攻撃を出したか（音用。SceneGameが読んで戻す）
+	float x, y;				// 位置
+	float vx, vy;			// 速度
+	float moveSpeed;		// 移動速度
+	float jumpPower;		// ジャンプの初速(デフォルトはJUMP_POWER)
+	bool onGround;			// 地面にいるか
+	bool attacking;			// 攻撃中か
+	int attackTimer;		// 攻撃判定の残りフレーム数
+	int PlayerID;			// プレイヤーID（1か2）
+	bool wantThrow;			// 武器を投げたいか
+	bool facingRight;		// 向いている方向
+	int winCount;			// 勝利数
+	int jumpCount;			// 残りジャンプ回数
+	bool justJumped;		// このフレームでジャンプしたか（音用。SceneGameが読んで戻す）
+	bool justBareAttacked;	// このフレームで素手攻撃を出したか（音用。SceneGameが読んで戻す）
 	int holdingWeaponIndex; // 持ってる武器のインデックス（-1なら持ってない）
 	
 	bool isDashing;
