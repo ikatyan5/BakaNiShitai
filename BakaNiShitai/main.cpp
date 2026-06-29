@@ -11,31 +11,32 @@
 #include "SceneTutorial.h"
 #include "GameSettings.h"
 #include <ctime>
+#include <memory>
 
-BaseScene* CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings, SoundManager& sndMgr) {
+std::unique_ptr<BaseScene> CreateScene(SceneID id, ImageManager& imgMgr, GameSettings& settings, SoundManager& sndMgr) {
     switch (id) {
     case SCENE_TITLE: {
-        auto* s = new SceneTitle();
+        auto s = std::make_unique<SceneTitle>();
         s->Init(imgMgr, sndMgr);
         return s;
     }
     case SCENE_MENU: {
-        auto* s = new SceneMenu();
+        auto s = std::make_unique<SceneMenu>();
         s->Init(imgMgr, sndMgr);
         return s;
     }
     case SCENE_GAME: {
-        auto* s = new SceneGame();
+        auto s = std::make_unique<SceneGame>();
         s->Init(imgMgr, settings, sndMgr);
         return s;
     }
     case SCENE_SETTINGS: {
-        auto* s = new SceneSettings();
+        auto s = std::make_unique<SceneSettings>();
         s->Init(imgMgr,settings);
         return s;
     }
     case SCENE_TUTORIAL: {
-        auto* s = new SceneTutorial();
+        auto s = std::make_unique<SceneTutorial>();
         s->Init(imgMgr);
         return s;
     }
@@ -64,7 +65,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     SceneID currentID = SCENE_TITLE;
     GameSettings settings;
-    BaseScene* currentScene = CreateScene(currentID, imageManager, settings, soundManager);
+    std::unique_ptr<BaseScene> currentScene = CreateScene(currentID, imageManager, settings, soundManager);
 
     while (ProcessMessage() == 0) {
         LONGLONG start = GetNowHiPerformanceCount();
@@ -75,14 +76,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         SceneID next = currentScene->GetNextScene();
         if (next != SCENE_NONE) {
-            delete currentScene;
             currentID = next;
             currentScene = CreateScene(currentID, imageManager, settings, soundManager);
         }
         while (GetNowHiPerformanceCount() - start < 16667) {}
     }
 
-    delete currentScene;
     DxLib_End();
     return 0;
 }
