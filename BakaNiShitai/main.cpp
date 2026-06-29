@@ -52,7 +52,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     //printfDx(_T("接続パッド数=%d\n"), padNum);
     SetBackgroundColor(135, 206, 235);
     SetWaitVSyncFlag(TRUE);
-    SetMainWindowText(_T("君たちを\"バカ\"にしたい"));
+    SetMainWindowText("君たちを\"バカ\"にしたい");
     SetDrawScreen(DX_SCREEN_BACK);
     srand((unsigned int)time(NULL));
 

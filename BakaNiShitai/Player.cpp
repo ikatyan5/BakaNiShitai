@@ -550,7 +550,7 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 #ifdef _DEBUG
 
 	TCHAR kbBuf[8];
-	wsprintf(kbBuf, _T("x%d"), knockbackCount);
+	wsprintf(kbBuf, ("x%d"), knockbackCount);
 	DrawString((int)(x - 10), (int)(y - PLAYER_HIT_CY - 160), kbBuf, GetColor(255, 50, 50));
 
 	// プレイヤーの当たり判定（緑）

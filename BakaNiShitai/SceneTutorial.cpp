@@ -4,15 +4,15 @@
 #include "DxLib.h"
 
 static const TCHAR* TOP_ITEMS[] = {
-    _T("操作説明"),
-    _T("アイテム/武器"),
-    _T("各制限について"),
+    ("操作説明"),
+    ("アイテム/武器"),
+    ("各制限について"),
 };
 static const int TOP_COUNT = 3;
 
 static const TCHAR* ZUKAN_ITEMS[] = {
-    _T("武器"),
-    _T("アイテム"),
+    ("武器"),
+    ("アイテム"),
 };
 static const int ZUKAN_COUNT = 2;
 
@@ -27,45 +27,45 @@ void SceneTutorial::Init(ImageManager& imgMgr_) {
     animTimer = animFrame = 0;
 
     // 武器図鑑エントリ
-    weaponEntries[0] = { _T("鎌"),             imgMgr->weaponImages[WEAPON_KAMA],          _T("シンプルなカマ"), _T("特筆していうことはない") };
-    weaponEntries[1] = { _T("棍棒"),           imgMgr->weaponImages[WEAPON_KONBOU],        _T("スタンダードで使いやすい"), _T("はたき落とす回数が多めだ") };
-    weaponEntries[2] = { _T("剣"),             imgMgr->weaponImages[WEAPON_KEN],           _T("投げた時の速度が早め"), _T("振った時の判定は少し狭いから注意だ") };
-    weaponEntries[3] = { _T("銃"),             imgMgr->weaponImages[WEAPON_GUN],           _T("遠距離から攻撃できる..と思ったら大間違いだ"), _T("意外と振りが一番早い") };
-    weaponEntries[4] = { _T("箒"),             imgMgr->weaponImages[WEAPON_HOUKI],         _T("横に広い攻撃範囲がある") , _T("はたき落としがしやすい") };
-    weaponEntries[5] = { _T("ハンマー"),       imgMgr->weaponImages[WEAPON_HAMMER],        _T("重い一撃を放つことができるぞ") , _T("ジャンプしながら攻撃がおすすめ") };
-    weaponEntries[6] = { _T("杖"),             imgMgr->weaponImages[WEAPON_STICK],         _T("振ると魔法を一回撃てる") , _T("魔法は三種類 ランダムで放つぞ") };
-    weaponEntries[7] = { _T("ブーメラン"),     imgMgr->weaponImages[WEAPON_BOOMERANG],     _T("投げると戻ってくる 当たらないように") , _T("気を付けて投げるべし 当たったらダサいぞ") };
-    weaponEntries[8] = { _T("メメントモリ"),   imgMgr->weaponImages[WEAPON_MEMENTO_MORI],  _T("攻撃すると撃てる 外したら自分がやられる") , _T("覚悟を決めて撃つんだ") };
-    weaponEntries[9] = { _T("ピコハン"),       imgMgr->weaponImages[WEAPON_PIKOHAN],       _T("特定の制限でしか出ないぞ"), _T("当てるとスタン 近接の方がスタン時間が長い") };
-    weaponEntries[10] = { _T("テンサイノツエ"),imgMgr->weaponImages[WEAPON_TENSAI_TSUE],   _T("普通の杖に見えるが…?") , _T("拾うと何かしらで変化が起きているぞ") };
+    weaponEntries[0] = { ("鎌"),             imgMgr->weaponImages[WEAPON_KAMA],          ("シンプルなカマ"), ("特筆していうことはない") };
+    weaponEntries[1] = { ("棍棒"),           imgMgr->weaponImages[WEAPON_KONBOU],        ("スタンダードで使いやすい"), ("はたき落とす回数が多めだ") };
+    weaponEntries[2] = { ("剣"),             imgMgr->weaponImages[WEAPON_KEN],           ("投げた時の速度が早め"), ("振った時の判定は少し狭いから注意だ") };
+    weaponEntries[3] = { ("銃"),             imgMgr->weaponImages[WEAPON_GUN],           ("遠距離から攻撃できる..と思ったら大間違いだ"), ("意外と振りが一番早い") };
+    weaponEntries[4] = { ("箒"),             imgMgr->weaponImages[WEAPON_HOUKI],         ("横に広い攻撃範囲がある") , ("はたき落としがしやすい") };
+    weaponEntries[5] = { ("ハンマー"),       imgMgr->weaponImages[WEAPON_HAMMER],        ("重い一撃を放つことができるぞ") , ("ジャンプしながら攻撃がおすすめ") };
+    weaponEntries[6] = { ("杖"),             imgMgr->weaponImages[WEAPON_STICK],         ("振ると魔法を一回撃てる") , ("魔法は三種類 ランダムで放つぞ") };
+    weaponEntries[7] = { ("ブーメラン"),     imgMgr->weaponImages[WEAPON_BOOMERANG],     ("投げると戻ってくる 当たらないように") , ("気を付けて投げるべし 当たったらダサいぞ") };
+    weaponEntries[8] = { ("メメントモリ"),   imgMgr->weaponImages[WEAPON_MEMENTO_MORI],  ("攻撃すると撃てる 外したら自分がやられる") , ("覚悟を決めて撃つんだ") };
+    weaponEntries[9] = { ("ピコハン"),       imgMgr->weaponImages[WEAPON_PIKOHAN],       ("特定の制限でしか出ないぞ"), ("当てるとスタン 近接の方がスタン時間が長い") };
+    weaponEntries[10] = { ("テンサイノツエ"),imgMgr->weaponImages[WEAPON_TENSAI_TSUE],   ("普通の杖に見えるが…?") , ("拾うと何かしらで変化が起きているぞ") };
 
     // アイテム図鑑エントリ
-    itemEntries[0] = { _T("青ポーション"), imgMgr->potionBlue,   _T("拾うとジャンプ力が上がる"),  _T("場合によっては不利になるかも") };
-    itemEntries[1] = { _T("赤ポーション"), imgMgr->potionRed,    _T("拾った後少し経ったら爆発する"), _T("爆発にうまく巻き込めたら勝ちだ") };
-    itemEntries[2] = { _T("紫ポーション"), imgMgr->potionPurple, _T("拾うとランダムな位置にワープする") , _T("決して攻撃で使うものではない") };
-    itemEntries[3] = { _T("黄ポーション"), imgMgr->potionYellow, _T("拾うと色が変わる...") , _T("ほんとうにそれだけ ほんとに") };
-    itemEntries[4] = { _T("ハンカチ"),     imgMgr->hankachi,     _T("宝の地図に見えるハンカチ") , _T("拾うと少し操作が快適になる") };
-    itemEntries[5] = { _T("爆弾"),         imgMgr->bomb,         _T("アイテムとしては出ないので") , _T("安心してください") };
-    itemEntries[6] = { _T("バナナ"),       imgMgr->banana,       _T("拾うとスタンする"), _T("レアアイテムかもしれない") };
-    itemEntries[7] = { _T("毒キノコ"),     imgMgr->kinoko,       _T("拾うと移動が反転する"), _T("効果時間が短いから気を付けるべし") };
+    itemEntries[0] = { ("青ポーション"), imgMgr->potionBlue,   ("拾うとジャンプ力が上がる"),  ("場合によっては不利になるかも") };
+    itemEntries[1] = { ("赤ポーション"), imgMgr->potionRed,    ("拾った後少し経ったら爆発する"), ("爆発にうまく巻き込めたら勝ちだ") };
+    itemEntries[2] = { ("紫ポーション"), imgMgr->potionPurple, ("拾うとランダムな位置にワープする") , ("決して攻撃で使うものではない") };
+    itemEntries[3] = { ("黄ポーション"), imgMgr->potionYellow, ("拾うと色が変わる...") , ("ほんとうにそれだけ ほんとに") };
+    itemEntries[4] = { ("ハンカチ"),     imgMgr->hankachi,     ("宝の地図に見えるハンカチ") , ("拾うと少し操作が快適になる") };
+    itemEntries[5] = { ("爆弾"),         imgMgr->bomb,         ("アイテムとしては出ないので") , ("安心してください") };
+    itemEntries[6] = { ("バナナ"),       imgMgr->banana,       ("拾うとスタンする"), ("レアアイテムかもしれない") };
+    itemEntries[7] = { ("毒キノコ"),     imgMgr->kinoko,       ("拾うと移動が反転する"), ("効果時間が短いから気を付けるべし") };
 
 
-    restrictionEntries[0] = { _T("なにもなし！"),                        _T("制限なし！ガチ勝負だ"),                        _T("実力がそのまま出るぞ") };
-    restrictionEntries[1] = { _T("重力がなくなった！"),                   _T("ふわふわ浮いて動きが別物になる"),              _T("空中戦が得意なやつが有利かも") };
-    restrictionEntries[2] = { _T("ジャンプ回数が無制限に！"),             _T("何度でもジャンプできるぞ"),                    _T("空中をうまく使って立ち回ろう") };
-    restrictionEntries[3] = { _T("近接が必殺だ！武器で殴って場外へ！"),   _T("素手じゃ倒せない 武器で殴るんだ"),             _T("素手よりも武器のほうが飛ぶぞ！") };
-    restrictionEntries[4] = { _T("杖ばっか降ってくるぞ！"),               _T("降ってくる武器が杖だけになる"),                _T("まれに暴走した杖が混ざるかも…") };
-    restrictionEntries[5] = { _T("ブーメランばっか降ってくるぞ！"),       _T("降ってくる武器がブーメランだけになる"),        _T("自分に当たらないように気をつけろ！") };
-    restrictionEntries[6] = { _T("！マークが出たら攻撃だ！"),             _T("！マークが出たら攻撃を仕掛けよう"),           _T("マークが出てない時に攻撃したら負けだ") };
-    restrictionEntries[7] = { _T("重力がおかしくなったぞ！"),             _T("重力がランダムに変化し続ける"),                _T("とんでもないものまで落ちてくるぞ") };
-    restrictionEntries[8] = { _T("画面がひっくり返るぞ！"),               _T("色々なものが反転しまくるぞ"),                 _T("早くなれたほうが勝つぞ") };
-    restrictionEntries[9] = { _T("加速＆武器が跳ね回るぞ！"),             _T("時間で動きが加速 投げた武器は壁で跳ね回る"),   _T("自分は速く 武器はどこ飛ぶか読めない！") };
-    restrictionEntries[10] = { _T("隕石が降ってくるぞ！"),                 _T("隕石が降ってきて当たると負けだ"),          _T("持っているピコハンを使って妨害だ") };
-    restrictionEntries[11] = { _T("強いやつから逃げ切れ！"),               _T("片方がめっちゃ強くなる 逃げきれ！"),         _T("強い方は攻撃キーで突進ができるぞ") };
-    restrictionEntries[12] = { _T("床がツルツルで滑るぞ！"),               _T("地面が氷みたいに滑って急に止まれない"),       _T("勢い余って場外注意 早めに動くべし") };
-    restrictionEntries[13] = { _T("なんか画面おかしくね？"),               _T("画面が終わるぞ 目を酷使するべし"),            _T("邪魔なものが飛び回るぞ") };
-    restrictionEntries[14] = { _T("分身が出現＋位置が入れ替わるぞ！"),   _T("分身に紛れつつ 時々2人の位置が入れ替わる"),   _T("どれが本体か見失うなよ！") };
-    restrictionEntries[15] = { _T("画面の真ん中へ引っ張られるぞ！"),       _T("放っておくと画面中央へ吸い寄せられる"),       _T("歩けば逆らえる 端を取るなら踏ん張れ") };
+    restrictionEntries[0] = { ("なにもなし！"),                        ("制限なし！ガチ勝負だ"),                        ("実力がそのまま出るぞ") };
+    restrictionEntries[1] = { ("重力がなくなった！"),                   ("ふわふわ浮いて動きが別物になる"),              ("空中戦が得意なやつが有利かも") };
+    restrictionEntries[2] = { ("ジャンプ回数が無制限に！"),             ("何度でもジャンプできるぞ"),                    ("空中をうまく使って立ち回ろう") };
+    restrictionEntries[3] = { ("近接が必殺だ！武器で殴って場外へ！"),   ("素手じゃ倒せない 武器で殴るんだ"),             ("素手よりも武器のほうが飛ぶぞ！") };
+    restrictionEntries[4] = { ("杖ばっか降ってくるぞ！"),               ("降ってくる武器が杖だけになる"),                ("まれに暴走した杖が混ざるかも…") };
+    restrictionEntries[5] = { ("ブーメランばっか降ってくるぞ！"),       ("降ってくる武器がブーメランだけになる"),        ("自分に当たらないように気をつけろ！") };
+    restrictionEntries[6] = { ("！マークが出たら攻撃だ！"),             ("！マークが出たら攻撃を仕掛けよう"),           ("マークが出てない時に攻撃したら負けだ") };
+    restrictionEntries[7] = { ("重力がおかしくなったぞ！"),             ("重力がランダムに変化し続ける"),                ("とんでもないものまで落ちてくるぞ") };
+    restrictionEntries[8] = { ("画面がひっくり返るぞ！"),               ("色々なものが反転しまくるぞ"),                 ("早くなれたほうが勝つぞ") };
+    restrictionEntries[9] = { ("加速＆武器が跳ね回るぞ！"),             ("時間で動きが加速 投げた武器は壁で跳ね回る"),   ("自分は速く 武器はどこ飛ぶか読めない！") };
+    restrictionEntries[10] = { ("隕石が降ってくるぞ！"),                 ("隕石が降ってきて当たると負けだ"),          ("持っているピコハンを使って妨害だ") };
+    restrictionEntries[11] = { ("強いやつから逃げ切れ！"),               ("片方がめっちゃ強くなる 逃げきれ！"),         ("強い方は攻撃キーで突進ができるぞ") };
+    restrictionEntries[12] = { ("床がツルツルで滑るぞ！"),               ("地面が氷みたいに滑って急に止まれない"),       ("勢い余って場外注意 早めに動くべし") };
+    restrictionEntries[13] = { ("なんか画面おかしくね？"),               ("画面が終わるぞ 目を酷使するべし"),            ("邪魔なものが飛び回るぞ") };
+    restrictionEntries[14] = { ("分身が出現＋位置が入れ替わるぞ！"),   ("分身に紛れつつ 時々2人の位置が入れ替わる"),   ("どれが本体か見失うなよ！") };
+    restrictionEntries[15] = { ("画面の真ん中へ引っ張られるぞ！"),       ("放っておくと画面中央へ吸い寄せられる"),       ("歩けば逆らえる 端を取るなら踏ん張れ") };
 }
 
 void SceneTutorial::Update() {
@@ -143,7 +143,7 @@ void SceneTutorial::Draw() {
             DrawString((SCREEN_W - w) / 2, 280 + i * 120, items[i], color);
         }
         SetFontSize(24);
-        DrawString(40, 860, _T("ESC: 戻る"), GetColor(180, 180, 180));
+        DrawString(40, 860, ("ESC: 戻る"), GetColor(180, 180, 180));
         SetFontSize(16);
         break;
     }
@@ -159,7 +159,7 @@ void SceneTutorial::Draw() {
         SetFontSize(28);
         for (int i = 0; i < count; i++) {
             unsigned int color = (i == zukanIndex) ? GetColor(200, 50, 50) : GetColor(50, 50, 50);
-            DrawString(50, 80 + i * 70, _T("・"), color);
+            DrawString(50, 80 + i * 70, ("・"), color);
             DrawString(90, 80 + i * 70, entries[i].name, color);
         }
 
@@ -177,7 +177,7 @@ void SceneTutorial::Draw() {
         DrawString(690, 510, entries[zukanIndex].desc2, GetColor(80, 80, 80));
 
         SetFontSize(20);
-        DrawString(40, 880, _T("ESC: 戻る"), GetColor(100, 100, 100));
+        DrawString(40, 880, ("ESC: 戻る"), GetColor(100, 100, 100));
         SetFontSize(16);
         break;
     }
@@ -186,9 +186,9 @@ void SceneTutorial::Draw() {
         DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboard[animFrame], TRUE);
         // TODO: 操作説明は後で実装
         SetFontSize(36);
-        DrawString(100, 200, _T("操作説明"), GetColor(255, 255, 255));
+        DrawString(100, 200, ("操作説明"), GetColor(255, 255, 255));
         SetFontSize(24);
-        DrawString(40, 860, _T("ESC: 戻る"), GetColor(180, 180, 180));
+        DrawString(40, 860, ("ESC: 戻る"), GetColor(180, 180, 180));
         SetFontSize(16);
         break;
 
@@ -200,7 +200,7 @@ void SceneTutorial::Draw() {
         SetFontSize(24);
         for (int i = 0; i < RESTRICTION_ENTRY_COUNT; i++) {
             unsigned int color = (i == zukanIndex) ? GetColor(200, 50, 50) : GetColor(50, 50, 50);
-            DrawString(50, 55 + i * 48, _T("・"), color);
+            DrawString(50, 55 + i * 48, ("・"), color);
             DrawString(90, 55 + i * 48, restrictionEntries[i].name, color);
         }
 
@@ -215,7 +215,7 @@ void SceneTutorial::Draw() {
         DrawString(690, 355, restrictionEntries[zukanIndex].desc2, GetColor(80, 80, 80));
 
         SetFontSize(20);
-        DrawString(40, 880, _T("ESC: 戻る"), GetColor(100, 100, 100));
+        DrawString(40, 880, ("ESC: 戻る"), GetColor(100, 100, 100));
         SetFontSize(16);
         break;
     }

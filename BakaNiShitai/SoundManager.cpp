@@ -9,30 +9,30 @@
 
 
 void SoundManager::Load() {
-    hit          = LoadSoundMem(_T("Sound/damage.wav"));
-    explosion    = LoadSoundMem(_T("Sound/explosion.wav"));
-    pickup       = LoadSoundMem(_T("Sound/pickup.wav"));
-    mementoMori  = LoadSoundMem(_T("Sound/mementoMori.wav"));
-    menu         = LoadSoundMem(_T("Sound/menu.wav"));
-    parry        = LoadSoundMem(_T("Sound/parry.wav"));
-    setsuna      = LoadSoundMem(_T("Sound/setsuna.wav"));
-    weaponThrow  = LoadSoundMem(_T("Sound/throw.wav"));
-    weaponPickup = LoadSoundMem(_T("Sound/weapon_pickup.wav"));
-    jump         = LoadSoundMem(_T("Sound/jump.wav"));
-    setsunaSign  = LoadSoundMem(_T("Sound/setsuna_sign.wav"));
-    deflect      = LoadSoundMem(_T("Sound/deflect.wav"));
-    meteor       = LoadSoundMem(_T("Sound/meteor.wav"));
-    attack       = LoadSoundMem(_T("Sound/attack.wav"));
-    countdown    = LoadSoundMem(_T("Sound/countdown.wav"));
-    decide       = LoadSoundMem(_T("Sound/decide.wav"));
-    tensai       = LoadSoundMem(_T("Sound/tensai.wav"));
-    win          = LoadSoundMem(_T("Sound/win.wav"));
+    hit          = LoadSoundMem("Sound/damage.wav");
+    explosion    = LoadSoundMem("Sound/explosion.wav");
+    pickup       = LoadSoundMem("Sound/pickup.wav");
+    mementoMori  = LoadSoundMem("Sound/mementoMori.wav");
+    menu         = LoadSoundMem("Sound/menu.wav");
+    parry        = LoadSoundMem("Sound/parry.wav");
+    setsuna      = LoadSoundMem("Sound/setsuna.wav");
+    weaponThrow  = LoadSoundMem("Sound/throw.wav");
+    weaponPickup = LoadSoundMem("Sound/weapon_pickup.wav");
+    jump         = LoadSoundMem("Sound/jump.wav");
+    setsunaSign  = LoadSoundMem("Sound/setsuna_sign.wav");
+    deflect      = LoadSoundMem("Sound/deflect.wav");
+    meteor       = LoadSoundMem("Sound/meteor.wav");
+    attack       = LoadSoundMem("Sound/attack.wav");
+    countdown    = LoadSoundMem("Sound/countdown.wav");
+    decide       = LoadSoundMem("Sound/decide.wav");
+    tensai       = LoadSoundMem("Sound/tensai.wav");
+    win          = LoadSoundMem("Sound/win.wav");
 
     // BGM（メニュー系1曲＋ゲーム用3曲）
-    bgmMenu     = LoadSoundMem(_T("Sound/iwashiro_atsugiri_ham.mp3"));
-    bgmGame[0]  = LoadSoundMem(_T("Sound/iwashiro_marugoshi.mp3"));
-    bgmGame[1]  = LoadSoundMem(_T("Sound/iwashiro_miyako_ochisugara.mp3"));
-    bgmGame[2]  = LoadSoundMem(_T("Sound/iwashiro_yanagi_bocho.mp3"));
+    bgmMenu     = LoadSoundMem("Sound/iwashiro_atsugiri_ham.mp3");
+    bgmGame[0]  = LoadSoundMem("Sound/iwashiro_marugoshi.mp3");
+    bgmGame[1]  = LoadSoundMem("Sound/iwashiro_miyako_ochisugara.mp3");
+    bgmGame[2]  = LoadSoundMem("Sound/iwashiro_yanagi_bocho.mp3");
     currentGameBgm = -1;
 }
 
