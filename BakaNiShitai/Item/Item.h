@@ -1,6 +1,9 @@
 ﻿#pragma once
 #include "DxLib.h"
 
+// アイテムの共通土台（抽象基底クラス）。
+// 各アイテムはこれを継承し、OnPickup に「拾われた時の効果」を実装する。
+
 class Player;
 
 class Item {

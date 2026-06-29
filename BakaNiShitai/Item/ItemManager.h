@@ -4,6 +4,8 @@
 #include "RestrictionManager.h"
 #include "SoundManager.h"
 
+// 落ちてくるアイテムの湧き・更新・描画・当たり判定をまとめて持つ係。
+
 class Player;
 
 const int ITEM_MAX = 5;

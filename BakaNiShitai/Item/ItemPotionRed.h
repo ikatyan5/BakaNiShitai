@@ -1,6 +1,9 @@
 ﻿#pragma once
 #include "Item.h"
 
+// 赤ポーション
+// 拾うと一定時間後自爆する
+
 class ItemPotionRed : public Item {
 public:
     enum ExplodePhase {
