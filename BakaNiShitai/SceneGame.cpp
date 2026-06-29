@@ -1177,10 +1177,10 @@ void SceneGame::Draw() {
 
         SetFontSize(72);
         const TCHAR* resultText =
-            (isDraw && setsunaRedoPending) ? _T("画面見てないのか？") :
-            isDraw ? _T("ちんたらすんな！") :
-            !JUDGE ? _T("赤の勝ち！") :
-            _T("青の勝ち！");
+            (isDraw && setsunaRedoPending) ? ("画面見てないのか？") :
+            isDraw ? ("ちんたらすんな！") :
+            !JUDGE ? ("赤の勝ち！") :
+            ("青の勝ち！");
         unsigned int resultColor = isDraw ? GetColor(255, 255, 0) :
             !JUDGE ? GetColor(255, 50, 50) :
             GetColor(50, 50, 255);
@@ -1192,18 +1192,18 @@ void SceneGame::Draw() {
     else if (state == STATE_GAMEEND) {
         DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
         SetFontSize(48);
-        const TCHAR* winText = !JUDGE ? _T("赤の勝ち！") : _T("青の勝ち！");
+        const TCHAR* winText = !JUDGE ? ("赤の勝ち！") : ("青の勝ち！");
         unsigned int winColor = !JUDGE ? GetColor(255, 50, 50) : GetColor(50, 50, 255);
         int winW = GetDrawStringWidth(winText, lstrlen(winText));
         DrawString((SCREEN_W - winW) / 2, 320, winText, winColor);
 
         SetFontSize(72);
-        const TCHAR* endText = _T("ゲーム終了！");
+        const TCHAR* endText = ("ゲーム終了！");
         int endW = GetDrawStringWidth(endText, lstrlen(endText));
         DrawString((SCREEN_W - endW) / 2, 420, endText, GetColor(255, 255, 255));
 
         SetFontSize(24);
-        const TCHAR* retText = _T("Rキーでメニューに戻る");
+        const TCHAR* retText = ("Rキーでメニューに戻る");
         int retW = GetDrawStringWidth(retText, lstrlen(retText));
         DrawString((SCREEN_W - retW) / 2, 560, retText, GetColor(0, 0, 0));
 
@@ -1219,8 +1219,8 @@ void SceneGame::Draw() {
 
         // 今回の制限（小さめ）
         SetFontSize(24);
-        int titleW = GetDrawStringWidth(_T("今回の制限は！"), 7);
-        DrawString((SCREEN_W - titleW) / 2, 330, _T("今回の制限は！"), GetColor(50, 50, 50));
+        int titleW = GetDrawStringWidth(("今回の制限は！"), 7);
+        DrawString((SCREEN_W - titleW) / 2, 330, ("今回の制限は！"), GetColor(50, 50, 50));
 
         // 制限名を大きく表示
         SetFontSize(48);
@@ -1234,7 +1234,7 @@ void SceneGame::Draw() {
         SetFontSize(72);
         int sec = (countdownTimer / 60) + 1;
         TCHAR buf[8];
-        wsprintf(buf, _T("%d"), sec);
+        wsprintf(buf, ("%d"), sec);
         int numW = GetDrawStringWidth(buf, lstrlen(buf));
         DrawString((SCREEN_W - numW) / 2, 700, buf, GetColor(50, 50, 50));
 
