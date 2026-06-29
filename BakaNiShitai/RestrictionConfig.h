@@ -20,5 +20,6 @@ enum RestrictionType {
     REST_SCREEN_BLUR,         // 〇 画面ぼやけ
     REST_SWAP,                // 〇 入れ替え（一定時間ごとに2人の位置を交換）
     REST_TUG,                 // 〇 綱引き（常に画面中央へ引っ張られる）
+    REST_BLACKOUT,            // 〇 停電（画面が暗転し、数秒おきの雷の一瞬だけ全部見える）
     REST_TYPE_MAX
 };

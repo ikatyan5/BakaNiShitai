@@ -222,6 +222,58 @@ namespace {
         }
     };
 
+    // 停電：ふだんは黒い暗幕で画面を覆い、シルエットがうっすら見える程度にする。
+    // 数秒おきに「雷」が落ちて一瞬だけ暗幕が外れ、白い閃光とともに全部まる見えになる。
+    // その「見えた一瞬」で動けたほうが有利＝偶発的なチャンスを生む狙い。たたき台の値。
+    class BlackoutRestriction : public Restriction {
+    public:
+        const TCHAR* Name() const override { return _T("停電だ！雷の一瞬だけがチャンス！"); }
+
+        void OnRoundStart(SceneGame& g) override {
+            flashFrames = 0;
+            nextFlash = FLASH_MIN + rand() % FLASH_RAND;
+        }
+
+        // タイマー進行だけ。閃光中はカウントを進め、暗闇中は次の雷までを数える。
+        void UpdatePlaying(SceneGame& g) override {
+            if (flashFrames > 0) {
+                flashFrames--;
+            }
+            else if (nextFlash > 0) {
+                nextFlash--;
+            }
+            else {
+                flashFrames = FLASH_LEN;                 // 雷の閃光が続くフレーム数
+                nextFlash = FLASH_MIN + rand() % FLASH_RAND; // 次の雷まで2〜4秒（ランダム）
+            }
+        }
+
+        // UI も含めた一番手前に暗幕／閃光を被せる。
+        void DrawForeground(SceneGame& g) override {
+            if (flashFrames > 0) {
+                // 雷の瞬間：暗幕を外して全部見せ、薄い白幕で稲光らしさを足す
+                SetDrawBlendMode(DX_BLENDMODE_ALPHA, FLASH_ALPHA);
+                DrawBox(0, 0, SCREEN_W, SCREEN_H, GetColor(255, 255, 255), TRUE);
+                SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+            }
+            else {
+                // ふだん：黒い暗幕。シルエットがぎりぎり分かる濃さ
+                SetDrawBlendMode(DX_BLENDMODE_ALPHA, DARK_ALPHA);
+                DrawBox(0, 0, SCREEN_W, SCREEN_H, GetColor(0, 0, 0), TRUE);
+                SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+            }
+        }
+
+    private:
+        static const int DARK_ALPHA  = 250; // 暗幕の濃さ（0〜255。大きいほど暗い）
+        static const int FLASH_ALPHA = 120; // 閃光の白幕の濃さ
+        static const int FLASH_LEN   = 60;   // 閃光の長さ（フレーム）
+        static const int FLASH_MIN   = 120; // 次の雷までの最短（2秒）
+        static const int FLASH_RAND  = 60; // それに足すランダム幅（最大+2秒）
+        int flashFrames = 0; // >0 のあいだ閃光中
+        int nextFlash   = 0; // 0 になったら次の雷
+    };
+
 } // namespace
 
 Restriction* CreateRestriction(RestrictionType type) {
@@ -241,6 +293,7 @@ Restriction* CreateRestriction(RestrictionType type) {
     case REST_SCREEN_BLUR:     return new ScreenBlurRestriction();
     case REST_SWAP:            return new SwapRestriction();
     case REST_TUG:             return new TugRestriction();
+    case REST_BLACKOUT:        return new BlackoutRestriction();
     default:                   return new NoneRestriction();
     }
 }
