@@ -4,6 +4,8 @@
 #include "ImageManager.h"
 #include "SoundManager.h"
 
+// モードを選ぶメニュー画面
+
 class SceneMenu : public BaseScene {
 public:
     void Init(ImageManager& imgMgr, SoundManager& sndMgr);

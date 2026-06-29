@@ -13,6 +13,9 @@
 #include "GameSettings.h"
 #include "SoundManager.h"
 
+// 対戦本編のシーン。プレイヤー・武器・アイテム・妨害などをまとめて持ち、
+// カウントダウン→対戦→決着の進行を回す本体。
+
 class SceneGame : public BaseScene {
 public:
     void Init(ImageManager& imgMgr, GameSettings& settings, SoundManager& sndMgr);

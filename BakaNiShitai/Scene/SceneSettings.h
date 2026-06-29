@@ -4,6 +4,8 @@
 #include "GameSettings.h"
 #include "SceneID.h"
 
+// 操作デバイスを割り当てる設定画面
+
 class SceneSettings : public BaseScene {
 public:
     void Init(ImageManager& imgMgr, GameSettings& settings);

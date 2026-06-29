@@ -2,6 +2,9 @@
 #include "BaseScene.h"
 #include "ImageManager.h"
 
+// 武器・アイテムを説明する
+// チュートリアル画面
+
 enum TutorialState {
     TUTO_TOP,           // トップメニュー
     TUTO_ZUKAN_SELECT,  // 武器かアイテムか選ぶ

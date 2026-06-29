@@ -4,6 +4,8 @@
 #include "ImageManager.h"
 #include "SoundManager.h"
 
+// タイトル画面のシーン
+
 class SceneTitle : public BaseScene {
 public:
     void Init(ImageManager& imgMgr, SoundManager& sndMgr);
