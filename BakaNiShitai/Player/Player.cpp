@@ -59,7 +59,6 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 	}
 }
 
-// 左右移動とキー入力処理
 // 左右上下の入力を読む（パッド / P1=WASD / P2=矢印）
 void Player::ReadMoveInput(bool& leftKey, bool& rightKey, bool& upKey, bool& downKey) {
 	leftKey = rightKey = upKey = downKey = false;
@@ -86,6 +85,7 @@ void Player::ReadMoveInput(bool& leftKey, bool& rightKey, bool& upKey, bool& dow
 	}
 }
 
+// 左右移動とキー入力処理
 void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons){
 	// ノックバック中は通常入力を無効化
 	if (isKnockedBack) {
@@ -441,6 +441,16 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 	else {
 		DrawExtendGraphF(drawX + 96, drawY, drawX, drawY + 128, drawImage[animFrame], TRUE);
 	}
+	DrawStatusEffects(weapons, imgMgr);
+
+	DrawHeldWeapon(weapons);
+
+#ifdef _DEBUG
+	DrawDebugInfo(weapons);
+#endif
+}
+
+void Player::DrawStatusEffects(Weapon* weapons, ImageManager& imgMgr) {
 	// スタンエフェクト
 	if (isStunned) {
 		int stanFrame = (stanTimer / 8) % 2; // 8フレームごとに切り替え
@@ -477,43 +487,46 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 			imgMgr.shield, TRUE
 		);
 	}
+}
 
-	// 武器の追従描画
-	if (holdingWeaponIndex != -1) {
-		weaponDrawX = facingRight ? x + 60.0f : x - 60.0f;
-		weaponDrawY = y - 64.0f;
+void Player::DrawHeldWeapon(Weapon* weapons) {
+	if (holdingWeaponIndex == -1) return;
 
-		if (animFrame == 1) {
-			weaponDrawY -= 60.0f;
-		}
-		float weaponAngle = 0.0f;
+	weaponDrawX = facingRight ? x + 60.0f : x - 60.0f;
+	weaponDrawY = y - 64.0f;
 
-		if (isReadyThrow) {
-			weaponDrawX = facingRight ? x - 20.0f : x + 20.0f;
+	if (animFrame == 1) {
+		weaponDrawY -= 60.0f;
+	}
+	float weaponAngle = 0.0f;
+
+	if (isReadyThrow) {
+		weaponDrawX = facingRight ? x - 20.0f : x + 20.0f;
+		weaponDrawY = y - 110.0f;
+		weaponAngle = facingRight ? -2.5f : 2.5f;
+	}
+	else if (attacking && WEAPON_DATA[weapons[holdingWeaponIndex].weaponType].isRanged) {
+		if (attackTimer > 7) {
 			weaponDrawY = y - 110.0f;
-			weaponAngle = facingRight ? -2.5f : 2.5f;
+			weaponAngle = facingRight ? -0.8f : 0.8f;
 		}
-		else if (attacking && WEAPON_DATA[weapons[holdingWeaponIndex].weaponType].isRanged) {
-			if (attackTimer > 7) {
-				weaponDrawY = y - 110.0f;
-				weaponAngle = facingRight ? -0.8f : 0.8f;
+		else {
+			// メメントモリだけY軸を上げる
+			if (weapons[holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI) {
+				weaponDrawY = y - 43.0f;
 			}
 			else {
-				// メメントモリだけY軸を上げる
-				if (weapons[holdingWeaponIndex].weaponType == WEAPON_MEMENTO_MORI) {
-					weaponDrawY = y - 43.0f;
-				}
-				else {
-					weaponDrawY = y - 20.0f;
-				}
-				weaponAngle = facingRight ? 0.8f : -0.8f;
+				weaponDrawY = y - 20.0f;
 			}
+			weaponAngle = facingRight ? 0.8f : -0.8f;
 		}
-		DrawRotaGraphF(weaponDrawX, weaponDrawY, 1.5, weaponAngle,
-			weapons[holdingWeaponIndex].weaponImage, TRUE, !facingRight);
 	}
+	DrawRotaGraphF(weaponDrawX, weaponDrawY, 1.5, weaponAngle,
+		weapons[holdingWeaponIndex].weaponImage, TRUE, !facingRight);
+}
 
 #ifdef _DEBUG
+void Player::DrawDebugInfo(Weapon* weapons) {
 
 	TCHAR kbBuf[8];
 	wsprintf(kbBuf, ("x%d"), knockbackCount);
@@ -548,9 +561,8 @@ void Player::Draw(Weapon* weapons, ImageManager& imgMgr) {
 			DrawBoxAA(atkX - 20.0f, atkY - 40.0f, atkX + 20.0f, atkY + 40.0f, GetColor(255, 0, 0), FALSE);
 		}
 	}
-
-#endif
 }
+#endif
 
 void Player::DrawDecoy(float dx, float dy, bool faceRight, int weaponType, bool showWeapon, ImageManager& imgMgr) {
 	// 本体の Draw から「体の絵」部分だけを抜き出したもの。

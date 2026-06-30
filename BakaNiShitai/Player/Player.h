@@ -88,6 +88,10 @@ public:
 private:
 	// 入力読み取りを1か所に集約（パッド / P1=WASD / P2=矢印）。UpdateInputの重複を解消するための共通関数。
 	void ReadMoveInput(bool& leftKey, bool& rightKey, bool& upKey, bool& downKey);
+	// Draw() をパーツごとに分割
+	void DrawStatusEffects(Weapon* weapons, ImageManager& imgMgr); // スタン・反転・テンサイ・シールド
+	void DrawHeldWeapon(Weapon* weapons);         // 持っている武器の追従描画
+	void DrawDebugInfo(Weapon* weapons);          // デバッグ用の当たり判定表示
 
 	int playerImage[7];
 	int playerGlowImage[7];
