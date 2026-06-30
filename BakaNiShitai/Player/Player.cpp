@@ -60,28 +60,40 @@ void Player::Init(float startX, float startY, int id, bool facingR, ImageManager
 }
 
 // 左右移動とキー入力処理
+// 左右上下の入力を読む（パッド / P1=WASD / P2=矢印）
+void Player::ReadMoveInput(bool& leftKey, bool& rightKey, bool& upKey, bool& downKey) {
+	leftKey = rightKey = upKey = downKey = false;
+	if (useGamepad) {
+		int pad = GetJoypadInputState(padID);
+		int stickX = 0, stickY = 0;
+		GetJoypadAnalogInput(&stickX, &stickY, padID);
+		leftKey  = (pad & PAD_INPUT_LEFT)  || stickX < -500;
+		rightKey = (pad & PAD_INPUT_RIGHT) || stickX > 500;
+		upKey    = (pad & PAD_INPUT_UP)    || stickY < -500;
+		downKey  = (pad & PAD_INPUT_DOWN)  || stickY > 500;
+	}
+	else if (PlayerID == 1) {
+		leftKey  = CheckHitKey(KEY_INPUT_A);
+		rightKey = CheckHitKey(KEY_INPUT_D);
+		upKey    = CheckHitKey(KEY_INPUT_W);
+		downKey  = CheckHitKey(KEY_INPUT_S);
+	}
+	else {
+		leftKey  = CheckHitKey(KEY_INPUT_LEFT);
+		rightKey = CheckHitKey(KEY_INPUT_RIGHT);
+		upKey    = CheckHitKey(KEY_INPUT_UP);
+		downKey  = CheckHitKey(KEY_INPUT_DOWN);
+	}
+}
+
 void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons){
 	// ノックバック中は通常入力を無効化
 	if (isKnockedBack) {
 		knockbackTimer--;
 		knockbackVx *= 0.85f;
 
-		bool leftKey = false, rightKey = false;
-		if (useGamepad) {
-			int pad = GetJoypadInputState(padID);
-			int stickX = 0, stickY = 0;
-			GetJoypadAnalogInput(&stickX, &stickY, padID);
-			leftKey = (pad & PAD_INPUT_LEFT) || stickX < -500;
-			rightKey = (pad & PAD_INPUT_RIGHT) || stickX > 500;
-		}
-		else if (PlayerID == 1) {
-			leftKey = CheckHitKey(KEY_INPUT_A);
-			rightKey = CheckHitKey(KEY_INPUT_D);
-		}
-		else {
-			leftKey = CheckHitKey(KEY_INPUT_LEFT);
-			rightKey = CheckHitKey(KEY_INPUT_RIGHT);
-		}
+		bool leftKey, rightKey, upKey, downKey;
+		ReadMoveInput(leftKey, rightKey, upKey, downKey);
 
 		if (knockbackVx < 0 && rightKey) knockbackVx *= 0.88f;
 		if (knockbackVx > 0 && leftKey)  knockbackVx *= 0.88f;
@@ -112,22 +124,8 @@ void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons
 	}
 	// 氷の床：地上は入力で加速・離すと滑る慣性移動（空中は通常操作のまま下の処理に任せる）
 	if (restrictions.IsActive(REST_ICE_FLOOR) && onGround) {
-		bool leftKey, rightKey;
-		if (useGamepad) {
-			int pad = GetJoypadInputState(padID);
-			int stickX = 0, stickY = 0;
-			GetJoypadAnalogInput(&stickX, &stickY, padID);
-			leftKey = (pad & PAD_INPUT_LEFT) || stickX < -500;
-			rightKey = (pad & PAD_INPUT_RIGHT) || stickX > 500;
-		}
-		else if (PlayerID == 1) {
-			leftKey = CheckHitKey(KEY_INPUT_A);
-			rightKey = CheckHitKey(KEY_INPUT_D);
-		}
-		else {
-			leftKey = CheckHitKey(KEY_INPUT_LEFT);
-			rightKey = CheckHitKey(KEY_INPUT_RIGHT);
-		}
+		bool leftKey, rightKey, upKey, downKey;
+		ReadMoveInput(leftKey, rightKey, upKey, downKey);
 		const float ICE_ACCEL = 0.05f;     // 踏ん張りの効かなさ（小さいほどツルツル）
 		const float ICE_FRICTION = 0.99f; // 離した時の滑り（1に近いほど止まらない）
 		const float ICE_MAXV = isBlinking ? (moveSpeed + 8.0f) : moveSpeed + 20.0; // 移動速度をUP
@@ -142,49 +140,17 @@ void Player::UpdateInput(const RestrictionManager& restrictions, Weapon* weapons
 	// 刹那の見切り：向き変えのみ可、移動禁止
 	if (restrictions.IsActive(REST_SETSUNA)) {
 		vx = 0;
-		if (useGamepad) {
-			int pad = GetJoypadInputState(padID);
-			int stickX = 0, stickY = 0;
-			GetJoypadAnalogInput(&stickX, &stickY, padID);
-			if ((pad & PAD_INPUT_LEFT) || stickX < -500)  facingRight = false;
-			if ((pad & PAD_INPUT_RIGHT) || stickX > 500) facingRight = true;
-		}
-		else if (PlayerID == 1) {
-			if (CheckHitKey(KEY_INPUT_A)) facingRight = false;
-			if (CheckHitKey(KEY_INPUT_D)) facingRight = true;
-		}
-		else {
-			if (CheckHitKey(KEY_INPUT_LEFT)) facingRight = false;
-			if (CheckHitKey(KEY_INPUT_RIGHT)) facingRight = true;
-		}
+		bool leftKey, rightKey, upKey, downKey;
+		ReadMoveInput(leftKey, rightKey, upKey, downKey);
+		if (leftKey)  facingRight = false;
+		if (rightKey) facingRight = true;
 		return;
 	}
 
 	{
 		vx = 0;
 		bool leftKey, rightKey, upKey, downKey;
-
-		if (useGamepad) {
-			int pad = GetJoypadInputState(padID);
-			int stickX = 0, stickY = 0;
-			GetJoypadAnalogInput(&stickX, &stickY, padID);
-			leftKey = (pad & PAD_INPUT_LEFT) || stickX < -500;
-			rightKey = (pad & PAD_INPUT_RIGHT) || stickX > 500;
-			upKey = (pad & PAD_INPUT_UP) || stickY < -500;
-			downKey = (pad & PAD_INPUT_DOWN) || stickY > 500;
-		}
-		else if (PlayerID == 1) {
-			leftKey = CheckHitKey(KEY_INPUT_A);
-			rightKey = CheckHitKey(KEY_INPUT_D);
-			upKey = CheckHitKey(KEY_INPUT_W);
-			downKey = CheckHitKey(KEY_INPUT_S);
-		}
-		else {
-			leftKey = CheckHitKey(KEY_INPUT_LEFT);
-			rightKey = CheckHitKey(KEY_INPUT_RIGHT);
-			upKey = CheckHitKey(KEY_INPUT_UP);
-			downKey = CheckHitKey(KEY_INPUT_DOWN);
-		}
+		ReadMoveInput(leftKey, rightKey, upKey, downKey);
 
 		if (leftKey) { vx = isBlinking ? -(moveSpeed + 8.0f) : -moveSpeed; facingRight = false; }
 		if (rightKey) { vx = isBlinking ? (moveSpeed + 8.0f) : moveSpeed; facingRight = true; }

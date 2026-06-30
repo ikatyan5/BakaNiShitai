@@ -86,6 +86,9 @@ public:
 	void DrawDecoy(float dx, float dy, bool faceRight, int weaponType, bool showWeapon, ImageManager& imgMgr);
 	void SwapImageWith(Player& other);
 private:
+	// 入力読み取りを1か所に集約（パッド / P1=WASD / P2=矢印）。UpdateInputの重複を解消するための共通関数。
+	void ReadMoveInput(bool& leftKey, bool& rightKey, bool& upKey, bool& downKey);
+
 	int playerImage[7];
 	int playerGlowImage[7];
 	float weaponDrawX;
