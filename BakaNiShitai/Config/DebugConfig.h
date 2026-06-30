@@ -20,5 +20,5 @@ const WeaponType DBG_WEAPON_TYPE = WEAPON_STICK;
 
 // 制限強制適用
 const bool DBG_FORCE_RESTRICTION = false;
-const RestrictionType DBG_RESTRICTION_TYPE = REST_BLACKOUT;
+const RestrictionType DBG_RESTRICTION_TYPE = REST_SCREEN_BLUR;
 #endif
