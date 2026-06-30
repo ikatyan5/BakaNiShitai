@@ -29,7 +29,18 @@ public:
     void UpdateGameEnd();   // 決着（メニュー待ち）
     void UpdateCountdown(); // 開始カウントダウン
     void Draw() override;
+    // Draw() を状態ごとに分割した本体（各状態の描画）
+    void DrawPlaying();
+    void DrawHit();
+    void DrawResult();
+    void DrawGameEnd();
+    void DrawCountdown();
     void DrawUI();
+    // DrawUI() をパーツごとに分割（shakeX は画面揺れ量を渡す）
+    void DrawHpBars(float shakeX);
+    void DrawScores(float shakeX);
+    void DrawTimer(float shakeX);
+    void DrawSetsunaUI();
     void EnterHitState(bool judgeValue, bool addScore = false);
     SceneID GetNextScene() override;
     void SpawnWeapon();

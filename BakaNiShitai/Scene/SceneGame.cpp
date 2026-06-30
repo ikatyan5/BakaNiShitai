@@ -1102,159 +1102,168 @@ void SceneGame::UpdateMeteor() {
 
 void SceneGame::Draw() {
     ClearDrawScreen();
-    if (state == STATE_PLAYING) {
-        SetDrawScreen(currentTex);
-        ClearDrawScreen();
-        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
-        stage.Draw();
-        for (int i = 0; i < WEAPON_MAX; i++) {
-            weapons[i].Draw();
-        }
-        DrawMementoMori(player1);
-        DrawMementoMori(player2);
-        if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
-        player1.Draw(weapons, *imgMgr);
-        player2.Draw(weapons, *imgMgr);
-        orbManager.Draw();
-        if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
-            meteorManager.Draw(*imgMgr);
-        }
-        itemManager.Draw();
-        DrawUI();
-        adManager.Draw();
-        if (restrictionManager.Active()) restrictionManager.Active()->DrawForeground(*this); // 妨害の前景演出（連打の壁など）
-        SetDrawScreen(DX_SCREEN_BACK);
+    if (state == STATE_PLAYING) DrawPlaying();
+    else if (state == STATE_HIT) DrawHit();
+    else if (state == STATE_RESULT) DrawResult();
+    else if (state == STATE_GAMEEND) DrawGameEnd();
+    else if (state == STATE_COUNTDOWN) DrawCountdown();
+}
 
-        if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
-            bool flipUD = (flipPattern == 0 || flipPattern == 1); // 上下反転
-            bool flipLR = (flipPattern == 0 || flipPattern == 2); // 左右反転
+void SceneGame::DrawPlaying() {
+    SetDrawScreen(currentTex);
+    ClearDrawScreen();
+    DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
+    stage.Draw();
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        weapons[i].Draw();
+    }
+    DrawMementoMori(player1);
+    DrawMementoMori(player2);
+    if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
+    player1.Draw(weapons, *imgMgr);
+    player2.Draw(weapons, *imgMgr);
+    orbManager.Draw();
+    if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
+        meteorManager.Draw(*imgMgr);
+    }
+    itemManager.Draw();
+    DrawUI();
+    adManager.Draw();
+    if (restrictionManager.Active()) restrictionManager.Active()->DrawForeground(*this); // 妨害の前景演出（連打の壁など）
+    SetDrawScreen(DX_SCREEN_BACK);
 
-            float left = flipLR ? SCREEN_W : 0.0f;
-            float right = flipLR ? 0.0f : SCREEN_W;
-            float top = flipUD ? SCREEN_H : 0.0f;
-            float bottom = flipUD ? 0.0f : SCREEN_H;
-            DrawExtendGraphF(left, top, right, bottom, currentTex, TRUE);
-        }
-        else {
-            DrawGraph(0, 0, currentTex, TRUE);
-        }
+    if (restrictionManager.IsActive(REST_SCREEN_FLIP)) {
+        bool flipUD = (flipPattern == 0 || flipPattern == 1); // 上下反転
+        bool flipLR = (flipPattern == 0 || flipPattern == 2); // 左右反転
 
-        if (blurMode != 0) {
-            int alpha = (blurMode == 1) ? 180 : 250;
-            SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
-            DrawGraph(0, 0, prevTex, TRUE);
-            SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-        }
+        float left = flipLR ? SCREEN_W : 0.0f;
+        float right = flipLR ? 0.0f : SCREEN_W;
+        float top = flipUD ? SCREEN_H : 0.0f;
+        float bottom = flipUD ? 0.0f : SCREEN_H;
+        DrawExtendGraphF(left, top, right, bottom, currentTex, TRUE);
+    }
+    else {
+        DrawGraph(0, 0, currentTex, TRUE);
+    }
 
-        // 重ねた後にコピー
-        GetDrawScreenGraph(0, 0, SCREEN_W, SCREEN_H, prevTex);
+    if (blurMode != 0) {
+        int alpha = (blurMode == 1) ? 180 : 250;
+        SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+        DrawGraph(0, 0, prevTex, TRUE);
+        SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+    }
+
+    // 重ねた後にコピー
+    GetDrawScreenGraph(0, 0, SCREEN_W, SCREEN_H, prevTex);
 
 #ifdef _DEBUG
-        for (int i = 0; i < restrictionManager.activeCount; i++) {
-            DrawString(10, 10 + i * 20, restrictionManager.ActiveName(), GetColor(255, 255, 0));
-        }
+    for (int i = 0; i < restrictionManager.activeCount; i++) {
+        DrawString(10, 10 + i * 20, restrictionManager.ActiveName(), GetColor(255, 255, 0));
+    }
 #endif
+}
+
+void SceneGame::DrawHit() {
+    DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
+    stage.Draw();
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        weapons[i].Draw();
     }
-    else if (state == STATE_HIT) {
-        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
-        stage.Draw();
-        for (int i = 0; i < WEAPON_MAX; i++) {
-            weapons[i].Draw();
-        }
-        DrawMementoMori(player1);
-        DrawMementoMori(player2);
-        if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
-        player1.Draw(weapons, *imgMgr);
-        player2.Draw(weapons, *imgMgr);
-        if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
-            meteorManager.Draw(*imgMgr);
-        }
-        orbManager.Draw();
-        itemManager.Draw();
-        DrawFlyExplosion();
-        DrawUI();
+    DrawMementoMori(player1);
+    DrawMementoMori(player2);
+    if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
+    player1.Draw(weapons, *imgMgr);
+    player2.Draw(weapons, *imgMgr);
+    if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
+        meteorManager.Draw(*imgMgr);
     }
-    else if (state == STATE_RESULT) {
-        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
-        stage.Draw();
-        for (int i = 0; i < WEAPON_MAX; i++) {
-            weapons[i].Draw();
-        }
-        if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
-        player1.Draw(weapons, *imgMgr);
-        player2.Draw(weapons, *imgMgr);
-        if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
-            meteorManager.Draw(*imgMgr);
-        }
-        orbManager.Draw();
-        itemManager.Draw();
-        DrawUI();
+    orbManager.Draw();
+    itemManager.Draw();
+    DrawFlyExplosion();
+    DrawUI();
+}
 
-        SetFontSize(72);
-        const TCHAR* resultText =
-            (isDraw && setsunaRedoPending) ? ("画面見てないのか？") :
-            isDraw ? ("ちんたらすんな！") :
-            !JUDGE ? ("赤の勝ち！") :
-            ("青の勝ち！");
-        unsigned int resultColor = isDraw ? GetColor(255, 255, 0) :
-            !JUDGE ? GetColor(255, 50, 50) :
-            GetColor(50, 50, 255);
-        int textW = GetDrawStringWidth(resultText, lstrlen(resultText));
-        DrawString((SCREEN_W - textW) / 2, 380, resultText, resultColor);
-        SetFontSize(16);
-
+void SceneGame::DrawResult() {
+    DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
+    stage.Draw();
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        weapons[i].Draw();
     }
-    else if (state == STATE_GAMEEND) {
-        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
-        SetFontSize(48);
-        const TCHAR* winText = !JUDGE ? ("赤の勝ち！") : ("青の勝ち！");
-        unsigned int winColor = !JUDGE ? GetColor(255, 50, 50) : GetColor(50, 50, 255);
-        int winW = GetDrawStringWidth(winText, lstrlen(winText));
-        DrawString((SCREEN_W - winW) / 2, 320, winText, winColor);
-
-        SetFontSize(72);
-        const TCHAR* endText = ("ゲーム終了！");
-        int endW = GetDrawStringWidth(endText, lstrlen(endText));
-        DrawString((SCREEN_W - endW) / 2, 420, endText, GetColor(255, 255, 255));
-
-        SetFontSize(24);
-        const TCHAR* retText = ("何か押してメニューに戻る");
-        int retW = GetDrawStringWidth(retText, lstrlen(retText));
-        DrawString((SCREEN_W - retW) / 2, 560, retText, GetColor(0, 0, 0));
-
-        SetFontSize(16);
+    if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
+    player1.Draw(weapons, *imgMgr);
+    player2.Draw(weapons, *imgMgr);
+    if (restrictionManager.IsActive(REST_METEOR) || meteorManager.HasActiveMeteor()) {
+        meteorManager.Draw(*imgMgr);
     }
-    else if (state == STATE_COUNTDOWN) {
-        DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
-        stage.Draw();
-        if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
-        player1.Draw(weapons, *imgMgr);
-        player2.Draw(weapons, *imgMgr);
-        DrawUI();
+    orbManager.Draw();
+    itemManager.Draw();
+    DrawUI();
 
-        // 今回の制限（小さめ）
-        SetFontSize(24);
-        int titleW = GetDrawStringWidth(("今回の制限は！"), 7);
-        DrawString((SCREEN_W - titleW) / 2, 330, ("今回の制限は！"), GetColor(50, 50, 50));
+    SetFontSize(72);
+    const TCHAR* resultText =
+        (isDraw && setsunaRedoPending) ? ("画面見てないのか？") :
+        isDraw ? ("ちんたらすんな！") :
+        !JUDGE ? ("赤の勝ち！") :
+        ("青の勝ち！");
+    unsigned int resultColor = isDraw ? GetColor(255, 255, 0) :
+        !JUDGE ? GetColor(255, 50, 50) :
+        GetColor(50, 50, 255);
+    int textW = GetDrawStringWidth(resultText, lstrlen(resultText));
+    DrawString((SCREEN_W - textW) / 2, 380, resultText, resultColor);
+    SetFontSize(16);
+}
 
-        // 制限名を大きく表示
-        SetFontSize(48);
-        for (int i = 0; i < restrictionManager.activeCount; i++) {
-            const TCHAR* text = restrictionManager.ActiveName();
-            int textW = GetDrawStringWidth(text, lstrlen(text));
-            DrawString((SCREEN_W - textW) / 2, 390 + i * 60, text, GetColor(255, 50, 50));
-        }
+void SceneGame::DrawGameEnd() {
+    DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
+    SetFontSize(48);
+    const TCHAR* winText = !JUDGE ? ("赤の勝ち！") : ("青の勝ち！");
+    unsigned int winColor = !JUDGE ? GetColor(255, 50, 50) : GetColor(50, 50, 255);
+    int winW = GetDrawStringWidth(winText, lstrlen(winText));
+    DrawString((SCREEN_W - winW) / 2, 320, winText, winColor);
 
-        // カウントダウン数字
-        SetFontSize(72);
-        int sec = (countdownTimer / 60) + 1;
-        TCHAR buf[8];
-        wsprintf(buf, ("%d"), sec);
-        int numW = GetDrawStringWidth(buf, lstrlen(buf));
-        DrawString((SCREEN_W - numW) / 2, 700, buf, GetColor(50, 50, 50));
+    SetFontSize(72);
+    const TCHAR* endText = ("ゲーム終了！");
+    int endW = GetDrawStringWidth(endText, lstrlen(endText));
+    DrawString((SCREEN_W - endW) / 2, 420, endText, GetColor(255, 255, 255));
 
-        SetFontSize(16);
+    SetFontSize(24);
+    const TCHAR* retText = ("何か押してメニューに戻る");
+    int retW = GetDrawStringWidth(retText, lstrlen(retText));
+    DrawString((SCREEN_W - retW) / 2, 560, retText, GetColor(0, 0, 0));
+
+    SetFontSize(16);
+}
+
+void SceneGame::DrawCountdown() {
+    DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardGame[animFrame], TRUE);
+    stage.Draw();
+    if (restrictionManager.Active()) restrictionManager.Active()->Draw(*this); // 妨害ごとの演出（分身など）
+    player1.Draw(weapons, *imgMgr);
+    player2.Draw(weapons, *imgMgr);
+    DrawUI();
+
+    // 今回の制限（小さめ）
+    SetFontSize(24);
+    int titleW = GetDrawStringWidth(("今回の制限は！"), 7);
+    DrawString((SCREEN_W - titleW) / 2, 330, ("今回の制限は！"), GetColor(50, 50, 50));
+
+    // 制限名を大きく表示
+    SetFontSize(48);
+    for (int i = 0; i < restrictionManager.activeCount; i++) {
+        const TCHAR* text = restrictionManager.ActiveName();
+        int textW = GetDrawStringWidth(text, lstrlen(text));
+        DrawString((SCREEN_W - textW) / 2, 390 + i * 60, text, GetColor(255, 50, 50));
     }
+
+    // カウントダウン数字
+    SetFontSize(72);
+    int sec = (countdownTimer / 60) + 1;
+    TCHAR buf[8];
+    wsprintf(buf, ("%d"), sec);
+    int numW = GetDrawStringWidth(buf, lstrlen(buf));
+    DrawString((SCREEN_W - numW) / 2, 700, buf, GetColor(50, 50, 50));
+
+    SetFontSize(16);
 }
 
 void SceneGame::DrawUI()
@@ -1264,6 +1273,13 @@ void SceneGame::DrawUI()
         (gravityInsaneLevel == 3 || gravityInsaneLevel == 4);
     float shakeX = uiShake ? sinf(uiShakeTimer * 0.8f) * 6.0f : 0.0f;
 
+    DrawHpBars(shakeX);
+    DrawScores(shakeX);
+    DrawTimer(shakeX);
+    DrawSetsunaUI();
+}
+
+void SceneGame::DrawHpBars(float shakeX) {
     // Player1 HPバー
     {
         int p1HpImg = p1Glowing ? imgMgr->p3Hp[p1HpIndex] : imgMgr->p1Hp[p1HpIndex];
@@ -1288,8 +1304,9 @@ void SceneGame::DrawUI()
             DrawExtendGraphF(SCREEN_W - 50.0f - UI_HP_W + shakeX, 20.0f, SCREEN_W - 50.0f + shakeX, 20.0f + UI_HP_H, p2HpImg, TRUE);
         }
     }
+}
 
-
+void SceneGame::DrawScores(float shakeX) {
     // Player1スコア
     {
         FallingUI& ui = scoreUI[0];
@@ -1337,7 +1354,9 @@ void SceneGame::DrawUI()
             }
         }
     }
+}
 
+void SceneGame::DrawTimer(float shakeX) {
     int sec = timeTimer / 60;
     int tens = sec / 10;
     int ones = sec % 10;
@@ -1356,7 +1375,9 @@ void SceneGame::DrawUI()
             DrawExtendGraphF(638.0f + shakeX, UI_TIME_Y, 638.0f + UI_NUMBER_SIZE + shakeX, UI_TIME_Y + UI_NUMBER_SIZE, imgMgr->numbers[ones], TRUE);
         }
     }
+}
 
+void SceneGame::DrawSetsunaUI() {
     if (setsunaSignVisible) {
         DrawExtendGraphF(563.0f, 347.0f, 717.0f, 501.0f, imgMgr->surpMark, TRUE);
     }
