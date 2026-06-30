@@ -28,6 +28,10 @@ public:
     void UpdateResult();    // リザルト表示
     void UpdateGameEnd();   // 決着（メニュー待ち）
     void UpdateCountdown(); // 開始カウントダウン
+    // UpdatePlaying() をフェーズごとに分割
+    void UpdateTimeLimit(); // アニメ送り＋制限時間切れの処理
+    void CheckAllHits();    // 各種の当たり判定・決着判定をまとめて行う
+    void UpdateWeapons();   // 武器の投げ・湧き・拾い・更新
     void Draw() override;
     // Draw() を状態ごとに分割した本体（各状態の描画）
     void DrawPlaying();

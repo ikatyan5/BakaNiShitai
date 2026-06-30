@@ -679,31 +679,7 @@ void SceneGame::UpdatePlaying() {
     // P1/P2を配列で扱い、左右対称な処理をループで一度だけ書く
     Player* players[2] = { &player1, &player2 };
 
-    animTimer++;
-    if (animTimer >= 10) {
-        animTimer = 0;
-        animFrame = (animFrame + 1) % 2;
-    }
-    if (timeTimer > 0) timeTimer--;
-    else {
-        if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
-            // ハイパー側が時間切れで自爆→弱い側の勝ち
-            EnterHitState(hyperPlayerID == 1, true);
-        }
-        else {
-            // 通常の引き分け処理
-            isDraw = true;
-            player1.animFrame = 6;
-            player2.animFrame = 6;
-            p1HpIndex = 1;
-            p2HpIndex = 1;
-            HIT_TIMER = 60;
-            RESULT_TIMER = 120;
-            timeTimer = matchTime * 60;
-            state = STATE_HIT;
-            JUDGE = false;
-        }
-    }
+    UpdateTimeLimit();
 
     UpdateMeteor();
 
@@ -742,6 +718,40 @@ void SceneGame::UpdatePlaying() {
     // ぼやけの駆動と広告更新は ScreenBlurRestriction::UpdateBeforePlayers（委譲）が呼ぶ。
     // 画面反転の毎フレーム駆動は ScreenFlipRestriction::UpdatePlaying（委譲）が呼ぶ。
 
+    CheckAllHits();
+
+    UpdateWeapons();
+}
+
+void SceneGame::UpdateTimeLimit() {
+    animTimer++;
+    if (animTimer >= 10) {
+        animTimer = 0;
+        animFrame = (animFrame + 1) % 2;
+    }
+    if (timeTimer > 0) timeTimer--;
+    else {
+        if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
+            // ハイパー側が時間切れで自爆→弱い側の勝ち
+            EnterHitState(hyperPlayerID == 1, true);
+        }
+        else {
+            // 通常の引き分け処理
+            isDraw = true;
+            player1.animFrame = 6;
+            player2.animFrame = 6;
+            p1HpIndex = 1;
+            p2HpIndex = 1;
+            HIT_TIMER = 60;
+            RESULT_TIMER = 120;
+            timeTimer = matchTime * 60;
+            state = STATE_HIT;
+            JUDGE = false;
+        }
+    }
+}
+
+void SceneGame::CheckAllHits() {
     // 爆発ヒット判定
     if (itemManager.hitOccurred) {
         itemManager.hitOccurred = false;
@@ -808,7 +818,9 @@ void SceneGame::UpdatePlaying() {
     // 近接攻撃ヒット判定
     CheckMeleeHit(player1, player2, false);
     CheckMeleeHit(player2, player1, true);
+}
 
+void SceneGame::UpdateWeapons() {
     ThrowWeapon(player1, 1);
     ThrowWeapon(player2, 2);
 
