@@ -66,6 +66,7 @@ void SceneTutorial::Init(ImageManager& imgMgr_) {
     restrictionEntries[13] = { ("なんか画面おかしくね？"),               ("画面が終わるぞ 目を酷使するべし"),            ("邪魔なものが飛び回るぞ") };
     restrictionEntries[14] = { ("分身が出現＋位置が入れ替わるぞ！"),   ("分身に紛れつつ 時々2人の位置が入れ替わる"),   ("どれが本体か見失うなよ！") };
     restrictionEntries[15] = { ("画面の真ん中へ引っ張られるぞ！"),       ("放っておくと画面中央へ吸い寄せられる"),       ("歩けば逆らえる 端を取るなら踏ん張れ") };
+    restrictionEntries[16] = { ("停電だ！雷の一瞬だけがチャンス！"),     ("画面が真っ暗 数秒おきの雷で一瞬だけ見える"), ("雷のタイミングを逃すな！") };
 }
 
 void SceneTutorial::Update() {
@@ -215,7 +216,7 @@ void SceneTutorial::Draw() {
         DrawString(690, 355, restrictionEntries[zukanIndex].desc2, GetColor(80, 80, 80));
 
         SetFontSize(54);
-        DrawString(40, 830, ("ESC: 戻る"), GetColor(0, 0, 0));
+        DrawString(40, 850, ("ESC: 戻る"), GetColor(0, 0, 0));
         SetFontSize(16);
         break;
     }
