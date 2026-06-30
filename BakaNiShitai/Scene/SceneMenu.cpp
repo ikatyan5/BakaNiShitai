@@ -33,6 +33,13 @@ static const TCHAR* MENU_ITEMS[] = {
 };
 static const int MENU_COUNT = 3;
 
+// マウス判定用：各メニュー項目のおおよその矩形 {x1, y1, x2, y2}（Drawの描画範囲に対応）
+static const int MENU_RECT[MENU_COUNT][4] = {
+    { 170, 140, 620, 340 }, // たたかう
+    { 180, 370, 520, 490 }, // チュートリ
+    { 170, 490, 390, 690 }, // 設定
+};
+
 void SceneMenu::Init(ImageManager& imgMgr_, SoundManager& sndMgr_) {
     imgMgr = &imgMgr_;
     sound = &sndMgr_;
@@ -44,6 +51,7 @@ void SceneMenu::Init(ImageManager& imgMgr_, SoundManager& sndMgr_) {
     prevUp = false;
     prevDown = false;
     prevEnter = true;
+    prevMouseLeft = false;
 }
 
 void SceneMenu::Update() {
@@ -65,9 +73,25 @@ void SceneMenu::Update() {
         animFrame2 = (animFrame2 + 1) % 2;
     }
 
-    bool up = CheckHitKey(KEY_INPUT_UP);
-    bool down = CheckHitKey(KEY_INPUT_DOWN);
+    // 上下キーは矢印に加えてW/Sでも操作できる
+    bool up = CheckHitKey(KEY_INPUT_UP) || CheckHitKey(KEY_INPUT_W);
+    bool down = CheckHitKey(KEY_INPUT_DOWN) || CheckHitKey(KEY_INPUT_S);
     bool enter = CheckHitKey(KEY_INPUT_RETURN);
+
+    // マウス：項目の上にカーソルがあれば、その項目を選択中にする
+    int mx, my;
+    GetMousePoint(&mx, &my);
+    int hoverItem = -1;
+    for (int i = 0; i < MENU_COUNT; i++) {
+        if (mx >= MENU_RECT[i][0] && mx <= MENU_RECT[i][2] &&
+            my >= MENU_RECT[i][1] && my <= MENU_RECT[i][3]) {
+            hoverItem = i;
+        }
+    }
+    if (hoverItem != -1 && hoverItem != selectIndex) {
+        selectIndex = hoverItem;
+        PlaySoundMem(sound->menu, DX_PLAYTYPE_BACK);
+    }
 
     if (up && !prevUp) {
         selectIndex = (selectIndex - 1 + MENU_COUNT) % MENU_COUNT;
@@ -77,7 +101,12 @@ void SceneMenu::Update() {
         selectIndex = (selectIndex + 1) % MENU_COUNT;
         PlaySoundMem(sound->menu, DX_PLAYTYPE_BACK);
     }
-    if (enter && !prevEnter) {
+
+    // 決定：Enter か、項目の上での左クリック
+    bool mouseLeft = (GetMouseInput() & MOUSE_INPUT_LEFT) != 0;
+    bool keyDecide = enter && !prevEnter;
+    bool mouseDecide = mouseLeft && !prevMouseLeft && hoverItem != -1;
+    if (keyDecide || mouseDecide) {
         PlaySoundMem(sound->decide, DX_PLAYTYPE_BACK);
         if (selectIndex == 0) nextScene = SCENE_GAME;
         if (selectIndex == 1) nextScene = SCENE_TUTORIAL;
@@ -87,6 +116,7 @@ void SceneMenu::Update() {
     prevUp = up;
     prevDown = down;
     prevEnter = enter;
+    prevMouseLeft = mouseLeft;
 }
 
 void SceneMenu::Draw() {
@@ -116,6 +146,12 @@ void SceneMenu::Draw() {
     SetFontSize(30);
     int tipsW = GetDrawStringWidth(TIPS[tipsIndex], lstrlen(TIPS[tipsIndex]));
     DrawString((SCREEN_W - tipsW) / 2, 70, TIPS[tipsIndex], GetColor(255, 255, 255));
+
+    // 画面下に操作説明を表示
+    SetFontSize(26);
+    const TCHAR* guide = ("WS / ↑↓ : えらぶ　　Enter / 左クリック : けってい");
+    int gw = GetDrawStringWidth(guide, lstrlen(guide));
+    DrawString((SCREEN_W - gw) / 2, SCREEN_H - 130, guide, GetColor(255, 255, 255));
     SetFontSize(16);
 }
 

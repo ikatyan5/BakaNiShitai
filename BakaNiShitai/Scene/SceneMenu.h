@@ -21,6 +21,7 @@ private:
     bool prevUp = false;      // 前フレームの上キー状態
     bool prevDown = false;    // 前フレームの下キー状態
     bool prevEnter = false;   // 前フレームのEnterキー状態
+    bool prevMouseLeft = false; // 前フレームのマウス左クリック状態
 
     int tipsTimer = 0;
     int tipsIndex = 0;

@@ -835,6 +835,7 @@ void SceneGame::Update() {
             }
             else if (player1.winCount >= WINNING_SCORE || player2.winCount >= WINNING_SCORE) {
                 state = STATE_GAMEEND;
+                gameEndWaitRelease = true; // 押しっぱなしでの即戻りを防ぐ
             }
             else {
                 // ラウンド間リセット
@@ -843,8 +844,12 @@ void SceneGame::Update() {
         }
     }
     else if (state == STATE_GAMEEND) {
-
-        if (CheckHitKey(KEY_INPUT_R)) {
+        // 決着直後はゲーム中に押していたキーで即メニューに戻ってしまうため、
+        // 一度すべてのキーが離れてから入力を受け付ける。
+        if (gameEndWaitRelease) {
+            if (CheckHitKeyAll() == 0) gameEndWaitRelease = false;
+        }
+        else if (CheckHitKeyAll()) {
             nextScene = SCENE_MENU;
         }
     }
@@ -1203,7 +1208,7 @@ void SceneGame::Draw() {
         DrawString((SCREEN_W - endW) / 2, 420, endText, GetColor(255, 255, 255));
 
         SetFontSize(24);
-        const TCHAR* retText = ("Rキーでメニューに戻る");
+        const TCHAR* retText = ("何か押してメニューに戻る");
         int retW = GetDrawStringWidth(retText, lstrlen(retText));
         DrawString((SCREEN_W - retW) / 2, 560, retText, GetColor(0, 0, 0));
 

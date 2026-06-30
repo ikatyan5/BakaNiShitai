@@ -142,8 +142,8 @@ void SceneTutorial::Draw() {
             int w = GetDrawStringWidth(items[i], lstrlen(items[i]));
             DrawString((SCREEN_W - w) / 2, 280 + i * 120, items[i], color);
         }
-        SetFontSize(24);
-        DrawString(40, 860, ("ESC: 戻る"), GetColor(180, 180, 180));
+        SetFontSize(54);
+        DrawString(40, 830, ("ESC: 戻る"), GetColor(255, 255, 255));
         SetFontSize(16);
         break;
     }
@@ -176,8 +176,8 @@ void SceneTutorial::Draw() {
         DrawString(690, 475, entries[zukanIndex].desc, GetColor(80, 80, 80));
         DrawString(690, 510, entries[zukanIndex].desc2, GetColor(80, 80, 80));
 
-        SetFontSize(20);
-        DrawString(40, 880, ("ESC: 戻る"), GetColor(100, 100, 100));
+        SetFontSize(54);
+        DrawString(40, 830, ("ESC: 戻る"), GetColor(0, 0, 0));
         SetFontSize(16);
         break;
     }
@@ -187,8 +187,8 @@ void SceneTutorial::Draw() {
         // TODO: 操作説明は後で実装
         SetFontSize(36);
         DrawString(100, 200, ("操作説明"), GetColor(255, 255, 255));
-        SetFontSize(24);
-        DrawString(40, 860, ("ESC: 戻る"), GetColor(180, 180, 180));
+        SetFontSize(54);
+        DrawString(40, 830, ("ESC: 戻る"), GetColor(255, 255, 255));
         SetFontSize(16);
         break;
 
@@ -214,8 +214,8 @@ void SceneTutorial::Draw() {
         DrawString(690, 320, restrictionEntries[zukanIndex].desc, GetColor(80, 80, 80));
         DrawString(690, 355, restrictionEntries[zukanIndex].desc2, GetColor(80, 80, 80));
 
-        SetFontSize(20);
-        DrawString(40, 880, ("ESC: 戻る"), GetColor(100, 100, 100));
+        SetFontSize(54);
+        DrawString(40, 830, ("ESC: 戻る"), GetColor(0, 0, 0));
         SetFontSize(16);
         break;
     }

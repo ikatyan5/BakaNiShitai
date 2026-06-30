@@ -83,6 +83,7 @@ private:
     int animFrame = 0;
 
     bool isDraw;
+    bool gameEndWaitRelease = false; // 決着直後、ゲーム中に押していたキーで即メニューに戻るのを防ぐ
     int matchTime; // 実際に使う試合時間
     int timeTimer; // フレームカウンター
 

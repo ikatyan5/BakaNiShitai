@@ -52,7 +52,7 @@ void SceneSettings::Draw() {
     ClearDrawScreen();
     DrawExtendGraphF(0.0f, 0.0f, SCREEN_W, SCREEN_H, imgMgr->blackboardSetting[animFrame], TRUE);
     DrawStringF(550.0f, 100.0f, ("設定"), GetColor(255, 255, 255));
-    DrawStringF(480.0f, 480.0f, ("← → で切り替え、ENTERで戻る"), GetColor(255, 255, 255));
+    DrawStringF(480.0f, 480.0f, ("↑ ↓で上下、← → で切り替え、ENTERで戻る"), GetColor(255, 255, 255));
 
     int p1Idx = (selectRow == 0) ? (2 + animFrame) : animFrame;
     int p2Idx = (selectRow == 1) ? (2 + animFrame) : animFrame;
