@@ -668,207 +668,217 @@ void SceneGame::Update() {
         if (flyExplodeTimer == 0) flyExplodeActive = false;
     }
 
-    if (state == STATE_PLAYING) {
-        // P1/P2を配列で扱い、左右対称な処理をループで一度だけ書く
-        Player* players[2] = { &player1, &player2 };
+    if (state == STATE_PLAYING) UpdatePlaying();
+    else if (state == STATE_HIT) UpdateHit();
+    else if (state == STATE_RESULT) UpdateResult();
+    else if (state == STATE_GAMEEND) UpdateGameEnd();
+    else if (state == STATE_COUNTDOWN) UpdateCountdown();
+}
 
-        animTimer++;
-        if (animTimer >= 10) {
-            animTimer = 0;
-            animFrame = (animFrame + 1) % 2;
+void SceneGame::UpdatePlaying() {
+    // P1/P2を配列で扱い、左右対称な処理をループで一度だけ書く
+    Player* players[2] = { &player1, &player2 };
+
+    animTimer++;
+    if (animTimer >= 10) {
+        animTimer = 0;
+        animFrame = (animFrame + 1) % 2;
+    }
+    if (timeTimer > 0) timeTimer--;
+    else {
+        if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
+            // ハイパー側が時間切れで自爆→弱い側の勝ち
+            EnterHitState(hyperPlayerID == 1, true);
         }
-        if (timeTimer > 0) timeTimer--;
         else {
-            if (restrictionManager.IsActive(REST_HYPETSUYOI) && hyperPlayerID != 0) {
-                // ハイパー側が時間切れで自爆→弱い側の勝ち
-                EnterHitState(hyperPlayerID == 1, true);
-            }
-            else {
-                // 通常の引き分け処理
-                isDraw = true;
-                player1.animFrame = 6;
-                player2.animFrame = 6;
-                p1HpIndex = 1;
-                p2HpIndex = 1;
-                HIT_TIMER = 60;
-                RESULT_TIMER = 120;
-                timeTimer = matchTime * 60;
-                state = STATE_HIT;
-                JUDGE = false;
-            }
+            // 通常の引き分け処理
+            isDraw = true;
+            player1.animFrame = 6;
+            player2.animFrame = 6;
+            p1HpIndex = 1;
+            p2HpIndex = 1;
+            HIT_TIMER = 60;
+            RESULT_TIMER = 120;
+            timeTimer = matchTime * 60;
+            state = STATE_HIT;
+            JUDGE = false;
         }
+    }
 
-        UpdateMeteor();
+    UpdateMeteor();
 
-        // 前処理が必要な妨害（刹那・重力ランダム）の毎フレーム駆動を委譲（プレイヤー更新の前）
-        if (restrictionManager.Active()) restrictionManager.Active()->UpdateBeforePlayers(*this);
+    // 前処理が必要な妨害（刹那・重力ランダム）の毎フレーム駆動を委譲（プレイヤー更新の前）
+    if (restrictionManager.Active()) restrictionManager.Active()->UpdateBeforePlayers(*this);
 
-        // ハイパー突進は HyperTsuyoiRestriction::UpdateBeforePlayers（委譲）が呼ぶ。
+    // ハイパー突進は HyperTsuyoiRestriction::UpdateBeforePlayers（委譲）が呼ぶ。
 
-        // 爆発中はプレイヤーの更新を止める
-        if (!itemManager.isExploding && !mementoMoriPending) {
-            for (Player* p : players) {
-                p->Update(stage, weapons, restrictionManager);
+    // 爆発中はプレイヤーの更新を止める
+    if (!itemManager.isExploding && !mementoMoriPending) {
+        for (Player* p : players) {
+            p->Update(stage, weapons, restrictionManager);
 
-                // ジャンプ・素手攻撃を出した瞬間に音を鳴らしてフラグを戻す
-                if (p->justJumped)       { PlaySoundMem(sound->jump,   DX_PLAYTYPE_BACK); p->justJumped = false; }
-                if (p->justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); p->justBareAttacked = false; }
-            }
+            // ジャンプ・素手攻撃を出した瞬間に音を鳴らしてフラグを戻す
+            if (p->justJumped)       { PlaySoundMem(sound->jump,   DX_PLAYTYPE_BACK); p->justJumped = false; }
+            if (p->justBareAttacked) { PlaySoundMem(sound->attack, DX_PLAYTYPE_BACK); p->justBareAttacked = false; }
         }
+    }
 
-        // 各妨害の毎フレーム挙動を委譲する（Strategy）。移植済みの妨害だけがここで動く。
-        if (restrictionManager.Active()) restrictionManager.Active()->UpdatePlaying(*this);
+    // 各妨害の毎フレーム挙動を委譲する（Strategy）。移植済みの妨害だけがここで動く。
+    if (restrictionManager.Active()) restrictionManager.Active()->UpdatePlaying(*this);
 
-        // ノックバック画面外チェック（近接無双は場外で負け）
-        if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
-            for (int i = 0; i < 2; i++) {
-                if (players[i]->isKnockedBack && (players[i]->x < 0.0f || players[i]->x > SCREEN_W))
-                    EnterHitState(i == 0, true); // i==0=P1が場外
-            }
+    // ノックバック画面外チェック（近接無双は場外で負け）
+    if (restrictionManager.IsActive(REST_MELEE_MUSOU)) {
+        for (int i = 0; i < 2; i++) {
+            if (players[i]->isKnockedBack && (players[i]->x < 0.0f || players[i]->x > SCREEN_W))
+                EnterHitState(i == 0, true); // i==0=P1が場外
         }
+    }
 
-        if (!restrictionManager.IsActive(REST_SETSUNA)) {
-            itemManager.Update(player1, player2, restrictionManager);
+    if (!restrictionManager.IsActive(REST_SETSUNA)) {
+        itemManager.Update(player1, player2, restrictionManager);
+    }
+    orbManager.Update(player1, player2);
+
+    // ぼやけの駆動と広告更新は ScreenBlurRestriction::UpdateBeforePlayers（委譲）が呼ぶ。
+    // 画面反転の毎フレーム駆動は ScreenFlipRestriction::UpdatePlaying（委譲）が呼ぶ。
+
+    // 爆発ヒット判定
+    if (itemManager.hitOccurred) {
+        itemManager.hitOccurred = false;
+        EnterHitState(itemManager.hitWinnerID == 2, true);
+    }
+
+    if (orbManager.hitOccurred) {
+        orbManager.hitOccurred = false;
+        EnterHitState(orbManager.hitWinnerID == 2, true);
+    }
+
+    p1Glowing = player1.isGlowing;
+    p2Glowing = player2.isGlowing;
+
+    // ハイパーの接触判定は HyperTsuyoiRestriction::UpdatePlaying（委譲）が呼ぶ。
+
+    // メメントモリ判定
+    CheckMementoMori(player1, player2, false);
+    CheckMementoMori(player2, player1, true);
+
+    // メメントモリ余韻タイマー
+    if (mementoMoriPending) {
+        mementoMoriTimer--;
+        if (mementoMoriTimer <= 0) {
+            mementoMoriPending = false;
+            EnterHitState(mementoMoriWinnerID == 2, true);
         }
-        orbManager.Update(player1, player2);
+    }
 
-        // ぼやけの駆動と広告更新は ScreenBlurRestriction::UpdateBeforePlayers（委譲）が呼ぶ。
-        // 画面反転の毎フレーム駆動は ScreenFlipRestriction::UpdatePlaying（委譲）が呼ぶ。
-
-        // 爆発ヒット判定
-        if (itemManager.hitOccurred) {
-            itemManager.hitOccurred = false;
-            EnterHitState(itemManager.hitWinnerID == 2, true);
-        }
-
-        if (orbManager.hitOccurred) {
-            orbManager.hitOccurred = false;
-            EnterHitState(orbManager.hitWinnerID == 2, true);
-        }
-
-        p1Glowing = player1.isGlowing;
-        p2Glowing = player2.isGlowing;
-
-        // ハイパーの接触判定は HyperTsuyoiRestriction::UpdatePlaying（委譲）が呼ぶ。
-
-        // メメントモリ判定
-        CheckMementoMori(player1, player2, false);
-        CheckMementoMori(player2, player1, true);
-
-        // メメントモリ余韻タイマー
-        if (mementoMoriPending) {
-            mementoMoriTimer--;
-            if (mementoMoriTimer <= 0) {
-                mementoMoriPending = false;
-                EnterHitState(mementoMoriWinnerID == 2, true);
-            }
-        }
-
-        // ピコハンリスポーン
-        auto checkPikohanRespawn = [&](Player& player) {
-            if (player.pikohanRespawnTimer <= 0) return;
-            player.pikohanRespawnTimer--;
-            if (player.pikohanRespawnTimer == 0) {
-                for (int i = 0; i < WEAPON_MAX; i++) {
-                    if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
-                        weapons[i].Init(WEAPON_PIKOHAN, *imgMgr);
-                        weapons[i].weaponState = Weapon::WEAPON_HELD;
-                        player.holdingWeaponIndex = i;
-                        break;
-                    }
+    // ピコハンリスポーン
+    auto checkPikohanRespawn = [&](Player& player) {
+        if (player.pikohanRespawnTimer <= 0) return;
+        player.pikohanRespawnTimer--;
+        if (player.pikohanRespawnTimer == 0) {
+            for (int i = 0; i < WEAPON_MAX; i++) {
+                if (weapons[i].weaponState == Weapon::WEAPON_INACTIVE) {
+                    weapons[i].Init(WEAPON_PIKOHAN, *imgMgr);
+                    weapons[i].weaponState = Weapon::WEAPON_HELD;
+                    player.holdingWeaponIndex = i;
+                    break;
                 }
             }
-            };
-        checkPikohanRespawn(player1);
-        checkPikohanRespawn(player2);
-
-        // オーブ判定
-        CheckStickOrb(player1, 1);
-        CheckStickOrb(player2, 2);
-
-        // テンサイのメテオ判定
-        CheckTensaiTsue(player1);
-        CheckTensaiTsue(player2);
-
-        // はたき落とし判定
-        CheckParry(player1, 1);
-        CheckParry(player2, 2);
-
-        // 投げ武器ヒット判定
-        CheckWeaponHit(player1, player2, true, 1);
-        CheckWeaponHit(player2, player1, false, 2);
-
-        // 近接攻撃ヒット判定
-        CheckMeleeHit(player1, player2, false);
-        CheckMeleeHit(player2, player1, true);
-
-        ThrowWeapon(player1, 1);
-        ThrowWeapon(player2, 2);
-
-        // 武器スポーン
-        SpawnWeapon();
-
-        PickupWeapon(player1);
-        PickupWeapon(player2);
-
-        for (int i = 0; i < WEAPON_MAX; i++) {
-            weapons[i].Update();
         }
+        };
+    checkPikohanRespawn(player1);
+    checkPikohanRespawn(player2);
+
+    // オーブ判定
+    CheckStickOrb(player1, 1);
+    CheckStickOrb(player2, 2);
+
+    // テンサイのメテオ判定
+    CheckTensaiTsue(player1);
+    CheckTensaiTsue(player2);
+
+    // はたき落とし判定
+    CheckParry(player1, 1);
+    CheckParry(player2, 2);
+
+    // 投げ武器ヒット判定
+    CheckWeaponHit(player1, player2, true, 1);
+    CheckWeaponHit(player2, player1, false, 2);
+
+    // 近接攻撃ヒット判定
+    CheckMeleeHit(player1, player2, false);
+    CheckMeleeHit(player2, player1, true);
+
+    ThrowWeapon(player1, 1);
+    ThrowWeapon(player2, 2);
+
+    // 武器スポーン
+    SpawnWeapon();
+
+    PickupWeapon(player1);
+    PickupWeapon(player2);
+
+    for (int i = 0; i < WEAPON_MAX; i++) {
+        weapons[i].Update();
     }
-    else if (state == STATE_HIT) {
-        // ヒット演出タイマー
-        if (HIT_TIMER > 0) HIT_TIMER--;
-        else {
-            state = STATE_RESULT;
-            // リザルトの「〇の勝ち！」表示と同時に鳴らす（引き分けは鳴らさない）
-            if (!isDraw) PlaySoundMem(sound->win, DX_PLAYTYPE_BACK);
-        }
-    }
-    else if (state == STATE_RESULT) {
-        // リザルト表示タイマー
-        if (RESULT_TIMER > 0) RESULT_TIMER--;
-        else {
-            if (setsunaRedoPending) {
-                // 刹那の両者遅すぎ→同じ刹那をもう一回（スコアそのまま・別の制限に進まない）
-                setsunaRedoPending = false;
-                ResetGame(true, true);
-            }
-            else if (player1.winCount >= WINNING_SCORE || player2.winCount >= WINNING_SCORE) {
-                state = STATE_GAMEEND;
-                gameEndWaitRelease = true; // 押しっぱなしでの即戻りを防ぐ
-            }
-            else {
-                // ラウンド間リセット
-                ResetGame(true);
-            }
-        }
-    }
-    else if (state == STATE_GAMEEND) {
-        // 決着直後はゲーム中に押していたキーで即メニューに戻ってしまうため、
-        // 一度すべてのキーが離れてから入力を受け付ける。
-        if (gameEndWaitRelease) {
-            if (CheckHitKeyAll() == 0) gameEndWaitRelease = false;
-        }
-        else if (CheckHitKeyAll()) {
-            nextScene = SCENE_MENU;
-        }
-    }
-    else if (state == STATE_COUNTDOWN) {
-        int beforeSec = (countdownTimer / 60) + 1;
-        countdownTimer--;
-        int afterSec = (countdownTimer / 60) + 1;
-        // 3・2・1と数字が変わる瞬間に鳴らす（0は鳴らさない）
-        if (afterSec != beforeSec && afterSec >= 1 && afterSec <= 3) {
-            PlaySoundMem(sound->countdown, DX_PLAYTYPE_BACK);
-        }
-        if (countdownTimer <= 0) {
-            state = STATE_PLAYING;
-            if (restrictionManager.IsActive(REST_SETSUNA)) {
-                // ！が出るまでの余興音。一度だけ流して、鳴り終わったら無音
-                PlaySoundMem(sound->setsuna, DX_PLAYTYPE_BACK);
-            }
-        }
 }
+
+void SceneGame::UpdateResult() {
+    // リザルト表示タイマー
+    if (RESULT_TIMER > 0) RESULT_TIMER--;
+    else {
+        if (setsunaRedoPending) {
+            // 刹那の両者遅すぎ→同じ刹那をもう一回（スコアそのまま・別の制限に進まない）
+            setsunaRedoPending = false;
+            ResetGame(true, true);
+        }
+        else if (player1.winCount >= WINNING_SCORE || player2.winCount >= WINNING_SCORE) {
+            state = STATE_GAMEEND;
+            gameEndWaitRelease = true; // 押しっぱなしでの即戻りを防ぐ
+        }
+        else {
+            // ラウンド間リセット
+            ResetGame(true);
+        }
+    }
+}
+
+void SceneGame::UpdateGameEnd() {
+    // 決着直後はゲーム中に押していたキーで即メニューに戻ってしまうため、
+    // 一度すべてのキーが離れてから入力を受け付ける。
+    if (gameEndWaitRelease) {
+        if (CheckHitKeyAll() == 0) gameEndWaitRelease = false;
+    }
+    else if (CheckHitKeyAll()) {
+        nextScene = SCENE_MENU;
+    }
+}
+
+void SceneGame::UpdateCountdown() {
+    int beforeSec = (countdownTimer / 60) + 1;
+    countdownTimer--;
+    int afterSec = (countdownTimer / 60) + 1;
+    // 3・2・1と数字が変わる瞬間に鳴らす（0は鳴らさない）
+    if (afterSec != beforeSec && afterSec >= 1 && afterSec <= 3) {
+        PlaySoundMem(sound->countdown, DX_PLAYTYPE_BACK);
+    }
+    if (countdownTimer <= 0) {
+        state = STATE_PLAYING;
+        if (restrictionManager.IsActive(REST_SETSUNA)) {
+            // ！が出るまでの余興音。一度だけ流して、鳴り終わったら無音
+            PlaySoundMem(sound->setsuna, DX_PLAYTYPE_BACK);
+        }
+    }
+}
+
+void SceneGame::UpdateHit() {
+    // ヒット演出タイマー
+    if (HIT_TIMER > 0) HIT_TIMER--;
+    else {
+        state = STATE_RESULT;
+        // リザルトの「〇の勝ち！」表示と同時に鳴らす（引き分けは鳴らさない）
+        if (!isDraw) PlaySoundMem(sound->win, DX_PLAYTYPE_BACK);
+    }
 }
 
 void SceneGame::UpdateFallingUI(bool enteredHeavy) {

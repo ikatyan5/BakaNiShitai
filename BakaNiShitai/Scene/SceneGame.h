@@ -22,6 +22,12 @@ public:
     void InitPlayers(bool keepWinCount = false);
     void ResetGame(bool keepWinCount, bool keepRestriction = false);
     void Update() override;
+    // Update() を状態ごとに分割した本体（State パターンの各状態の毎フレーム処理）
+    void UpdatePlaying();   // 対戦中
+    void UpdateHit();       // ヒット演出
+    void UpdateResult();    // リザルト表示
+    void UpdateGameEnd();   // 決着（メニュー待ち）
+    void UpdateCountdown(); // 開始カウントダウン
     void Draw() override;
     void DrawUI();
     void EnterHitState(bool judgeValue, bool addScore = false);
