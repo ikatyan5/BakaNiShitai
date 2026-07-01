@@ -676,6 +676,10 @@ void SceneGame::Update() {
 }
 
 void SceneGame::UpdatePlaying() {
+    // 呼ぶ順番が肝。①妨害の前処理で物理パラメータ(速度・重力)を確定
+    // → ②プレイヤー本体を動かす → ③妨害の後処理と各当たり判定、の順で処理する。
+    // 前後を入れ替えると挙動が1フレームずれたり判定が抜けたりする。
+
     // P1/P2を配列で扱い、左右対称な処理をループで一度だけ書く
     Player* players[2] = { &player1, &player2 };
 
@@ -738,7 +742,7 @@ void SceneGame::UpdateTimeLimit() {
         else {
             // 通常の引き分け処理
             isDraw = true;
-            player1.animFrame = 6;
+            player1.animFrame = 6; // 6 = やられ/引き分け表示のコマ
             player2.animFrame = 6;
             p1HpIndex = 1;
             p2HpIndex = 1;
@@ -781,7 +785,7 @@ void SceneGame::CheckAllHits() {
         }
     }
 
-    // ピコハンリスポーン
+    // 投げて消えたピコハンを、空いている武器スロットを1つ借りて手元に復活させる
     auto checkPikohanRespawn = [&](Player& player) {
         if (player.pikohanRespawnTimer <= 0) return;
         player.pikohanRespawnTimer--;
